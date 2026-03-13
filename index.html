@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>שאגת הארי — פיד עדכונים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --red:#dc2626;
+      --blue:#1d4ed8;
+      --gold:#f59e0b;
+      --bg:#0a0a0f;
+      --surface:#13131a;
+      --surface2:#1c1c27;
+      --border:rgba(255,255,255,.07);
+      --text:#f0f0f5;
+      --muted:#8888a0;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Assistant',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* ── BACKGROUND TEXTURE ── */
+    body::before{
+      content:'';
+      position:fixed;inset:0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(220,38,38,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(29,78,216,.10) 0%, transparent 55%);
+      pointer-events:none;z-index:0;
+    }
+
+    /* ── HEADER ── */
+    header{
+      position:sticky;top:0;z-index:100;
+      background:rgba(10,10,15,.88);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid var(--border);
+      padding:0 24px;
+      display:flex;align-items:center;justify-content:space-between;
+      height:64px;
+    }
+    .logo{
+      display:flex;align-items:center;gap:12px;
+    }
+    .logo-icon{
+      width:38px;height:38px;
+      background:linear-gradient(135deg,var(--red),#991b1b);
+      border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;
+      box-shadow:0 0 20px rgba(220,38,38,.35);
+    }
+    .logo-text{
+      font-size:20px;font-weight:900;letter-spacing:-.02em;
+      background:linear-gradient(90deg,#fff 60%,rgba(255,255,255,.5));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    .live-badge{
+      display:flex;align-items:center;gap:6px;
+      background:rgba(220,38,38,.15);
+      border:1px solid rgba(220,38,38,.3);
+      border-radius:99px;padding:4px 12px;
+      font-size:12px;font-weight:700;color:#f87171;
+    }
+    .live-dot{
+      width:7px;height:7px;border-radius:50%;
+      background:#ef4444;
+      box-shadow:0 0 8px #ef4444;
+      animation:pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
+
+    /* ── MAIN ── */
+    main{
+      max-width:680px;margin:0 auto;
+      padding:32px 16px 80px;
+      position:relative;z-index:1;
+    }
+
+    /* ── EMPTY STATE ── */
+    #emptyState{
+      text-align:center;padding:80px 20px;
+      display:none;
+    }
+    #emptyState i{font-size:48px;color:var(--muted);opacity:.4;margin-bottom:16px;display:block}
+    #emptyState p{color:var(--muted);font-size:15px}
+
+    /* ── FEED ITEM ── */
+    .feed-item{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:20px 22px;
+      margin-bottom:14px;
+      animation:slideIn .35s cubic-bezier(.16,1,.3,1) both;
+      position:relative;
+      overflow:hidden;
+      transition:border-color .2s,transform .15s;
+    }
+    .feed-item:hover{
+      border-color:rgba(255,255,255,.13);
+      transform:translateY(-1px);
+    }
+    .feed-item.red-item{
+      border-right:3px solid var(--red);
+    }
+    .feed-item.red-item::before{
+      content:'';
+      position:absolute;inset:0;
+      background:linear-gradient(90deg,rgba(220,38,38,.06) 0%,transparent 50%);
+      pointer-events:none;
+    }
+    .feed-item.news-item{
+      border-right:3px solid var(--blue);
+    }
+    .feed-item.news-item::before{
+      content:'';
+      position:absolute;inset:0;
+      background:linear-gradient(90deg,rgba(29,78,216,.05) 0%,transparent 50%);
+      pointer-events:none;
+    }
+    @keyframes slideIn{
+      from{opacity:0;transform:translateY(-12px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    /* ── ITEM HEADER ── */
+    .item-header{
+      display:flex;align-items:center;gap:10px;
+      margin-bottom:12px;
+    }
+    .profile-badge{
+      display:flex;align-items:center;gap:6px;
+      padding:3px 10px;border-radius:99px;
+      font-size:11px;font-weight:800;letter-spacing:.02em;
+    }
+    .profile-badge.news{background:rgba(29,78,216,.2);color:#93c5fd;border:1px solid rgba(29,78,216,.3)}
+    .profile-badge.red{background:rgba(220,38,38,.2);color:#fca5a5;border:1px solid rgba(220,38,38,.3)}
+    .item-meta{
+      display:flex;align-items:center;gap:8px;
+      margin-right:auto;
+      font-size:12px;color:var(--muted);
+    }
+    .item-meta .sep{opacity:.4}
+
+    /* ── ITEM BODY ── */
+    .item-text{
+      font-size:16px;line-height:1.7;
+      color:var(--text);
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .item-text a{color:#60a5fa;text-decoration:underline;word-break:break-all}
+    .item-text strong{font-weight:800}
+    .item-text em{font-style:italic}
+
+    .item-image{
+      margin-top:14px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid var(--border);
+    }
+    .item-image img{
+      width:100%;display:block;
+      max-height:380px;object-fit:cover;
+    }
+
+    .item-video{
+      margin-top:14px;
+    }
+    .video-btn{
+      display:inline-flex;align-items:center;gap:8px;
+      background:rgba(29,78,216,.18);
+      border:1px solid rgba(29,78,216,.3);
+      border-radius:10px;padding:8px 16px;
+      font-size:13px;font-weight:700;color:#93c5fd;
+      text-decoration:none;
+      transition:background .15s;
+    }
+    .video-btn:hover{background:rgba(29,78,216,.3)}
+
+    .item-buttons{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;
+    }
+    .action-btn-link{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--surface2);
+      border:1px solid var(--border);
+      border-radius:10px;padding:7px 14px;
+      font-size:13px;font-weight:700;color:var(--text);
+      text-decoration:none;
+      transition:border-color .15s,background .15s;
+    }
+    .action-btn-link:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+
+    /* ── ITEM FOOTER ── */
+    .item-footer{
+      display:flex;align-items:center;gap:10px;
+      margin-top:14px;padding-top:12px;
+      border-top:1px solid var(--border);
+      font-size:12px;color:var(--muted);
+    }
+    .groups-badge{
+      display:flex;align-items:center;gap:5px;
+    }
+
+    /* ── LOADING ── */
+    #loadingBar{
+      position:fixed;top:0;right:0;left:0;height:2px;z-index:200;
+      background:linear-gradient(90deg,var(--red),var(--blue));
+      transform:scaleX(0);transform-origin:right;
+      transition:transform .3s;
+    }
+    #loadingBar.show{animation:loadPulse 1.2s ease-in-out infinite}
+    @keyframes loadPulse{0%{transform:scaleX(0);transform-origin:right}50%{transform:scaleX(.6);transform-origin:right}100%{transform:scaleX(0);transform-origin:left}}
+
+    /* ── TOAST ── */
+    #newToast{
+      position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);
+      background:var(--surface2);border:1px solid rgba(239,68,68,.3);
+      border-radius:99px;padding:8px 20px;
+      font-size:13px;font-weight:700;color:#fca5a5;
+      display:none;opacity:0;transition:all .3s;z-index:50;
+      pointer-events:none;cursor:pointer;
+      box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    #newToast.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0);pointer-events:all}
+
+    /* ── SCROLL TO TOP ── */
+    #scrollTopBtn{
+      position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:99px;padding:8px 20px;
+      font-size:13px;font-weight:700;color:var(--muted);
+      cursor:pointer;display:none;
+      transition:all .2s;
+      box-shadow:0 4px 20px rgba(0,0,0,.4);
+    }
+    #scrollTopBtn:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
+    #scrollTopBtn.show{display:flex;align-items:center;gap:6px}
+  </style>
+</head>
+<body>
+
+<div id="loadingBar"></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🦁</div>
+    <span class="logo-text">שאגת הארי</span>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    <span>עדכונים חיים</span>
+  </div>
+</header>
+
+<main>
+  <div id="feedContainer"></div>
+  <div id="emptyState">
+    <i class="fas fa-satellite-dish"></i>
+    <p>ממתין לעדכונים...</p>
+  </div>
+</main>
+
+<div id="newToast" onclick="scrollToTop()">
+  <i class="fas fa-arrow-up" style="font-size:11px"></i>
+  <span id="newToastText">עדכון חדש</span>
+</div>
+
+<button id="scrollTopBtn" onclick="scrollToTop()">
+  <i class="fas fa-arrow-up" style="font-size:11px"></i> חזרה לראש
+</button>
+
+<script>
+const BACKEND='https://dhoc97909.pythonanywhere.com';
+let feedItems=[];
+let lastTs=0;
+let pendingNew=[];
+let isAtTop=true;
+
+function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderText(t){
+  if(!t)return'';
+  let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
+  s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
+  s=s.replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+
+function formatDate(dateStr,timeStr){
+  // dateStr like "13/03/2026", timeStr like "14:22"
+  if(!dateStr)return timeStr||'';
+  const today=new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/');
+  if(dateStr===today)return 'היום, '+timeStr;
+  return dateStr+' '+timeStr;
+}
+
+function buildItem(e){
+  const isRed=e.profile==='red';
+  const profileLabel=isRed?'🚨 צבע אדום':'📰 מבזק חדשות';
+  const profileClass=isRed?'red':'news';
+
+  let mediaHtml='';
+  if(e.imgUrl) mediaHtml+=`<div class="item-image"><img src="${esc(e.imgUrl)}" alt="תמונה" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`;
+  if(e.videoUrl) mediaHtml+=`<div class="item-video"><a class="video-btn" href="${esc(e.videoUrl)}" target="_blank" rel="noopener"><i class="fas fa-play"></i> צפה בסרטון</a></div>`;
+
+  let buttonsHtml='';
+  if(e.buttons&&e.buttons.length){
+    buttonsHtml='<div class="item-buttons">'+e.buttons.map(b=>`<a class="action-btn-link" href="${esc(b.url)}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt" style="font-size:10px"></i>${esc(b.text)}</a>`).join('')+'</div>';
+  }
+
+  const groups=e.groupCount||0;
+
+  return `<div class="feed-item ${profileClass}-item">
+    <div class="item-header">
+      <span class="profile-badge ${profileClass}">${profileLabel}</span>
+      <div class="item-meta">
+        <span>${formatDate(e.date,e.time)}</span>
+      </div>
+    </div>
+    <div class="item-text">${renderText(e.text)}</div>
+    ${mediaHtml}
+    ${buttonsHtml}
+    <div class="item-footer">
+      <span class="groups-badge"><i class="fas fa-users" style="font-size:10px"></i> ${groups} קבוצות</span>
+      ${e.sender?`<span class="sep">·</span><span>${esc(e.sender)}</span>`:''}
+    </div>
+  </div>`;
+}
+
+function renderFeed(items,prepend=false){
+  const container=document.getElementById('feedContainer');
+  const empty=document.getElementById('emptyState');
+
+  if(!items.length&&!feedItems.length){
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+
+  if(prepend){
+    // Insert new items at top without disrupting scroll
+    const scrollY=window.scrollY;
+    const frag=document.createDocumentFragment();
+    items.forEach(e=>{
+      const div=document.createElement('div');
+      div.innerHTML=buildItem(e);
+      frag.appendChild(div.firstChild);
+    });
+    container.insertBefore(frag,container.firstChild);
+    window.scrollTo(0,window.scrollY+(container.firstChild?.offsetHeight||0));
+  } else {
+    container.innerHTML=items.map(buildItem).join('');
+  }
+}
+
+async function loadFeed(){
+  setLoading(true);
+  try{
+    const r=await fetch(BACKEND+'/feed');
+    const d=await r.json();
+    if(d.status==='ok'){
+      feedItems=d.feed||[];
+      if(feedItems.length) lastTs=Math.max(...feedItems.map(e=>e.ts||0));
+      renderFeed(feedItems);
+    }
+  }catch(e){console.error(e);}
+  setLoading(false);
+}
+
+async function pollNew(){
+  if(!lastTs)return;
+  try{
+    const r=await fetch(BACKEND+'/feed?since='+lastTs);
+    const d=await r.json();
+    if(d.status==='ok'&&d.feed&&d.feed.length){
+      const newItems=d.feed;
+      lastTs=Math.max(...newItems.map(e=>e.ts||0),lastTs);
+      feedItems=[...newItems,...feedItems].slice(0,200);
+
+      if(isAtTop){
+        // User is at top — just prepend
+        renderFeed(newItems,true);
+      } else {
+        // User scrolled down — show toast
+        pendingNew=[...newItems,...pendingNew];
+        showNewToast();
+      }
+    }
+  }catch(e){}
+}
+
+function showNewToast(){
+  const toast=document.getElementById('newToast');
+  const txt=document.getElementById('newToastText');
+  txt.textContent=pendingNew.length===1?'עדכון חדש':`${pendingNew.length} עדכונים חדשים`;
+  toast.classList.add('show');
+}
+
+function scrollToTop(){
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(pendingNew.length){
+    renderFeed(feedItems);
+    pendingNew=[];
+  }
+  document.getElementById('newToast').classList.remove('show');
+}
+
+function setLoading(v){
+  document.getElementById('loadingBar').classList.toggle('show',v);
+}
+
+// Scroll tracking
+window.addEventListener('scroll',()=>{
+  isAtTop=window.scrollY<80;
+  const btn=document.getElementById('scrollTopBtn');
+  btn.classList.toggle('show',window.scrollY>300);
+  if(isAtTop){
+    document.getElementById('newToast').classList.remove('show');
+    if(pendingNew.length){renderFeed(feedItems);pendingNew=[];}
+  }
+},{passive:true});
+
+// Init
+loadFeed();
+setInterval(pollNew,6000);
+</script>
+</body>
+</html>
