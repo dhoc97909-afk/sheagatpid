@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
 <title>שאגת הארי</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -40,29 +40,27 @@ header{
 @keyframes dp{0%,100%{opacity:1}50%{opacity:.3}}
 .hdr-user{display:flex;align-items:center;gap:8px;}
 .hdr-user img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee;}
-.hdr-user-init{width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
 
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
 #feedInner{max-width:680px;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:3px;}
 
-/* MESSAGE ROW — avatar at top-right, messages flush right */
+/* MESSAGE ROW — avatar LEFT, bubble to the right of avatar */
 .msg-row{
   display:flex;
-  align-items:flex-start; /* changed from flex-end to flex-start so avatar is at top */
+  flex-direction:row;        /* avatar on LEFT (start in LTR flow) */
+  align-items:flex-start;
   gap:8px;
   padding:2px 0;
   animation:mi .3s cubic-bezier(.16,1,.3,1) both;
-  justify-content:flex-end; /* push everything to the right */
 }
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .msg-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-start;}
-.msg-av-placeholder{width:36px;flex-shrink:0;}
 
-/* BUBBLE */
+/* BUBBLE — top-left corner near avatar = sharp (4px), rest rounded */
 .bubble{
   background:#fff;
-  border-radius:18px 4px 18px 18px; /* top-right corner is sharp (near avatar) */
+  border-radius:4px 18px 18px 18px;
   padding:10px 14px 8px;
   max-width:82%;
   min-width:180px;
@@ -71,20 +69,15 @@ header{
 }
 .bubble.is-red{background:#fff9f9;border-right:3px solid #e02020;}
 
-/* sender name */
 .bubble-sender{font-size:13px;font-weight:800;color:#e02020;margin-bottom:4px;}
 .bubble-sender.news-sender{color:#1a56db;}
 
-/* text */
 .bubble-text{font-size:15px;line-height:1.7;color:#111;white-space:pre-wrap;word-break:break-word;}
 .bubble-text strong{font-weight:800;}
 .bubble-text em{font-style:italic;}
 .bubble-text a{color:#1a56db;text-decoration:underline;}
-
-/* RED: headline bold */
 .bubble-headline{font-size:16px;font-weight:800;color:#111;line-height:1.5;margin-bottom:4px;}
 
-/* media */
 .bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;}
 .bubble-img img{width:100%;display:block;max-height:340px;object-fit:cover;}
 .bubble-vid{margin-top:9px;}
@@ -92,44 +85,80 @@ header{
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
 
-/* timestamp bottom right */
 .bubble-foot{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-top:5px;}
 .bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-right:auto;}
 
 /* REACTIONS */
 .rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
-.rxn-chip{display:inline-flex;align-items:center;gap:3px;background:#f3f4f6;border:1.5px solid transparent;border-radius:99px;padding:2px 9px;font-size:13px;cursor:pointer;transition:all .12s;user-select:none;font-family:'Heebo',sans-serif;}
+.rxn-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#f3f4f6;border:1.5px solid transparent;
+  border-radius:99px;padding:2px 9px;
+  font-size:14px;cursor:pointer;transition:all .12s;user-select:none;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji','Heebo',sans-serif;
+}
 .rxn-chip:hover{background:#e5e7eb;}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
-.rxn-count{font-size:12px;font-weight:700;color:#374151;}
-.rxn-add-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:99px;line-height:1;transition:background .12s;color:#aaa;}
+.rxn-count{font-size:12px;font-weight:700;color:#374151;font-family:'Heebo',sans-serif;}
+.rxn-add-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:17px;padding:2px 6px;border-radius:99px;line-height:1;
+  transition:background .12s;color:#aaa;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+}
 .rxn-add-btn:hover{background:#f3f4f6;}
 
-/* comment btn */
 .cmt-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:color .12s;}
 .cmt-btn:hover{color:#1a56db;}
 .cmt-btn.has-cmt{color:#1a56db;}
 
-/* EMOJI PICKER — opens on the left side, capped at 56px from top (header height) */
+/* ─── EMOJI PICKER — horizontal strip fixed at bottom ─── */
 #emojiPicker{
   position:fixed;
+  bottom:0; left:0; right:0;
   background:#fff;
-  border:1px solid #e5e7eb;
-  border-radius:16px;
-  padding:10px;
-  box-shadow:0 8px 32px rgba(0,0,0,.15);
+  border-top:1.5px solid #e5e7eb;
+  box-shadow:0 -6px 28px rgba(0,0,0,.13);
   z-index:500;
   display:none;
-  flex-wrap:wrap;
-  gap:4px;
-  width:226px;
-  /* max-height so it doesn't go above the header */
-  max-height:calc(100vh - 56px - 20px);
-  overflow-y:auto;
+  flex-direction:row;
+  align-items:center;
+  padding:8px 12px 12px;
+  /* account for iOS safe area */
+  padding-bottom:max(12px, env(safe-area-inset-bottom));
+  gap:2px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  animation:slideUp .2s cubic-bezier(.16,1,.3,1);
 }
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+#emojiPicker::-webkit-scrollbar{display:none;}
 #emojiPicker.show{display:flex;}
-.ep-btn{background:none;border:none;font-size:21px;cursor:pointer;padding:4px 5px;border-radius:8px;line-height:1;}
-.ep-btn:hover{background:#f3f4f6;}
+
+.ep-btn{
+  background:none;border:none;
+  font-size:28px;cursor:pointer;
+  padding:5px 7px;border-radius:10px;
+  line-height:1;flex-shrink:0;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+  transition:background .1s, transform .1s;
+}
+.ep-btn:hover{background:#f3f4f6;transform:scale(1.25);}
+.ep-btn:active{transform:scale(0.9);}
+
+.ep-divider{width:1px;height:28px;background:#e5e7eb;flex-shrink:0;margin:0 4px;}
+
+.ep-close{
+  background:none;border:none;cursor:pointer;
+  font-size:13px;color:#aaa;
+  padding:6px 10px;border-radius:8px;
+  flex-shrink:0;margin-right:auto;
+  font-family:'Heebo',sans-serif;font-weight:600;
+  white-space:nowrap;
+}
+.ep-close:hover{background:#f3f4f6;color:#374151;}
 
 /* COMMENTS PANEL */
 #cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.3);}
@@ -173,6 +202,7 @@ header{
 @media(max-width:480px){
   .bubble{max-width:90%;}
   #commentsPanel{width:100vw;}
+  .ep-btn{font-size:26px;padding:4px 6px;}
 }
 </style>
 </head>
@@ -213,7 +243,7 @@ header{
   </button>
 </div>
 
-<!-- EMOJI PICKER -->
+<!-- EMOJI PICKER — horizontal strip, slides up from bottom -->
 <div id="emojiPicker">
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
   <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
@@ -227,6 +257,12 @@ header{
   <button class="ep-btn" onclick="pickEmoji('💪')">💪</button>
   <button class="ep-btn" onclick="pickEmoji('😡')">😡</button>
   <button class="ep-btn" onclick="pickEmoji('🙏')">🙏</button>
+  <button class="ep-btn" onclick="pickEmoji('👏')">👏</button>
+  <button class="ep-btn" onclick="pickEmoji('😍')">😍</button>
+  <button class="ep-btn" onclick="pickEmoji('🤯')">🤯</button>
+  <button class="ep-btn" onclick="pickEmoji('😱')">😱</button>
+  <div class="ep-divider"></div>
+  <button class="ep-close" onclick="document.getElementById('emojiPicker').classList.remove('show')">סגור ✕</button>
 </div>
 
 <!-- COMMENTS PANEL -->
@@ -271,41 +307,23 @@ function timeLabel(e){
 }
 
 /* ── PERSISTENT AUTH ── */
-function saveUser(user){
-  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(user));}catch(e){}
-}
-function loadSavedUser(){
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    if(raw)return JSON.parse(raw);
-  }catch(e){}
-  return null;
-}
-function clearSavedUser(){
-  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
-}
+function saveUser(user){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(user));}catch(e){}}
+function loadSavedUser(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return JSON.parse(raw);}catch(e){}return null;}
+function clearSavedUser(){try{localStorage.removeItem(STORAGE_KEY);}catch(e){}}
 
 async function verifyAndLogin(user){
   try{
     const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:user.email})});
     const d=await r.json();
-    if(!d.allowed){
-      clearSavedUser();
-      document.getElementById('loginErr').style.display='block';
-      return false;
-    }
-  }catch(e){
-    // if backend unreachable, trust saved session
-  }
-  me=user;
-  saveUser(user);
-  applyLogin();
-  return true;
+    if(!d.allowed){clearSavedUser();document.getElementById('loginErr').style.display='block';return false;}
+  }catch(e){}
+  me=user;saveUser(user);applyLogin();return true;
 }
 
 function applyLogin(){
   const av=document.getElementById('userAvatar');
-  av.innerHTML=me.picture?`<img src="${esc(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
+  av.innerHTML=me.picture
+    ?`<img src="${esc(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
     :`<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${me.name[0].toUpperCase()}</div>`;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
@@ -314,22 +332,10 @@ function applyLogin(){
 
 /* ── AUTH ── */
 function initGoogle(){
-  google.accounts.id.initialize({
-    client_id:GOOGLE_CLIENT_ID,
-    callback:handleLogin,
-    auto_select:true  // auto sign-in if previously authorized
-  });
-
-  // Try silent sign-in first (returns saved session via auto_select)
+  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleLogin,auto_select:true});
   const saved=loadSavedUser();
-  if(saved){
-    // verify still allowed, then skip login screen
-    verifyAndLogin(saved);
-    return;
-  }
-
+  if(saved){verifyAndLogin(saved);return;}
   google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',locale:'he',width:240});
-  // also prompt one-tap
   google.accounts.id.prompt();
 }
 
@@ -367,7 +373,9 @@ function buildMsg(e){
   const n=cmtCount[id]||0;
   const hasCmt=n>0;
 
+  // Avatar on LEFT, bubble on RIGHT of avatar
   return `<div class="msg-row" data-id="${id}">
+    <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
     <div class="bubble${red?' is-red':''}">
       <div class="bubble-sender ${red?'':'news-sender'}">${red?'🚨 שאגת הארי':'📰 שאגת הארי'}</div>
       ${content}${media}${btns}
@@ -381,7 +389,6 @@ function buildMsg(e){
         </button>
       </div>
     </div>
-    <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
   </div>`;
 }
 
@@ -396,61 +403,36 @@ function renderRxn(msgId,rxns){
     const mine=users.includes(me?.email);
     const c=document.createElement('button');
     c.className='rxn-chip'+(mine?' mine':'');
-    c.innerHTML=`${emoji}<span class="rxn-count">${users.length}</span>`;
+    c.innerHTML=`<span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;font-size:14px">${emoji}</span><span class="rxn-count">${users.length}</span>`;
     c.onclick=()=>doReact(msgId,emoji);
     bar.appendChild(c);
   });
   if(addBtn) bar.appendChild(addBtn);
-  else{const b=document.createElement('button');b.className='rxn-add-btn';b.textContent='😊';b.onclick=(e)=>openPicker(e,msgId);bar.appendChild(b);}
+  else{const b=document.createElement('button');b.className='rxn-add-btn';b.textContent='😊';b.onclick=(ev)=>openPicker(ev,msgId);bar.appendChild(b);}
 }
 
-/* ── EMOJI PICKER — opens to the left, constrained above header ── */
+/* ── EMOJI PICKER — bottom strip ── */
 function openPicker(e,msgId){
   e.stopPropagation();
   activePicker=msgId;
   const p=document.getElementById('emojiPicker');
-  p.classList.remove('show');
-
-  // Show first to measure height
-  p.style.visibility='hidden';
-  p.style.display='flex';
-  const pickerH=p.offsetHeight;
-  const pickerW=p.offsetWidth;
-  p.style.display='';
-  p.style.visibility='';
-
-  const r=e.currentTarget.getBoundingClientRect();
-  const HEADER_H=56;
-  const MARGIN=8;
-
-  // Prefer above the button; if not enough room, go below
-  let top=r.top - pickerH - MARGIN;
-  if(top < HEADER_H + MARGIN) top = r.bottom + MARGIN;
-  // Hard clamp so it never goes above header
-  top = Math.max(HEADER_H + MARGIN, top);
-
-  // Position to the LEFT of the button (since layout is RTL, left side = farther from edge)
-  let left = r.left - pickerW - MARGIN;
-  if(left < MARGIN) left = MARGIN;
-
-  p.style.top=top+'px';
-  p.style.left=left+'px';
-  p.style.right='auto';
   p.classList.toggle('show');
 }
-
 function pickEmoji(em){
   document.getElementById('emojiPicker').classList.remove('show');
   if(activePicker) doReact(activePicker,em);
   activePicker=null;
 }
-document.addEventListener('click',()=>document.getElementById('emojiPicker').classList.remove('show'));
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#emojiPicker')&&!e.target.closest('.rxn-add-btn')){
+    document.getElementById('emojiPicker').classList.remove('show');
+  }
+});
 
 async function doReact(msgId,emoji){
   if(!me)return;
   try{
-    const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:me.email,msgId,emoji})});
+    const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,msgId,emoji})});
     const d=await r.json();
     if(d.status==='ok') renderRxn(msgId,d.reactions);
   }catch(e){}
@@ -481,10 +463,8 @@ async function loadComments(msgId){
   }catch(e){b.innerHTML='<div class="no-cmt">שגיאה</div>';}
 }
 function buildCmt(msgId,c){
-  // Admin (david@hamakom.ovh) can delete ANY comment; others only their own
-  const canDelete = (me?.email===ADMIN_EMAIL) || (c.email===me?.email);
-  const av=c.picture?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.style.display='none'">`
-    :`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
+  const canDelete=(me?.email===ADMIN_EMAIL)||(c.email===me?.email);
+  const av=c.picture?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.style.display='none'">`:`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
   return `<div class="ci" id="ci-${c.id}">${av}<div class="ci-bubble">
     <div class="ci-name">${esc(c.name||c.email)}</div>
     <div class="ci-text">${esc(c.text)}</div>
@@ -504,8 +484,7 @@ async function sendComment(){
   if(!text||!me||!activeCmtMsgId)return;
   inp.value='';inp.style.height='auto';
   try{
-    const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
+    const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
     const d=await r.json();
     if(d.status==='ok'){
       const b=document.getElementById('cpBody');
@@ -522,8 +501,7 @@ async function sendComment(){
 async function delCmt(msgId,cid){
   if(!me)return;
   try{
-    const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:me.email,msgId,commentId:cid})});
+    const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,msgId,commentId:cid})});
     const d=await r.json();
     if(d.status==='ok'){
       document.getElementById('ci-'+cid)?.remove();
@@ -547,17 +525,12 @@ async function loadFeed(){
       const inner=document.getElementById('feedInner');
       inner.innerHTML='';
       if(!items.length){document.getElementById('empty').style.display='block';}
-      else{
-        inner.innerHTML=items.map(buildMsg).join('');
-        items.forEach(e=>loadRxn(e.id));
-      }
-      const w=document.getElementById('feedWrap');
-      w.scrollTop=w.scrollHeight;
+      else{inner.innerHTML=items.map(buildMsg).join('');items.forEach(e=>loadRxn(e.id));}
+      document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
     }
   }catch(e){}
   setLoading(false);
 }
-
 async function loadRxn(msgId){
   try{
     const r=await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
@@ -565,7 +538,6 @@ async function loadRxn(msgId){
     if(d.status==='ok') renderRxn(msgId,d.reactions);
   }catch(e){}
 }
-
 async function pollNew(){
   if(!lastTs||!me)return;
   try{
@@ -583,12 +555,11 @@ async function pollNew(){
         inner.appendChild(div.firstChild);
         loadRxn(e.id);
       });
-      if(atBottom){document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;}
+      if(atBottom)document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
       else{newCount+=ni.length;updateScrollBtn();}
     }
   }catch(e){}
 }
-
 function scrollToBottom(){
   document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});
   newCount=0;updateScrollBtn();
@@ -606,9 +577,7 @@ document.getElementById('feedWrap').addEventListener('scroll',function(){
   atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;
   updateScrollBtn();
 },{passive:true});
-
 function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
-
 window.addEventListener('load',()=>{
   if(window.google?.accounts)initGoogle();
   else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogle);
