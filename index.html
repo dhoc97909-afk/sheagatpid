@@ -5,164 +5,136 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
 <title>שאגת הארי</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Heebo','Noto Color Emoji',sans-serif;-webkit-font-smoothing:antialiased;background:#eae9e4;}
+html,body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialiased;background:#eae9e4;}
 
-/* ── LOGIN ── */
+/* LOGIN */
 #loginScreen{position:fixed;inset:0;background:#eae9e4;display:flex;align-items:center;justify-content:center;z-index:1000;}
 .login-card{background:#fff;border-radius:18px;padding:38px 32px;text-align:center;box-shadow:0 4px 32px rgba(0,0,0,.12);max-width:320px;width:90%;}
 .login-logo-img{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:block;object-fit:cover;}
-.login-title{
-  font-size:22px;font-weight:900;margin-bottom:4px;
-  background:linear-gradient(135deg,#1a56db 0%,#3b82f6 60%,#1a56db 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
+.login-title{font-size:20px;font-weight:900;color:#111;margin-bottom:4px;}
 .login-sub{font-size:13px;color:#888;margin-bottom:24px;}
 .login-err{font-size:12px;color:#e02020;margin-top:10px;display:none;font-weight:600;}
 
-/* ── APP ── */
+/* APP */
 #app{height:100%;display:none;flex-direction:column;}
 
-/* ── HEADER ── */
+/* HEADER */
 header{
   background:#fff;
   border-bottom:1px solid rgba(0,0,0,.08);
-  height:52px;padding:0 16px;
-  display:flex;align-items:center;gap:10px;
+  height:56px;padding:0 14px;
+  display:flex;align-items:center;gap:12px;
   flex-shrink:0;
   position:sticky;top:0;z-index:100;
 }
-.hdr-name{
-  font-size:18px;font-weight:900;
-  background:linear-gradient(135deg,#1a56db 0%,#3b82f6 60%,#1d4ed8 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  letter-spacing:-.01em;
-}
-.hdr-user{display:flex;align-items:center;gap:8px;margin-right:auto;}
+.hdr-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.hdr-info{flex:1;min-width:0;}
+.hdr-name{font-size:15px;font-weight:800;color:#111;line-height:1.2;}
+.hdr-status{font-size:12px;color:#4caf7d;font-weight:600;display:flex;align-items:center;gap:4px;}
+.hdr-dot{width:5px;height:5px;border-radius:50%;background:#4caf7d;animation:dp 1.6s ease-in-out infinite;}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.3}}
+.hdr-user{display:flex;align-items:center;gap:8px;}
+.hdr-user img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee;}
+.hdr-user-init{width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
 
-/* Admin badge */
-#adminBadge{
-  display:none;
-  align-items:center;gap:5px;
-  background:#eff6ff;border:1px solid #bfdbfe;
-  border-radius:99px;padding:4px 12px;
-  font-size:12px;font-weight:700;color:#1a56db;
-  cursor:pointer;white-space:nowrap;
-  transition:background .15s;
-}
-#adminBadge:hover{background:#dbeafe;}
-#adminBadge i{font-size:10px;}
+/* FEED */
+#feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
+#feedInner{max-width:680px;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:3px;}
 
-/* ── FEED ── */
-#feedWrap{flex:1;overflow-y:auto;padding:10px 0 32px;}
-#feedInner{max-width:680px;margin:0 auto;padding:0 12px;display:flex;flex-direction:column;gap:3px;}
-
-/* ── MESSAGE ROW ── */
+/* MESSAGE ROW — avatar at top-right, messages flush right */
 .msg-row{
   display:flex;
-  align-items:flex-start;
-  gap:0;
+  align-items:flex-start; /* changed from flex-end to flex-start so avatar is at top */
+  gap:8px;
   padding:2px 0;
   animation:mi .3s cubic-bezier(.16,1,.3,1) both;
-  justify-content:flex-end;
+  justify-content:flex-end; /* push everything to the right */
 }
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-start;}
+.msg-av-placeholder{width:36px;flex-shrink:0;}
 
-/* ── BUBBLE ── */
+/* BUBBLE */
 .bubble{
   background:#fff;
-  border-radius:18px 4px 18px 18px;
+  border-radius:18px 4px 18px 18px; /* top-right corner is sharp (near avatar) */
   padding:10px 14px 8px;
-  max-width:84%;
-  min-width:200px;
-  box-shadow:0 1px 3px rgba(0,0,0,.10);
+  max-width:82%;
+  min-width:180px;
+  box-shadow:0 1px 2px rgba(0,0,0,.10);
   position:relative;
 }
-.bubble.is-red{
-  background:linear-gradient(135deg,#fff9f9,#fff5f5);
-  border-right:3px solid #e02020;
-}
+.bubble.is-red{background:#fff9f9;border-right:3px solid #e02020;}
 
-/* sender name — shown once, at top of bubble */
-.bubble-sender{font-size:12px;font-weight:800;color:#1a56db;margin-bottom:5px;display:flex;align-items:center;gap:4px;}
-.bubble-sender.red-sender{color:#e02020;}
+/* sender name */
+.bubble-sender{font-size:13px;font-weight:800;color:#e02020;margin-bottom:4px;}
+.bubble-sender.news-sender{color:#1a56db;}
 
 /* text */
-.bubble-text{
-  font-size:15px;line-height:1.75;color:#111;
-  white-space:pre-wrap;word-break:break-word;
-  font-family:'Heebo','Noto Color Emoji',sans-serif;
-}
+.bubble-text{font-size:15px;line-height:1.7;color:#111;white-space:pre-wrap;word-break:break-word;}
 .bubble-text strong{font-weight:800;}
 .bubble-text em{font-style:italic;}
 .bubble-text a{color:#1a56db;text-decoration:underline;}
 
-/* RED headline */
-.bubble-headline{
-  font-size:16px;font-weight:900;color:#c00;line-height:1.55;margin-bottom:4px;
-  font-family:'Heebo','Noto Color Emoji',sans-serif;
-}
+/* RED: headline bold */
+.bubble-headline{font-size:16px;font-weight:800;color:#111;line-height:1.5;margin-bottom:4px;}
 
 /* media */
 .bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;}
 .bubble-img img{width:100%;display:block;max-height:340px;object-fit:cover;}
 .bubble-vid{margin-top:9px;}
-.vid-btn{
-  display:inline-flex;align-items:center;gap:6px;
-  background:#1a56db;color:#fff;padding:7px 15px;
-  border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;
-}
+.vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
-.lnk-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  background:#f3f4f6;border-radius:99px;
-  padding:6px 14px;font-size:13px;font-weight:600;
-  color:#374151;text-decoration:none;border:none;
-  transition:background .12s;
-}
-.lnk-btn:hover{background:#e5e7eb;}
+.lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
 
-/* ── REACTIONS — display only ── */
-.rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;min-height:0;}
-.rxn-chip{
-  display:inline-flex;align-items:center;gap:3px;
-  background:#f3f4f6;border:1.5px solid transparent;
-  border-radius:99px;padding:2px 10px;
-  font-size:13px;user-select:none;
-  font-family:'Heebo','Noto Color Emoji',sans-serif;
-}
+/* timestamp bottom right */
+.bubble-foot{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-top:5px;}
+.bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-right:auto;}
+
+/* REACTIONS */
+.rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.rxn-chip{display:inline-flex;align-items:center;gap:3px;background:#f3f4f6;border:1.5px solid transparent;border-radius:99px;padding:2px 9px;font-size:13px;cursor:pointer;transition:all .12s;user-select:none;font-family:'Heebo',sans-serif;}
+.rxn-chip:hover{background:#e5e7eb;}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
 .rxn-count{font-size:12px;font-weight:700;color:#374151;}
+.rxn-add-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:99px;line-height:1;transition:background .12s;color:#aaa;}
+.rxn-add-btn:hover{background:#f3f4f6;}
 
-/* ── BUBBLE FOOTER ── */
-.bubble-foot{display:flex;align-items:center;gap:8px;margin-top:6px;}
-.bubble-time{font-size:11px;color:#bbb;font-weight:500;margin-right:auto;}
-
-/* comment button */
-.cmt-btn{
-  display:inline-flex;align-items:center;gap:4px;
-  background:none;border:none;
-  font-size:12px;color:#bbb;cursor:pointer;
-  font-family:'Heebo',sans-serif;font-weight:600;
-  padding:2px 6px;border-radius:6px;
-  transition:color .12s, background .12s;
-}
-.cmt-btn:hover{color:#1a56db;background:#eff6ff;}
+/* comment btn */
+.cmt-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:color .12s;}
+.cmt-btn:hover{color:#1a56db;}
 .cmt-btn.has-cmt{color:#1a56db;}
 
-/* ── COMMENTS PANEL ── */
-#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.35);}
-#cpOverlay.show{display:block;}
-#commentsPanel{
-  position:fixed;top:0;right:0;width:340px;max-width:100vw;height:100%;
-  background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.14);
-  z-index:300;display:flex;flex-direction:column;
-  transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);
+/* EMOJI PICKER — opens on the left side, capped at 56px from top (header height) */
+#emojiPicker{
+  position:fixed;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.15);
+  z-index:500;
+  display:none;
+  flex-wrap:wrap;
+  gap:4px;
+  width:226px;
+  /* max-height so it doesn't go above the header */
+  max-height:calc(100vh - 56px - 20px);
+  overflow-y:auto;
 }
+#emojiPicker.show{display:flex;}
+.ep-btn{background:none;border:none;font-size:21px;cursor:pointer;padding:4px 5px;border-radius:8px;line-height:1;}
+.ep-btn:hover{background:#f3f4f6;}
+
+/* COMMENTS PANEL */
+#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.3);}
+#cpOverlay.show{display:block;}
+#commentsPanel{position:fixed;top:0;right:0;width:340px;max-width:100vw;height:100%;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:300;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);}
 #commentsPanel.open{transform:translateX(0);}
 .cp-hdr{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .cp-title{font-size:15px;font-weight:800;color:#111;}
@@ -185,50 +157,12 @@ header{
 .cp-inp:focus{border-color:#93c5fd;}
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
-/* ── ADMIN PANEL ── */
-#adminPanel{
-  display:none;
-  position:fixed;top:60px;left:50%;transform:translateX(-50%);
-  background:#fff;border-radius:18px;
-  box-shadow:0 8px 40px rgba(0,0,0,.16);
-  border:1px solid #e5e7eb;
-  z-index:200;min-width:300px;max-width:90vw;
-  animation:panIn .2s cubic-bezier(.16,1,.3,1);
-  max-height:80vh;overflow-y:auto;
-}
-@keyframes panIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.admin-panel-hdr{
-  padding:14px 16px;border-bottom:1px solid #f0f0f0;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.admin-panel-hdr h3{font-size:14px;font-weight:800;color:#1f2937;}
-.admin-panel-close{background:none;border:none;cursor:pointer;color:#aaa;font-size:14px;padding:4px;}
-.admin-login-row{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 16px;border-bottom:1px solid #f9fafb;
-}
-.admin-login-av{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;}
-.admin-login-av-i{width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.admin-login-name{font-size:13px;font-weight:700;color:#1f2937;}
-.admin-login-time{font-size:11px;color:#9ca3af;margin-right:auto;}
-
-/* ── SCROLL DOWN BUTTON ── */
-#scrollDownBtn{
-  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  background:#fff;border:1.5px solid #e5e7eb;
-  border-radius:99px;padding:7px 18px;
-  font-size:13px;font-weight:700;color:#374151;
-  cursor:pointer;display:none;align-items:center;gap:6px;
-  box-shadow:0 4px 18px rgba(0,0,0,.13);
-  font-family:'Heebo',sans-serif;z-index:50;
-  transition:box-shadow .15s,transform .15s;
-}
-#scrollDownBtn:hover{box-shadow:0 6px 22px rgba(0,0,0,.18);transform:translateX(-50%) translateY(-1px);}
+/* SCROLL DOWN */
+#scrollDownBtn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #e5e7eb;border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;color:#374151;cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,.11);font-family:'Heebo',sans-serif;z-index:50;}
 #scrollDownBtn.show{display:flex;}
 .unread-dot{width:8px;height:8px;border-radius:50%;background:#e02020;flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
 #scrollDownBtn.has-new .unread-dot{display:block;}
 
-/* ── LOADING BAR ── */
 #prog{position:fixed;top:0;inset-inline:0;height:2px;background:#1a56db;transform:scaleX(0);transform-origin:right;z-index:999;display:none;}
 #prog.on{display:block;animation:pr 1.1s ease-in-out infinite;}
 @keyframes pr{0%{transform:scaleX(0);transform-origin:right}50%{transform:scaleX(.55);transform-origin:right}100%{transform:scaleX(0);transform-origin:left}}
@@ -237,7 +171,7 @@ header{
 #empty i{font-size:36px;opacity:.2;margin-bottom:10px;display:block;}
 
 @media(max-width:480px){
-  .bubble{max-width:92%;}
+  .bubble{max-width:90%;}
   #commentsPanel{width:100vw;}
 }
 </style>
@@ -259,14 +193,12 @@ header{
 <!-- APP -->
 <div id="app">
   <header>
-    <div class="hdr-name">שאגת הארי</div>
-    <div class="hdr-user">
-      <div id="adminBadge" onclick="toggleAdminPanel()">
-        <i class="fas fa-users"></i>
-        <span id="adminBadgeCount">0</span> כניסות
-      </div>
-      <div id="userAvatar"></div>
+    <img class="hdr-avatar" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png" onerror="this.style.background='#e02020'">
+    <div class="hdr-info">
+      <div class="hdr-name">שאגת הארי</div>
+      <div class="hdr-status"><div class="hdr-dot"></div>מחובר · עדכונים חיים</div>
     </div>
+    <div class="hdr-user"><div id="userAvatar"></div></div>
   </header>
 
   <div id="feedWrap">
@@ -281,17 +213,24 @@ header{
   </button>
 </div>
 
-<!-- ADMIN LOGINS PANEL -->
-<div id="adminPanel">
-  <div class="admin-panel-hdr">
-    <h3 id="adminPanelTitle">📊 כניסות לפיד</h3>
-    <button class="admin-panel-close" onclick="toggleAdminPanel()"><i class="fas fa-times"></i></button>
-  </div>
-  <div id="adminPanelBody" style="padding:4px 0;"></div>
+<!-- EMOJI PICKER -->
+<div id="emojiPicker">
+  <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
+  <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
+  <button class="ep-btn" onclick="pickEmoji('😮')">😮</button>
+  <button class="ep-btn" onclick="pickEmoji('😂')">😂</button>
+  <button class="ep-btn" onclick="pickEmoji('😢')">😢</button>
+  <button class="ep-btn" onclick="pickEmoji('🔥')">🔥</button>
+  <button class="ep-btn" onclick="pickEmoji('🚨')">🚨</button>
+  <button class="ep-btn" onclick="pickEmoji('✅')">✅</button>
+  <button class="ep-btn" onclick="pickEmoji('🕊️')">🕊️</button>
+  <button class="ep-btn" onclick="pickEmoji('💪')">💪</button>
+  <button class="ep-btn" onclick="pickEmoji('😡')">😡</button>
+  <button class="ep-btn" onclick="pickEmoji('🙏')">🙏</button>
 </div>
 
 <!-- COMMENTS PANEL -->
-<div id="cpOverlay" onclick="closeComments()"></div>
+<div class="cp-overlay" id="cpOverlay" onclick="closeComments()"></div>
 <div id="commentsPanel">
   <div class="cp-hdr">
     <span class="cp-title">💬 תגובות</span>
@@ -307,194 +246,219 @@ header{
 </div>
 
 <script>
-const BACKEND      = 'https://dhoc97909.pythonanywhere.com';
-const GOOGLE_CLIENT_ID = '856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
-const ADMIN_EMAIL  = 'david@hamakom.ovh';
-const STORAGE_KEY  = 'shaagat_hari_user';
-const LAST_READ_KEY= 'shaagat_hari_last_read';
+const BACKEND='https://dhoc97909.pythonanywhere.com';
+const GOOGLE_CLIENT_ID='856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
+const LOGO='https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
+const ADMIN_EMAIL='david@hamakom.ovh';
+const STORAGE_KEY='shaagat_hari_user';
 
-let me = null, items = [], lastTs = 0, newCount = 0, atBottom = true;
-let activeCmtMsgId = null;
-let rxnCache = {}, cmtCount = {};
-let adminPanelOpen = false;
+let me=null, items=[], lastTs=0, newCount=0, atBottom=true;
+let activePicker=null, activeCmtMsgId=null;
+let rxnCache={}, cmtCount={};
 
-/* ── UTILS ── */
-function esc(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function rich(t){
-  if(!t) return '';
-  let s = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-  s = s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
-  s = s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
-  s = s.replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  if(!t)return'';
+  let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
+  s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
+  s=s.replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
   return s;
 }
 function timeLabel(e){
-  const today = new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
-  return (e.date && e.date !== today) ? e.date + ' ' + e.time : (e.time||'');
+  const today=new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return(e.date&&e.date!==today)?e.date+' '+e.time:(e.time||'');
 }
 
-/* ── LAST READ ── */
-function getLastReadId(){ try{ return localStorage.getItem(LAST_READ_KEY)||''; }catch(e){ return ''; } }
-function setLastReadId(id){ try{ if(id) localStorage.setItem(LAST_READ_KEY, id); }catch(e){} }
-
 /* ── PERSISTENT AUTH ── */
-function saveUser(u){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(u)); }catch(e){} }
-function loadSavedUser(){ try{ const r=localStorage.getItem(STORAGE_KEY); if(r) return JSON.parse(r); }catch(e){} return null; }
-function clearSavedUser(){ try{ localStorage.removeItem(STORAGE_KEY); }catch(e){} }
+function saveUser(user){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(user));}catch(e){}
+}
+function loadSavedUser(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  return null;
+}
+function clearSavedUser(){
+  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+}
 
 async function verifyAndLogin(user){
   try{
-    const r = await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:user.email})});
-    const d = await r.json();
-    if(!d.allowed){ clearSavedUser(); document.getElementById('loginErr').style.display='block'; return false; }
-  }catch(e){}
-  me = user;
+    const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:user.email})});
+    const d=await r.json();
+    if(!d.allowed){
+      clearSavedUser();
+      document.getElementById('loginErr').style.display='block';
+      return false;
+    }
+  }catch(e){
+    // if backend unreachable, trust saved session
+  }
+  me=user;
   saveUser(user);
-  // Register this login on server
-  fetch(BACKEND+'/feed_login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,name:me.name,picture:me.picture})}).catch(()=>{});
   applyLogin();
   return true;
 }
 
 function applyLogin(){
-  const av = document.getElementById('userAvatar');
-  av.innerHTML = me.picture
-    ? `<img src="${esc(me.picture)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #e5e7eb">`
-    : `<div style="width:32px;height:32px;border-radius:50%;background:#1a56db;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">${me.name[0].toUpperCase()}</div>`;
+  const av=document.getElementById('userAvatar');
+  av.innerHTML=me.picture?`<img src="${esc(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
+    :`<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${me.name[0].toUpperCase()}</div>`;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
-  if(me.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) loadAdminLogins();
   loadFeed();
 }
 
-/* ── GOOGLE AUTH ── */
+/* ── AUTH ── */
 function initGoogle(){
-  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID, callback:handleLogin, auto_select:true});
-  const saved = loadSavedUser();
-  if(saved){ verifyAndLogin(saved); return; }
+  google.accounts.id.initialize({
+    client_id:GOOGLE_CLIENT_ID,
+    callback:handleLogin,
+    auto_select:true  // auto sign-in if previously authorized
+  });
+
+  // Try silent sign-in first (returns saved session via auto_select)
+  const saved=loadSavedUser();
+  if(saved){
+    // verify still allowed, then skip login screen
+    verifyAndLogin(saved);
+    return;
+  }
+
   google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',locale:'he',width:240});
+  // also prompt one-tap
   google.accounts.id.prompt();
 }
+
 async function handleLogin(resp){
-  let payload = {};
-  try{ payload = JSON.parse(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){}
-  const email = (payload.email||'').toLowerCase();
-  const user = {email, name:payload.name||email.split('@')[0], picture:payload.picture||''};
+  let payload={};
+  try{payload=JSON.parse(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){}
+  const email=(payload.email||'').toLowerCase();
+  const user={email,name:payload.name||email.split('@')[0],picture:payload.picture||''};
   await verifyAndLogin(user);
 }
 
-/* ── ADMIN LOGINS ── */
-async function loadAdminLogins(){
-  try{
-    const r = await fetch(BACKEND+'/feed_logins?email='+encodeURIComponent(me.email));
-    const d = await r.json();
-    if(d.status==='ok'){
-      const badge = document.getElementById('adminBadge');
-      badge.style.display = 'flex';
-      document.getElementById('adminBadgeCount').textContent = d.logins.length;
-      // Populate panel
-      renderAdminPanel(d.logins);
-    }
-  }catch(e){}
-}
-
-function renderAdminPanel(logins){
-  const body = document.getElementById('adminPanelBody');
-  document.getElementById('adminPanelTitle').textContent = `📊 ${logins.length} כניסות לפיד`;
-  if(!logins.length){
-    body.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">אין כניסות עדיין</div>';
-    return;
-  }
-  body.innerHTML = logins.map(l=>{
-    const av = l.picture
-      ? `<img class="admin-login-av" src="${esc(l.picture)}" onerror="this.style.display='none'">`
-      : `<div class="admin-login-av-i">${(l.name||l.email||'?')[0].toUpperCase()}</div>`;
-    return `<div class="admin-login-row">
-      ${av}
-      <div>
-        <div class="admin-login-name">${esc(l.name||l.email||'')}</div>
-        <div style="font-size:11px;color:#9ca3af">${esc(l.email||'')}</div>
-      </div>
-      <div class="admin-login-time">${esc(l.time||'')}</div>
-    </div>`;
-  }).join('');
-}
-
-function toggleAdminPanel(){
-  adminPanelOpen = !adminPanelOpen;
-  const p = document.getElementById('adminPanel');
-  p.style.display = adminPanelOpen ? 'block' : 'none';
-  if(adminPanelOpen) loadAdminLogins(); // refresh
-}
-document.addEventListener('click', e=>{
-  if(adminPanelOpen && !e.target.closest('#adminPanel') && !e.target.closest('#adminBadge')){
-    adminPanelOpen = false;
-    document.getElementById('adminPanel').style.display='none';
-  }
-});
-
-/* ── BUILD MESSAGE ── */
+/* ── BUILD MSG ── */
 function buildMsg(e){
-  const red = e.profile === 'red';
-  const id  = e.id;
-  const lines = (e.text||'').trim().split('\n');
-  const h = lines[0]||'';
-  const body = lines.slice(1).join('\n').trim();
+  const red=e.profile==='red';
+  const id=e.id;
+  const lines=(e.text||'').trim().split('\n');
+  const h=lines[0]||'';
+  const body=lines.slice(1).join('\n').trim();
 
-  let content = '';
+  let content='';
   if(red){
-    content = `<div class="bubble-headline">🚨 ${esc(h)}</div>`;
-    if(body) content += `<div class="bubble-text" style="margin-top:4px">${rich(body)}</div>`;
+    content=`<div class="bubble-headline">🚨 ${esc(h)}</div>`;
+    if(body) content+=`<div class="bubble-text" style="margin-top:4px">${rich(body)}</div>`;
   } else {
-    content = `<div class="bubble-text">${rich(h+(body?'\n'+body:''))}</div>`;
+    content=`<div class="bubble-text">${rich(h+(body?'\n'+body:''))}</div>`;
   }
 
-  let media = '';
-  if(e.imgUrl)    media += `<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" onerror="this.closest('.bubble-img').remove()"></div>`;
-  if(e.videoUrl)  media += `<div class="bubble-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
+  let media='';
+  if(e.imgUrl) media+=`<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" onerror="this.closest('.bubble-img').remove()"></div>`;
+  if(e.videoUrl) media+=`<div class="bubble-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
 
-  let btns = '';
-  if(e.buttons&&e.buttons.length)
-    btns = '<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
+  let btns='';
+  if(e.buttons&&e.buttons.length) btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
 
-  const n = cmtCount[id]||0;
-  const hasCmt = n > 0;
+  const n=cmtCount[id]||0;
+  const hasCmt=n>0;
 
-  // Sender shown ONCE — inside bubble at top; no avatar img beside bubble
   return `<div class="msg-row" data-id="${id}">
     <div class="bubble${red?' is-red':''}">
-      <div class="bubble-sender${red?' red-sender':''}">${red?'🚨 שאגת הארי':'📰 שאגת הארי'}</div>
+      <div class="bubble-sender ${red?'':'news-sender'}">${red?'🚨 שאגת הארי':'📰 שאגת הארי'}</div>
       ${content}${media}${btns}
-      <div class="rxn-row" id="rxn-${id}"></div>
+      <div class="rxn-row" id="rxn-${id}">
+        <button class="rxn-add-btn" onclick="openPicker(event,'${id}')">😊</button>
+      </div>
       <div class="bubble-foot">
         <span class="bubble-time">${timeLabel(e)}</span>
         <button class="cmt-btn${hasCmt?' has-cmt':''}" id="cbtn-${id}" onclick="openComments('${id}')">
-          <i class="fas fa-comment" style="font-size:10px"></i>
-          ${hasCmt ? n+' תגובות' : 'תגובות'}
+          <i class="fas fa-comment" style="font-size:10px"></i> ${hasCmt?n+' תגובות':'תגובות'}
         </button>
       </div>
     </div>
+    <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
   </div>`;
 }
 
-function renderRxn(msgId, rxns){
-  rxnCache[msgId] = rxns;
-  const bar = document.getElementById('rxn-'+msgId);
-  if(!bar) return;
-  bar.innerHTML = '';
-  Object.entries(rxns).forEach(([emoji, users])=>{
-    if(!users||!users.length) return;
-    const mine = users.includes(me?.email);
-    const chip = document.createElement('span');
-    chip.className = 'rxn-chip'+(mine?' mine':'');
-    chip.innerHTML = `${emoji}<span class="rxn-count">${users.length}</span>`;
-    bar.appendChild(chip);
+function renderRxn(msgId,rxns){
+  rxnCache[msgId]=rxns;
+  const bar=document.getElementById('rxn-'+msgId);
+  if(!bar)return;
+  const addBtn=bar.querySelector('.rxn-add-btn');
+  bar.innerHTML='';
+  Object.entries(rxns).forEach(([emoji,users])=>{
+    if(!users.length)return;
+    const mine=users.includes(me?.email);
+    const c=document.createElement('button');
+    c.className='rxn-chip'+(mine?' mine':'');
+    c.innerHTML=`${emoji}<span class="rxn-count">${users.length}</span>`;
+    c.onclick=()=>doReact(msgId,emoji);
+    bar.appendChild(c);
   });
+  if(addBtn) bar.appendChild(addBtn);
+  else{const b=document.createElement('button');b.className='rxn-add-btn';b.textContent='😊';b.onclick=(e)=>openPicker(e,msgId);bar.appendChild(b);}
+}
+
+/* ── EMOJI PICKER — opens to the left, constrained above header ── */
+function openPicker(e,msgId){
+  e.stopPropagation();
+  activePicker=msgId;
+  const p=document.getElementById('emojiPicker');
+  p.classList.remove('show');
+
+  // Show first to measure height
+  p.style.visibility='hidden';
+  p.style.display='flex';
+  const pickerH=p.offsetHeight;
+  const pickerW=p.offsetWidth;
+  p.style.display='';
+  p.style.visibility='';
+
+  const r=e.currentTarget.getBoundingClientRect();
+  const HEADER_H=56;
+  const MARGIN=8;
+
+  // Prefer above the button; if not enough room, go below
+  let top=r.top - pickerH - MARGIN;
+  if(top < HEADER_H + MARGIN) top = r.bottom + MARGIN;
+  // Hard clamp so it never goes above header
+  top = Math.max(HEADER_H + MARGIN, top);
+
+  // Position to the LEFT of the button (since layout is RTL, left side = farther from edge)
+  let left = r.left - pickerW - MARGIN;
+  if(left < MARGIN) left = MARGIN;
+
+  p.style.top=top+'px';
+  p.style.left=left+'px';
+  p.style.right='auto';
+  p.classList.toggle('show');
+}
+
+function pickEmoji(em){
+  document.getElementById('emojiPicker').classList.remove('show');
+  if(activePicker) doReact(activePicker,em);
+  activePicker=null;
+}
+document.addEventListener('click',()=>document.getElementById('emojiPicker').classList.remove('show'));
+
+async function doReact(msgId,emoji){
+  if(!me)return;
+  try{
+    const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:me.email,msgId,emoji})});
+    const d=await r.json();
+    if(d.status==='ok') renderRxn(msgId,d.reactions);
+  }catch(e){}
 }
 
 /* ── COMMENTS ── */
 function openComments(msgId){
-  activeCmtMsgId = msgId;
+  activeCmtMsgId=msgId;
   document.getElementById('commentsPanel').classList.add('open');
   document.getElementById('cpOverlay').classList.add('show');
   loadComments(msgId);
@@ -502,25 +466,25 @@ function openComments(msgId){
 function closeComments(){
   document.getElementById('commentsPanel').classList.remove('open');
   document.getElementById('cpOverlay').classList.remove('show');
-  activeCmtMsgId = null;
+  activeCmtMsgId=null;
 }
 async function loadComments(msgId){
-  const b = document.getElementById('cpBody');
-  b.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">טוען...</div>';
+  const b=document.getElementById('cpBody');
+  b.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">טוען...</div>';
   try{
-    const r = await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(msgId));
-    const d = await r.json();
-    const list = d.comments||[];
-    cmtCount[msgId] = list.length;
-    updateCmtBtn(msgId, list.length);
-    b.innerHTML = list.length ? list.map(c=>buildCmt(msgId,c)).join('') : '<div class="no-cmt">עדיין אין תגובות</div>';
-  }catch(e){ b.innerHTML='<div class="no-cmt">שגיאה</div>'; }
+    const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(msgId));
+    const d=await r.json();
+    const list=d.comments||[];
+    cmtCount[msgId]=list.length;
+    updateCmtBtn(msgId,list.length);
+    b.innerHTML=list.length?list.map(c=>buildCmt(msgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
+  }catch(e){b.innerHTML='<div class="no-cmt">שגיאה</div>';}
 }
-function buildCmt(msgId, c){
-  const canDelete = (me?.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase()) || (c.email===me?.email);
-  const av = c.picture
-    ? `<img class="ci-av" src="${esc(c.picture)}" onerror="this.style.display='none'">`
-    : `<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
+function buildCmt(msgId,c){
+  // Admin (david@hamakom.ovh) can delete ANY comment; others only their own
+  const canDelete = (me?.email===ADMIN_EMAIL) || (c.email===me?.email);
+  const av=c.picture?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.style.display='none'">`
+    :`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
   return `<div class="ci" id="ci-${c.id}">${av}<div class="ci-bubble">
     <div class="ci-name">${esc(c.name||c.email)}</div>
     <div class="ci-text">${esc(c.text)}</div>
@@ -528,83 +492,67 @@ function buildCmt(msgId, c){
     ${canDelete?`<button class="ci-del" onclick="delCmt('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
   </div></div>`;
 }
-function updateCmtBtn(msgId, n){
-  const btn = document.getElementById('cbtn-'+msgId);
-  if(!btn) return;
-  btn.className = 'cmt-btn'+(n>0?' has-cmt':'');
-  btn.innerHTML = `<i class="fas fa-comment" style="font-size:10px"></i> ${n>0?n+' תגובות':'תגובות'}`;
+function updateCmtBtn(msgId,n){
+  const btn=document.getElementById('cbtn-'+msgId);
+  if(!btn)return;
+  btn.className='cmt-btn'+(n>0?' has-cmt':'');
+  btn.innerHTML=`<i class="fas fa-comment" style="font-size:10px"></i> ${n>0?n+' תגובות':'תגובות'}`;
 }
 async function sendComment(){
-  const inp  = document.getElementById('cpInp');
-  const text = inp.value.trim();
-  if(!text||!me||!activeCmtMsgId) return;
-  inp.value = ''; inp.style.height='auto';
+  const inp=document.getElementById('cpInp');
+  const text=inp.value.trim();
+  if(!text||!me||!activeCmtMsgId)return;
+  inp.value='';inp.style.height='auto';
   try{
-    const r = await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
-    const d = await r.json();
+    const d=await r.json();
     if(d.status==='ok'){
-      const b = document.getElementById('cpBody');
+      const b=document.getElementById('cpBody');
       b.querySelector('.no-cmt')?.remove();
-      const div = document.createElement('div');
-      div.innerHTML = buildCmt(activeCmtMsgId, d.comment);
+      const div=document.createElement('div');
+      div.innerHTML=buildCmt(activeCmtMsgId,d.comment);
       b.appendChild(div.firstChild);
-      b.scrollTop = b.scrollHeight;
-      cmtCount[activeCmtMsgId] = (cmtCount[activeCmtMsgId]||0)+1;
-      updateCmtBtn(activeCmtMsgId, cmtCount[activeCmtMsgId]);
+      b.scrollTop=b.scrollHeight;
+      cmtCount[activeCmtMsgId]=(cmtCount[activeCmtMsgId]||0)+1;
+      updateCmtBtn(activeCmtMsgId,cmtCount[activeCmtMsgId]);
     }
   }catch(e){}
 }
-async function delCmt(msgId, cid){
-  if(!me) return;
+async function delCmt(msgId,cid){
+  if(!me)return;
   try{
-    const r = await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email:me.email,msgId,commentId:cid})});
-    const d = await r.json();
+    const d=await r.json();
     if(d.status==='ok'){
       document.getElementById('ci-'+cid)?.remove();
-      cmtCount[msgId] = Math.max(0,(cmtCount[msgId]||1)-1);
-      updateCmtBtn(msgId, cmtCount[msgId]);
+      cmtCount[msgId]=Math.max(0,(cmtCount[msgId]||1)-1);
+      updateCmtBtn(msgId,cmtCount[msgId]);
       if(!document.querySelector('#cpBody .ci'))
-        document.getElementById('cpBody').innerHTML = '<div class="no-cmt">עדיין אין תגובות</div>';
+        document.getElementById('cpBody').innerHTML='<div class="no-cmt">עדיין אין תגובות</div>';
     }
   }catch(e){}
 }
 
-/* ── FEED LOAD ── */
+/* ── FEED ── */
 async function loadFeed(){
   setLoading(true);
   try{
-    const r = await fetch(BACKEND+'/feed');
-    const d = await r.json();
+    const r=await fetch(BACKEND+'/feed');
+    const d=await r.json();
     if(d.status==='ok'){
-      items = [...d.feed].reverse();
-      lastTs = items.length ? Math.max(...items.map(e=>e.ts||0)) : 0;
-      const inner = document.getElementById('feedInner');
-      inner.innerHTML = '';
-      if(!items.length){ document.getElementById('empty').style.display='block'; }
+      items=[...d.feed].reverse();
+      lastTs=items.length?Math.max(...items.map(e=>e.ts||0)):0;
+      const inner=document.getElementById('feedInner');
+      inner.innerHTML='';
+      if(!items.length){document.getElementById('empty').style.display='block';}
       else{
-        inner.innerHTML = items.map(buildMsg).join('');
+        inner.innerHTML=items.map(buildMsg).join('');
         items.forEach(e=>loadRxn(e.id));
-        // Scroll to last read position or bottom
-        const lastId = getLastReadId();
-        const w = document.getElementById('feedWrap');
-        if(lastId){
-          const el = document.querySelector(`[data-id="${lastId}"]`);
-          if(el){
-            setTimeout(()=>{
-              el.scrollIntoView({behavior:'instant',block:'start'});
-              w.scrollTop = Math.max(0, w.scrollTop - 64); // offset for header
-            }, 60);
-          } else {
-            // Last read not found (older than feed) — go to bottom
-            w.scrollTop = w.scrollHeight;
-          }
-        } else {
-          w.scrollTop = w.scrollHeight;
-          if(items.length) setLastReadId(items[items.length-1].id);
-        }
       }
+      const w=document.getElementById('feedWrap');
+      w.scrollTop=w.scrollHeight;
     }
   }catch(e){}
   setLoading(false);
@@ -612,77 +560,60 @@ async function loadFeed(){
 
 async function loadRxn(msgId){
   try{
-    const r = await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
-    const d = await r.json();
-    if(d.status==='ok') renderRxn(msgId, d.reactions);
+    const r=await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
+    const d=await r.json();
+    if(d.status==='ok') renderRxn(msgId,d.reactions);
   }catch(e){}
 }
 
-/* ── POLL FOR NEW MESSAGES ── */
 async function pollNew(){
-  if(!lastTs||!me) return;
+  if(!lastTs||!me)return;
   try{
-    const r = await fetch(BACKEND+'/feed?since='+lastTs);
-    const d = await r.json();
+    const r=await fetch(BACKEND+'/feed?since='+lastTs);
+    const d=await r.json();
     if(d.status==='ok'&&d.feed?.length){
-      const ni = [...d.feed].reverse();
-      lastTs = Math.max(...d.feed.map(e=>e.ts||0), lastTs);
-      items  = [...items, ...ni];
-      const inner = document.getElementById('feedInner');
-      document.getElementById('empty').style.display = 'none';
+      const ni=[...d.feed].reverse();
+      lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
+      items=[...items,...ni];
+      const inner=document.getElementById('feedInner');
+      document.getElementById('empty').style.display='none';
       ni.forEach(e=>{
-        const div = document.createElement('div');
-        div.innerHTML = buildMsg(e);
+        const div=document.createElement('div');
+        div.innerHTML=buildMsg(e);
         inner.appendChild(div.firstChild);
         loadRxn(e.id);
       });
-      if(atBottom){
-        document.getElementById('feedWrap').scrollTop = document.getElementById('feedWrap').scrollHeight;
-        if(items.length) setLastReadId(items[items.length-1].id);
-      } else {
-        newCount += ni.length;
-        updateScrollBtn();
-      }
+      if(atBottom){document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;}
+      else{newCount+=ni.length;updateScrollBtn();}
     }
   }catch(e){}
 }
 
-/* ── SCROLL ── */
 function scrollToBottom(){
-  document.getElementById('feedWrap').scrollTo({top:999999, behavior:'smooth'});
-  newCount = 0;
-  if(items.length) setLastReadId(items[items.length-1].id);
-  updateScrollBtn();
+  document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});
+  newCount=0;updateScrollBtn();
 }
 function updateScrollBtn(){
-  const btn = document.getElementById('scrollDownBtn');
-  const txt = document.getElementById('scrollDownTxt');
+  const btn=document.getElementById('scrollDownBtn');
+  const txt=document.getElementById('scrollDownTxt');
   if(!atBottom){
     btn.classList.add('show');
-    if(newCount>0){ btn.classList.add('has-new'); txt.textContent = newCount+' חדשות'; }
-    else{ btn.classList.remove('has-new'); txt.textContent = 'למטה'; }
-  } else {
-    btn.classList.remove('show','has-new');
-    newCount = 0;
-  }
+    if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}
+    else{btn.classList.remove('has-new');txt.textContent='למטה';}
+  }else{btn.classList.remove('show','has-new');newCount=0;}
 }
-document.getElementById('feedWrap').addEventListener('scroll', function(){
-  atBottom = (this.scrollHeight - this.scrollTop - this.clientHeight) < 80;
-  if(atBottom){
-    newCount = 0;
-    if(items.length) setLastReadId(items[items.length-1].id);
-  }
+document.getElementById('feedWrap').addEventListener('scroll',function(){
+  atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;
   updateScrollBtn();
 },{passive:true});
 
-function setLoading(v){ document.getElementById('prog').classList.toggle('on',v); }
+function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
 
-/* ── INIT ── */
 window.addEventListener('load',()=>{
-  if(window.google?.accounts) initGoogle();
-  else document.querySelector('script[src*="gsi"]').addEventListener('load', initGoogle);
+  if(window.google?.accounts)initGoogle();
+  else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogle);
 });
-setInterval(pollNew, 6000);
+setInterval(pollNew,6000);
 </script>
 </body>
 </html>
