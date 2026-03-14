@@ -564,15 +564,20 @@ function closeComments(){
 }
 async function loadComments(msgId){
   const b=document.getElementById('cpBody');
-  b.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">טוען...</div>';
+  // Show cached count instantly if we have it, no "loading" spinner
+  const cached=b.dataset.msgId===msgId;
+  if(!cached) b.innerHTML='';
+  b.dataset.msgId=msgId;
   try{
     const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(msgId));
     const d=await r.json();
     const list=d.comments||[];
     cmtCount[msgId]=list.length;
     updateCmtBtn(msgId,list.length);
+    const wasAtBottom=(b.scrollHeight-b.scrollTop-b.clientHeight)<60;
     b.innerHTML=list.length?list.map(c=>buildCmt(msgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
-  }catch(e){b.innerHTML='<div class="no-cmt">שגיאה</div>';}
+    if(wasAtBottom||!cached) b.scrollTop=b.scrollHeight;
+  }catch(e){if(!b.innerHTML)b.innerHTML='<div class="no-cmt">שגיאה</div>';}
 }
 
 function buildCmt(msgId,c){
@@ -644,7 +649,7 @@ async function loadFeed(){
       const inner=document.getElementById('feedInner');
       inner.innerHTML='';
       if(!items.length){document.getElementById('empty').style.display='block';}
-      else{inner.innerHTML=items.map(buildMsg).join('');items.forEach(e=>loadRxn(e.id));}
+      else{inner.innerHTML=items.map(buildMsg).join('');items.forEach(e=>loadRxn(e.id));pollCmtCounts();}
       document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
     }
   }catch(e){}
@@ -669,6 +674,7 @@ async function pollNew(){
       const inner=document.getElementById('feedInner');
       document.getElementById('empty').style.display='none';
       ni.forEach(e=>{const div=document.createElement('div');div.innerHTML=buildMsg(e);inner.appendChild(div.firstChild);loadRxn(e.id);});
+      pollCmtCounts();
       if(atBottom)document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
       else{newCount+=ni.length;updateScrollBtn();}
     }
