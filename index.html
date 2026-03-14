@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
 <title>שאגת הארי</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Heebo', 'Noto Color Emoji', sans-serif;-webkit-font-smoothing:antialiased;background:#eae9e4;}
+html,body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialiased;background:#eae9e4;}
 
 /* LOGIN */
 #loginScreen{position:fixed;inset:0;background:#eae9e4;display:flex;align-items:center;justify-content:center;z-index:1000;}
@@ -40,20 +40,29 @@ header{
 @keyframes dp{0%,100%{opacity:1}50%{opacity:.3}}
 .hdr-user{display:flex;align-items:center;gap:8px;}
 .hdr-user img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee;}
+.hdr-user-init{width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
 
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
-#feedInner{max-width:680px;margin:0 10px 0 auto; /* צמוד לימין */ padding:0 10px;display:flex;flex-direction:column;gap:3px;}
+#feedInner{max-width:680px;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:3px;}
 
-/* MESSAGE ROW */
-.msg-row{display:flex;align-items:flex-start;justify-content:flex-start;gap:8px;padding:2px 0;animation:mi .3s cubic-bezier(.16,1,.3,1) both;direction:rtl;}
+/* MESSAGE ROW — avatar at top-right, messages flush right */
+.msg-row{
+  display:flex;
+  align-items:flex-start; /* changed from flex-end to flex-start so avatar is at top */
+  gap:8px;
+  padding:2px 0;
+  animation:mi .3s cubic-bezier(.16,1,.3,1) both;
+  justify-content:flex-end; /* push everything to the right */
+}
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.msg-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-top:2px;}
+.msg-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-start;}
+.msg-av-placeholder{width:36px;flex-shrink:0;}
 
 /* BUBBLE */
 .bubble{
   background:#fff;
-  border-radius:4px 18px 18px 18px;
+  border-radius:18px 4px 18px 18px; /* top-right corner is sharp (near avatar) */
   padding:10px 14px 8px;
   max-width:82%;
   min-width:180px;
@@ -61,63 +70,108 @@ header{
   position:relative;
 }
 .bubble.is-red{background:#fff9f9;border-right:3px solid #e02020;}
+
+/* sender name */
 .bubble-sender{font-size:13px;font-weight:800;color:#e02020;margin-bottom:4px;}
 .bubble-sender.news-sender{color:#1a56db;}
-.bubble-text{font-size:15px;line-height:1.7;color:#111;white-space:pre-wrap;word-break:break-word; font-family: 'Heebo', 'Noto Color Emoji', sans-serif;}
+
+/* text */
+.bubble-text{font-size:15px;line-height:1.7;color:#111;white-space:pre-wrap;word-break:break-word;}
+.bubble-text strong{font-weight:800;}
+.bubble-text em{font-style:italic;}
+.bubble-text a{color:#1a56db;text-decoration:underline;}
+
+/* RED: headline bold */
 .bubble-headline{font-size:16px;font-weight:800;color:#111;line-height:1.5;margin-bottom:4px;}
+
+/* media */
 .bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;}
 .bubble-img img{width:100%;display:block;max-height:340px;object-fit:cover;}
 .bubble-vid{margin-top:9px;}
 .vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
-.lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;}
+.lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
+
+/* timestamp bottom right */
 .bubble-foot{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-top:5px;}
 .bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-right:auto;}
 
 /* REACTIONS */
 .rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
-.rxn-chip{display:inline-flex;align-items:center;gap:3px;background:#f3f4f6;border:1.5px solid transparent;border-radius:99px;padding:2px 9px;font-size:13px;cursor:pointer;font-family:'Noto Color Emoji', sans-serif;}
+.rxn-chip{display:inline-flex;align-items:center;gap:3px;background:#f3f4f6;border:1.5px solid transparent;border-radius:99px;padding:2px 9px;font-size:13px;cursor:pointer;transition:all .12s;user-select:none;font-family:'Heebo',sans-serif;}
+.rxn-chip:hover{background:#e5e7eb;}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
-.rxn-add-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;color:#aaa; font-family:'Noto Color Emoji', sans-serif;}
+.rxn-count{font-size:12px;font-weight:700;color:#374151;}
+.rxn-add-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:99px;line-height:1;transition:background .12s;color:#aaa;}
+.rxn-add-btn:hover{background:#f3f4f6;}
 
-/* EMOJI PICKER - פס צר בצד שמאל */
+/* comment btn */
+.cmt-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:color .12s;}
+.cmt-btn:hover{color:#1a56db;}
+.cmt-btn.has-cmt{color:#1a56db;}
+
+/* EMOJI PICKER — opens on the left side, capped at 56px from top (header height) */
 #emojiPicker{
-  position:fixed;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:8px;
-  box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:500;display:none;flex-direction:column; /* פס צר */
-  gap:4px;width:50px; /* רוחב צר */
-  max-height: 300px; overflow-y: auto;
+  position:fixed;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.15);
+  z-index:500;
+  display:none;
+  flex-wrap:wrap;
+  gap:4px;
+  width:226px;
+  /* max-height so it doesn't go above the header */
+  max-height:calc(100vh - 56px - 20px);
+  overflow-y:auto;
 }
 #emojiPicker.show{display:flex;}
-.ep-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:4px;border-radius:8px;font-family:'Noto Color Emoji', sans-serif;}
+.ep-btn{background:none;border:none;font-size:21px;cursor:pointer;padding:4px 5px;border-radius:8px;line-height:1;}
+.ep-btn:hover{background:#f3f4f6;}
 
-/* COMMENTS PANEL - צד שמאל ונמוך */
-#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.1);}
+/* COMMENTS PANEL */
+#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.3);}
 #cpOverlay.show{display:block;}
-#commentsPanel{
-  position:fixed;top:65px; /* נמוך יותר מהסרגל */
-  left:0; /* צד שמאל */
-  width:340px;max-width:100vw;height:calc(100% - 65px);
-  background:#fff;box-shadow:4px 0 24px rgba(0,0,0,.12);
-  z-index:300;display:flex;flex-direction:column;
-  transform:translateX(-100%); /* כניסה משמאל */
-  transition:transform 0.3s cubic-bezier(.16,1,.3,1);
-}
+#commentsPanel{position:fixed;top:0;right:0;width:340px;max-width:100vw;height:100%;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:300;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);}
 #commentsPanel.open{transform:translateX(0);}
-.cp-hdr{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;}
+.cp-hdr{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cp-title{font-size:15px;font-weight:800;color:#111;}
+.cp-close{background:none;border:none;font-size:17px;cursor:pointer;color:#aaa;padding:4px;border-radius:8px;}
+.cp-close:hover{background:#f3f4f6;}
 .cp-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
-.cp-inp-row{padding:10px 12px;border-top:1px solid #f0f0f0;display:flex;gap:8px;align-items:flex-end;}
-.cp-inp{flex:1;border:1.5px solid #e5e7eb;border-radius:12px;padding:8px 12px;font-size:14px;font-family:'Heebo',sans-serif;resize:none;outline:none;}
-.cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.ci{display:flex;gap:8px;animation:ci .22s ease;}
+@keyframes ci{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.ci-av{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.ci-av-i{width:28px;height:28px;border-radius:50%;background:#1a56db;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ci-bubble{background:#f3f4f6;border-radius:0 12px 12px 12px;padding:7px 11px;flex:1;position:relative;}
+.ci-name{font-size:11px;font-weight:800;color:#111;margin-bottom:2px;}
+.ci-text{font-size:13px;line-height:1.6;color:#374151;word-break:break-word;}
+.ci-time{font-size:10px;color:#aaa;margin-top:3px;}
+.ci-del{position:absolute;top:5px;left:8px;background:none;border:none;font-size:11px;color:#ccc;cursor:pointer;opacity:0;transition:opacity .12s;}
+.ci-bubble:hover .ci-del{opacity:1;}
+.no-cmt{text-align:center;color:#aaa;font-size:13px;padding:30px 0;}
+.cp-inp-row{padding:10px 12px;border-top:1px solid #f0f0f0;display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.cp-inp{flex:1;border:1.5px solid #e5e7eb;border-radius:12px;padding:8px 12px;font-size:14px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:80px;line-height:1.5;}
+.cp-inp:focus{border-color:#93c5fd;}
+.cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
 /* SCROLL DOWN */
-#scrollDownBtn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #e5e7eb;border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,.11);z-index:50;}
+#scrollDownBtn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #e5e7eb;border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;color:#374151;cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,.11);font-family:'Heebo',sans-serif;z-index:50;}
 #scrollDownBtn.show{display:flex;}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:#e02020;flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
+#scrollDownBtn.has-new .unread-dot{display:block;}
 
-#prog{position:fixed;top:0;inset-inline:0;height:2px;background:#1a56db;transform:scaleX(0);z-index:999;display:none;}
+#prog{position:fixed;top:0;inset-inline:0;height:2px;background:#1a56db;transform:scaleX(0);transform-origin:right;z-index:999;display:none;}
 #prog.on{display:block;animation:pr 1.1s ease-in-out infinite;}
 @keyframes pr{0%{transform:scaleX(0);transform-origin:right}50%{transform:scaleX(.55);transform-origin:right}100%{transform:scaleX(0);transform-origin:left}}
 
+#empty{display:none;text-align:center;padding:60px 20px;color:#aaa;}
+#empty i{font-size:36px;opacity:.2;margin-bottom:10px;display:block;}
+
 @media(max-width:480px){
+  .bubble{max-width:90%;}
   #commentsPanel{width:100vw;}
 }
 </style>
@@ -125,9 +179,10 @@ header{
 <body>
 <div id="prog"></div>
 
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
-    <img class="login-logo-img" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png">
+    <img class="login-logo-img" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png" onerror="this.style.display='none'">
     <div class="login-title">שאגת הארי</div>
     <div class="login-sub">כניסה לצוות העריכה</div>
     <div id="googleBtn"></div>
@@ -135,9 +190,10 @@ header{
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
-  <header id="mainHdr">
-    <img class="hdr-avatar" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png">
+  <header>
+    <img class="hdr-avatar" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png" onerror="this.style.background='#e02020'">
     <div class="hdr-info">
       <div class="hdr-name">שאגת הארי</div>
       <div class="hdr-status"><div class="hdr-dot"></div>מחובר · עדכונים חיים</div>
@@ -147,35 +203,45 @@ header{
 
   <div id="feedWrap">
     <div id="feedInner"></div>
-    <div id="empty" style="display:none;text-align:center;padding:60px;color:#aaa;"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
+    <div id="empty"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
   </div>
 
   <button id="scrollDownBtn" onclick="scrollToBottom()">
-    <span id="scrollDownTxt">למטה</span> <i class="fas fa-arrow-down"></i>
+    <div class="unread-dot"></div>
+    <span id="scrollDownTxt">למטה</span>
+    <i class="fas fa-arrow-down" style="font-size:10px"></i>
   </button>
 </div>
 
+<!-- EMOJI PICKER -->
 <div id="emojiPicker">
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
   <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
-  <button class="ep-btn" onclick="pickEmoji('🔥')">🔥</button>
-  <button class="ep-btn" onclick="pickEmoji('😂')">😂</button>
   <button class="ep-btn" onclick="pickEmoji('😮')">😮</button>
+  <button class="ep-btn" onclick="pickEmoji('😂')">😂</button>
   <button class="ep-btn" onclick="pickEmoji('😢')">😢</button>
+  <button class="ep-btn" onclick="pickEmoji('🔥')">🔥</button>
   <button class="ep-btn" onclick="pickEmoji('🚨')">🚨</button>
   <button class="ep-btn" onclick="pickEmoji('✅')">✅</button>
+  <button class="ep-btn" onclick="pickEmoji('🕊️')">🕊️</button>
+  <button class="ep-btn" onclick="pickEmoji('💪')">💪</button>
+  <button class="ep-btn" onclick="pickEmoji('😡')">😡</button>
+  <button class="ep-btn" onclick="pickEmoji('🙏')">🙏</button>
 </div>
 
-<div id="cpOverlay" onclick="closeComments()"></div>
+<!-- COMMENTS PANEL -->
+<div class="cp-overlay" id="cpOverlay" onclick="closeComments()"></div>
 <div id="commentsPanel">
   <div class="cp-hdr">
     <span class="cp-title">💬 תגובות</span>
-    <button style="background:none;border:none;cursor:pointer;color:#aaa;" onclick="closeComments()"><i class="fas fa-times"></i></button>
+    <button class="cp-close" onclick="closeComments()"><i class="fas fa-times"></i></button>
   </div>
   <div class="cp-body" id="cpBody"></div>
   <div class="cp-inp-row">
-    <textarea class="cp-inp" id="cpInp" placeholder="כתוב תגובה..." rows="1"></textarea>
-    <button class="cp-send" onclick="sendComment()"><i class="fas fa-paper-plane"></i></button>
+    <textarea class="cp-inp" id="cpInp" placeholder="כתוב תגובה..." rows="1"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendComment();}"></textarea>
+    <button class="cp-send" onclick="sendComment()"><i class="fas fa-paper-plane" style="font-size:12px"></i></button>
   </div>
 </div>
 
@@ -183,100 +249,214 @@ header{
 const BACKEND='https://dhoc97909.pythonanywhere.com';
 const GOOGLE_CLIENT_ID='856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
 const LOGO='https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
-const ADMIN_EMAIL = 'david@hamakom.ovh';
+const ADMIN_EMAIL='david@hamakom.ovh';
+const STORAGE_KEY='shaagat_hari_user';
 
-let me=null, items=[], lastTs=0, newCount=0, atBottom=true, activePicker=null, activeCmtMsgId=null;
+let me=null, items=[], lastTs=0, newCount=0, atBottom=true;
+let activePicker=null, activeCmtMsgId=null;
 let rxnCache={}, cmtCount={};
 
 function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function rich(t){
   if(!t)return'';
-  let s=esc(t).replace(/\n/g,'<br>');
+  let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
   s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
-  s=s.replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank">$1</a>');
+  s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
+  s=s.replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
   return s;
 }
-
-function initGoogle(){
-  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleLogin});
-  google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',locale:'he',width:240});
-  const savedUser = localStorage.getItem('lion_user');
-  if(savedUser){ me = JSON.parse(savedUser); showApp(); }
+function timeLabel(e){
+  const today=new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return(e.date&&e.date!==today)?e.date+' '+e.time:(e.time||'');
 }
 
-async function handleLogin(resp){
-  let payload=JSON.parse(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-  const email=payload.email.toLowerCase();
-  try {
-    const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+/* ── PERSISTENT AUTH ── */
+function saveUser(user){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(user));}catch(e){}
+}
+function loadSavedUser(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  return null;
+}
+function clearSavedUser(){
+  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+}
+
+async function verifyAndLogin(user){
+  try{
+    const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:user.email})});
     const d=await r.json();
-    if(!d.allowed){document.getElementById('loginErr').style.display='block';return;}
-  } catch(e){return;}
-  me={email,name:payload.name,picture:payload.picture};
-  localStorage.setItem('lion_user', JSON.stringify(me));
-  showApp();
+    if(!d.allowed){
+      clearSavedUser();
+      document.getElementById('loginErr').style.display='block';
+      return false;
+    }
+  }catch(e){
+    // if backend unreachable, trust saved session
+  }
+  me=user;
+  saveUser(user);
+  applyLogin();
+  return true;
 }
 
-function showApp(){
-  document.getElementById('userAvatar').innerHTML=me.picture?`<img src="${me.picture}" style="width:30px;height:30px;border-radius:50%">`:`<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;display:flex;align-items:center;justify-content:center">${me.name[0]}</div>`;
+function applyLogin(){
+  const av=document.getElementById('userAvatar');
+  av.innerHTML=me.picture?`<img src="${esc(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
+    :`<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${me.name[0].toUpperCase()}</div>`;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
   loadFeed();
 }
 
+/* ── AUTH ── */
+function initGoogle(){
+  google.accounts.id.initialize({
+    client_id:GOOGLE_CLIENT_ID,
+    callback:handleLogin,
+    auto_select:true  // auto sign-in if previously authorized
+  });
+
+  // Try silent sign-in first (returns saved session via auto_select)
+  const saved=loadSavedUser();
+  if(saved){
+    // verify still allowed, then skip login screen
+    verifyAndLogin(saved);
+    return;
+  }
+
+  google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',locale:'he',width:240});
+  // also prompt one-tap
+  google.accounts.id.prompt();
+}
+
+async function handleLogin(resp){
+  let payload={};
+  try{payload=JSON.parse(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){}
+  const email=(payload.email||'').toLowerCase();
+  const user={email,name:payload.name||email.split('@')[0],picture:payload.picture||''};
+  await verifyAndLogin(user);
+}
+
+/* ── BUILD MSG ── */
 function buildMsg(e){
   const red=e.profile==='red';
   const id=e.id;
+  const lines=(e.text||'').trim().split('\n');
+  const h=lines[0]||'';
+  const body=lines.slice(1).join('\n').trim();
+
+  let content='';
+  if(red){
+    content=`<div class="bubble-headline">🚨 ${esc(h)}</div>`;
+    if(body) content+=`<div class="bubble-text" style="margin-top:4px">${rich(body)}</div>`;
+  } else {
+    content=`<div class="bubble-text">${rich(h+(body?'\n'+body:''))}</div>`;
+  }
+
+  let media='';
+  if(e.imgUrl) media+=`<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" onerror="this.closest('.bubble-img').remove()"></div>`;
+  if(e.videoUrl) media+=`<div class="bubble-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
+
+  let btns='';
+  if(e.buttons&&e.buttons.length) btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
+
   const n=cmtCount[id]||0;
+  const hasCmt=n>0;
+
   return `<div class="msg-row" data-id="${id}">
-    <img class="msg-av" src="${LOGO}">
     <div class="bubble${red?' is-red':''}">
       <div class="bubble-sender ${red?'':'news-sender'}">${red?'🚨 שאגת הארי':'📰 שאגת הארי'}</div>
-      <div class="bubble-text">${red?`<strong>${esc(e.text.split('\n')[0])}</strong><br>`+rich(e.text.split('\n').slice(1).join('\n')):rich(e.text)}</div>
-      ${e.imgUrl?`<div class="bubble-img"><img src="${e.imgUrl}"></div>`:''}
-      <div class="rxn-row" id="rxn-${id}"><button class="rxn-add-btn" onclick="openPicker(event,'${id}')">😊</button></div>
+      ${content}${media}${btns}
+      <div class="rxn-row" id="rxn-${id}">
+        <button class="rxn-add-btn" onclick="openPicker(event,'${id}')">😊</button>
+      </div>
       <div class="bubble-foot">
-        <span class="bubble-time">${e.time||''}</span>
-        <button class="cmt-btn" id="cbtn-${id}" onclick="openComments('${id}')"><i class="fas fa-comment"></i> ${n>0?n+' תגובות':'תגובות'}</button>
+        <span class="bubble-time">${timeLabel(e)}</span>
+        <button class="cmt-btn${hasCmt?' has-cmt':''}" id="cbtn-${id}" onclick="openComments('${id}')">
+          <i class="fas fa-comment" style="font-size:10px"></i> ${hasCmt?n+' תגובות':'תגובות'}
+        </button>
       </div>
     </div>
+    <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
   </div>`;
 }
 
+function renderRxn(msgId,rxns){
+  rxnCache[msgId]=rxns;
+  const bar=document.getElementById('rxn-'+msgId);
+  if(!bar)return;
+  const addBtn=bar.querySelector('.rxn-add-btn');
+  bar.innerHTML='';
+  Object.entries(rxns).forEach(([emoji,users])=>{
+    if(!users.length)return;
+    const mine=users.includes(me?.email);
+    const c=document.createElement('button');
+    c.className='rxn-chip'+(mine?' mine':'');
+    c.innerHTML=`${emoji}<span class="rxn-count">${users.length}</span>`;
+    c.onclick=()=>doReact(msgId,emoji);
+    bar.appendChild(c);
+  });
+  if(addBtn) bar.appendChild(addBtn);
+  else{const b=document.createElement('button');b.className='rxn-add-btn';b.textContent='😊';b.onclick=(e)=>openPicker(e,msgId);bar.appendChild(b);}
+}
+
+/* ── EMOJI PICKER — opens to the left, constrained above header ── */
 function openPicker(e,msgId){
   e.stopPropagation();
   activePicker=msgId;
   const p=document.getElementById('emojiPicker');
+  p.classList.remove('show');
+
+  // Show first to measure height
+  p.style.visibility='hidden';
+  p.style.display='flex';
+  const pickerH=p.offsetHeight;
+  const pickerW=p.offsetWidth;
+  p.style.display='';
+  p.style.visibility='';
+
   const r=e.currentTarget.getBoundingClientRect();
-  p.style.top=(r.top < 100 ? 100 : r.top - 50)+'px';
-  p.style.left='20px'; /* צד שמאל */
+  const HEADER_H=56;
+  const MARGIN=8;
+
+  // Prefer above the button; if not enough room, go below
+  let top=r.top - pickerH - MARGIN;
+  if(top < HEADER_H + MARGIN) top = r.bottom + MARGIN;
+  // Hard clamp so it never goes above header
+  top = Math.max(HEADER_H + MARGIN, top);
+
+  // Position to the LEFT of the button (since layout is RTL, left side = farther from edge)
+  let left = r.left - pickerW - MARGIN;
+  if(left < MARGIN) left = MARGIN;
+
+  p.style.top=top+'px';
+  p.style.left=left+'px';
+  p.style.right='auto';
   p.classList.toggle('show');
 }
+
 function pickEmoji(em){
   document.getElementById('emojiPicker').classList.remove('show');
   if(activePicker) doReact(activePicker,em);
+  activePicker=null;
 }
 document.addEventListener('click',()=>document.getElementById('emojiPicker').classList.remove('show'));
 
 async function doReact(msgId,emoji){
-  const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,msgId,emoji})});
-  const d=await r.json();
-  if(d.status==='ok') renderRxn(msgId,d.reactions);
+  if(!me)return;
+  try{
+    const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:me.email,msgId,emoji})});
+    const d=await r.json();
+    if(d.status==='ok') renderRxn(msgId,d.reactions);
+  }catch(e){}
 }
 
-function renderRxn(msgId,rxns){
-  const bar=document.getElementById('rxn-'+msgId); if(!bar)return;
-  bar.innerHTML='';
-  Object.entries(rxns).forEach(([emoji,users])=>{
-    const c=document.createElement('button');
-    c.className='rxn-chip'+(users.includes(me.email)?' mine':'');
-    c.innerHTML=`${emoji} <span>${users.length}</span>`;
-    c.onclick=()=>doReact(msgId,emoji);
-    bar.appendChild(c);
-  });
-  const b=document.createElement('button'); b.className='rxn-add-btn'; b.textContent='😊'; b.onclick=(e)=>openPicker(e,msgId); bar.appendChild(b);
-}
-
+/* ── COMMENTS ── */
 function openComments(msgId){
   activeCmtMsgId=msgId;
   document.getElementById('commentsPanel').classList.add('open');
@@ -286,69 +466,154 @@ function openComments(msgId){
 function closeComments(){
   document.getElementById('commentsPanel').classList.remove('open');
   document.getElementById('cpOverlay').classList.remove('show');
+  activeCmtMsgId=null;
 }
-
 async function loadComments(msgId){
-  const b=document.getElementById('cpBody'); b.innerHTML='טוען...';
-  const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(msgId));
-  const d=await r.json();
-  const list=d.comments||[];
-  cmtCount[msgId]=list.length;
-  b.innerHTML=list.length?list.map(c=>`<div class="ci" style="display:flex;gap:8px;margin-bottom:10px">
-    <div class="ci-bubble" style="background:#f3f4f6;padding:8px;border-radius:10px;flex:1;position:relative">
-      <div style="font-size:11px;font-weight:800">${esc(c.name)}</div>
-      <div style="font-size:13px">${esc(c.text)}</div>
-      ${(me.email===ADMIN_EMAIL || c.email===me.email)?`<button onclick="delCmt('${msgId}','${c.id}')" style="position:absolute;top:5px;left:5px;background:none;border:none;color:#ccc;cursor:pointer">×</button>`:''}
-    </div>
-  </div>`).join(''):'אין תגובות';
+  const b=document.getElementById('cpBody');
+  b.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">טוען...</div>';
+  try{
+    const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(msgId));
+    const d=await r.json();
+    const list=d.comments||[];
+    cmtCount[msgId]=list.length;
+    updateCmtBtn(msgId,list.length);
+    b.innerHTML=list.length?list.map(c=>buildCmt(msgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
+  }catch(e){b.innerHTML='<div class="no-cmt">שגיאה</div>';}
 }
-
+function buildCmt(msgId,c){
+  // Admin (david@hamakom.ovh) can delete ANY comment; others only their own
+  const canDelete = (me?.email===ADMIN_EMAIL) || (c.email===me?.email);
+  const av=c.picture?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.style.display='none'">`
+    :`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
+  return `<div class="ci" id="ci-${c.id}">${av}<div class="ci-bubble">
+    <div class="ci-name">${esc(c.name||c.email)}</div>
+    <div class="ci-text">${esc(c.text)}</div>
+    <div class="ci-time">${c.time||''}</div>
+    ${canDelete?`<button class="ci-del" onclick="delCmt('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
+  </div></div>`;
+}
+function updateCmtBtn(msgId,n){
+  const btn=document.getElementById('cbtn-'+msgId);
+  if(!btn)return;
+  btn.className='cmt-btn'+(n>0?' has-cmt':'');
+  btn.innerHTML=`<i class="fas fa-comment" style="font-size:10px"></i> ${n>0?n+' תגובות':'תגובות'}`;
+}
 async function sendComment(){
-  const inp=document.getElementById('cpInp'); if(!inp.value.trim())return;
-  await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text:inp.value})});
-  inp.value=''; loadComments(activeCmtMsgId);
+  const inp=document.getElementById('cpInp');
+  const text=inp.value.trim();
+  if(!text||!me||!activeCmtMsgId)return;
+  inp.value='';inp.style.height='auto';
+  try{
+    const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
+    const d=await r.json();
+    if(d.status==='ok'){
+      const b=document.getElementById('cpBody');
+      b.querySelector('.no-cmt')?.remove();
+      const div=document.createElement('div');
+      div.innerHTML=buildCmt(activeCmtMsgId,d.comment);
+      b.appendChild(div.firstChild);
+      b.scrollTop=b.scrollHeight;
+      cmtCount[activeCmtMsgId]=(cmtCount[activeCmtMsgId]||0)+1;
+      updateCmtBtn(activeCmtMsgId,cmtCount[activeCmtMsgId]);
+    }
+  }catch(e){}
+}
+async function delCmt(msgId,cid){
+  if(!me)return;
+  try{
+    const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:me.email,msgId,commentId:cid})});
+    const d=await r.json();
+    if(d.status==='ok'){
+      document.getElementById('ci-'+cid)?.remove();
+      cmtCount[msgId]=Math.max(0,(cmtCount[msgId]||1)-1);
+      updateCmtBtn(msgId,cmtCount[msgId]);
+      if(!document.querySelector('#cpBody .ci'))
+        document.getElementById('cpBody').innerHTML='<div class="no-cmt">עדיין אין תגובות</div>';
+    }
+  }catch(e){}
 }
 
-async function delCmt(msgId,commentId){
-  await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,msgId,commentId})});
-  loadComments(msgId);
-}
-
+/* ── FEED ── */
 async function loadFeed(){
-  const r=await fetch(BACKEND+'/feed');
-  const d=await r.json();
-  if(d.status==='ok'){
-    items=[...d.feed].reverse();
-    lastTs=items.length?Math.max(...items.map(e=>e.ts||0)):0;
-    document.getElementById('feedInner').innerHTML=items.map(buildMsg).join('');
-    items.forEach(e=>loadRxn(e.id));
-    scrollToBottom();
-  }
+  setLoading(true);
+  try{
+    const r=await fetch(BACKEND+'/feed');
+    const d=await r.json();
+    if(d.status==='ok'){
+      items=[...d.feed].reverse();
+      lastTs=items.length?Math.max(...items.map(e=>e.ts||0)):0;
+      const inner=document.getElementById('feedInner');
+      inner.innerHTML='';
+      if(!items.length){document.getElementById('empty').style.display='block';}
+      else{
+        inner.innerHTML=items.map(buildMsg).join('');
+        items.forEach(e=>loadRxn(e.id));
+      }
+      const w=document.getElementById('feedWrap');
+      w.scrollTop=w.scrollHeight;
+    }
+  }catch(e){}
+  setLoading(false);
 }
 
 async function loadRxn(msgId){
-  const r=await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
-  const d=await r.json(); if(d.status==='ok') renderRxn(msgId,d.reactions);
+  try{
+    const r=await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
+    const d=await r.json();
+    if(d.status==='ok') renderRxn(msgId,d.reactions);
+  }catch(e){}
 }
 
-function scrollToBottom(){ document.getElementById('feedWrap').scrollTop=999999; }
+async function pollNew(){
+  if(!lastTs||!me)return;
+  try{
+    const r=await fetch(BACKEND+'/feed?since='+lastTs);
+    const d=await r.json();
+    if(d.status==='ok'&&d.feed?.length){
+      const ni=[...d.feed].reverse();
+      lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
+      items=[...items,...ni];
+      const inner=document.getElementById('feedInner');
+      document.getElementById('empty').style.display='none';
+      ni.forEach(e=>{
+        const div=document.createElement('div');
+        div.innerHTML=buildMsg(e);
+        inner.appendChild(div.firstChild);
+        loadRxn(e.id);
+      });
+      if(atBottom){document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;}
+      else{newCount+=ni.length;updateScrollBtn();}
+    }
+  }catch(e){}
+}
+
+function scrollToBottom(){
+  document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});
+  newCount=0;updateScrollBtn();
+}
+function updateScrollBtn(){
+  const btn=document.getElementById('scrollDownBtn');
+  const txt=document.getElementById('scrollDownTxt');
+  if(!atBottom){
+    btn.classList.add('show');
+    if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}
+    else{btn.classList.remove('has-new');txt.textContent='למטה';}
+  }else{btn.classList.remove('show','has-new');newCount=0;}
+}
+document.getElementById('feedWrap').addEventListener('scroll',function(){
+  atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;
+  updateScrollBtn();
+},{passive:true});
+
 function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
 
-window.addEventListener('load',initGoogle);
-setInterval(async ()=>{
-  if(!lastTs || !me) return;
-  const r=await fetch(BACKEND+'/feed?since='+lastTs);
-  const d=await r.json();
-  if(d.status==='ok' && d.feed.length){
-    d.feed.forEach(e=>{
-      const div=document.createElement('div'); div.innerHTML=buildMsg(e);
-      document.getElementById('feedInner').appendChild(div.firstChild);
-      loadRxn(e.id);
-    });
-    lastTs=Math.max(...d.feed.map(x=>x.ts));
-    if(atBottom) scrollToBottom();
-  }
-},6000);
+window.addEventListener('load',()=>{
+  if(window.google?.accounts)initGoogle();
+  else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogle);
+});
+setInterval(pollNew,6000);
 </script>
 </body>
 </html>
