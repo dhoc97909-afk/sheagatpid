@@ -54,7 +54,7 @@ header{
 
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
-#feedInner{max-width:680px;margin:0 0 0 auto;padding:0 16px 0 60px;display:flex;flex-direction:column;gap:6px;}
+#feedInner{max-width:680px;margin:0 0 0 auto;padding:0 24px 0 60px;display:flex;flex-direction:column;gap:6px;}
 
 /* MESSAGE ROW — direction:rtl so avatar is on the physical RIGHT */
 .msg-row{
@@ -165,8 +165,7 @@ header{
 .ep-btn:active{transform:scale(.9);}
 
 /* ── COMMENTS PANEL — from LEFT, below header ── */
-#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.28);}
-#cpOverlay.show{display:block;}
+#cpOverlay{display:none;}
 #commentsPanel{
   position:fixed;
   top:56px;left:0;right:auto;
@@ -453,7 +452,8 @@ function buildMsg(e){
     content=`<div class="bubble-text">${rich(h+(body?'\n'+body:''))}</div>`;
   }
   let media='';
-  if(e.imgUrl) media+=`<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" style="cursor:zoom-in" onclick="openLightbox('${esc(e.imgUrl)}')" onerror="this.closest('.bubble-img').remove()"></div>`;
+  if(e.imgUrl) media+=`<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" style="cursor:pointer" onclick="openLightbox('${esc(e.imgUrl)}')" onerror="this.closest('.bubble-img').remove()"></div>`;
+
   if(e.videoUrl) media+=`<div class="bubble-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
   let btns='';
   if(e.buttons&&e.buttons.length) btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
