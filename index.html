@@ -47,7 +47,7 @@ header{background:var(--white);border-bottom:1px solid var(--rule);position:stic
 
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:12px 0 20px;}
-#feedInner{max-width:660px;width:100%;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:8px;}
+#feedInner{max-width:660px;width:100%;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:6px;}
 
 /* MSG */
 .msg{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s;}
@@ -55,15 +55,15 @@ header{background:var(--white);border-bottom:1px solid var(--rule);position:stic
 .msg.is-red{border-right:4px solid var(--red);}
 .msg.is-news{border-right:4px solid var(--blue);}
 
-.breaking-head{background:var(--red);color:#fff;padding:11px 15px;display:flex;align-items:center;gap:9px;}
+.breaking-head{background:var(--red);color:#fff;padding:8px 13px;display:flex;align-items:center;gap:8px;}
 .break-tag{background:rgba(255,255,255,.2);font-size:9px;font-weight:900;letter-spacing:.15em;padding:2px 8px;border-radius:3px;white-space:nowrap;text-transform:uppercase;flex-shrink:0;}
-.breaking-title{font-size:17px;font-weight:800;line-height:1.4;}
+.breaking-title{font-size:14px;font-weight:800;line-height:1.4;}
 
-.msg-body{padding:13px 15px 0;}
+.msg-body{padding:9px 13px 0;}
 .msg-cat{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 9px;border-radius:3px;margin-bottom:9px;}
 .msg-cat.news{background:#eff6ff;color:var(--blue);}
 .msg-cat.red-cat{background:#fef2f2;color:var(--red);}
-.msg-text{font-size:15px;line-height:1.75;color:var(--ink2);white-space:pre-wrap;word-break:break-word;}
+.msg-text{font-size:14px;line-height:1.65;color:var(--ink2);white-space:pre-wrap;word-break:break-word;}
 .msg-text strong{font-weight:800;color:var(--ink);}
 .msg-text em{font-style:italic;}
 .msg-text a{color:var(--blue);text-decoration:underline;}
@@ -90,13 +90,13 @@ header{background:var(--white);border-bottom:1px solid var(--rule);position:stic
 .rxn-add:hover{background:#e5e7eb;}
 
 /* EMOJI PICKER — smaller */
-.emoji-picker{position:fixed;background:var(--white);border:1px solid var(--rule);border-radius:12px;padding:8px;box-shadow:0 8px 28px rgba(0,0,0,.13);z-index:500;display:none;flex-wrap:wrap;gap:3px;width:180px;}
+.emoji-picker{position:fixed;background:var(--white);border:1px solid var(--rule);border-radius:99px;padding:5px 8px;box-shadow:0 6px 24px rgba(0,0,0,.14);z-index:500;display:none;align-items:center;gap:1px;white-space:nowrap;}
 .emoji-picker.show{display:flex;}
-.ep-btn{background:none;border:none;font-size:18px;cursor:pointer;padding:3px 5px;border-radius:6px;transition:background .1s;line-height:1;}
+.ep-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:3px 4px;border-radius:99px;transition:background .1s;line-height:1;}
 .ep-btn:hover{background:#f3f4f6;}
 
 /* MSG FOOTER */
-.msg-foot{padding:8px 15px 11px;display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.msg-foot{padding:6px 13px 9px;display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
 .msg-time{font-size:11px;color:var(--ink3);font-weight:500;display:flex;align-items:center;gap:5px;}
 .msg-time i{font-size:9px;opacity:.45;}
 .comment-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--rule);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s;}
@@ -159,9 +159,10 @@ header{background:var(--white);border-bottom:1px solid var(--rule);position:stic
 
 @media(max-width:480px){
   #commentsPanel{width:100vw;}
-  .msg-body{padding:11px 12px 0;}
-  .reactions-bar{padding:7px 12px 0;}
-  .msg-foot{padding:7px 12px 10px;}
+  .msg-body{padding:8px 11px 0;}
+  .reactions-bar{padding:5px 11px 0;}
+  .msg-foot{padding:5px 11px 8px;}
+  .breaking-title{font-size:13px;}
 }
 </style>
 </head>
@@ -284,6 +285,7 @@ async function handleLogin(resp){
   }
 
   currentUser={email,name,picture};
+  sessionStorage.setItem('feedUser', JSON.stringify(currentUser));
   const av=document.getElementById('userAvatar');
   if(picture) av.innerHTML=`<img src="${esc(picture)}" class="user-avatar" title="${esc(name)}">`;
   else av.innerHTML=`<div class="user-initial">${(name[0]||'?').toUpperCase()}</div>`;
@@ -426,13 +428,17 @@ function openEmojiPicker(e,msgId){
   const picker=document.getElementById('emojiPicker');
   activePickerMsgId=msgId;
   const rect=e.currentTarget.getBoundingClientRect();
-  // Position above the button
-  const top=rect.top-8;
-  const pickerH=120;
-  picker.style.top=(top-pickerH)+'px';
-  picker.style.left=Math.max(8,rect.left-60)+'px';
+  // Show as horizontal strip above button, right-aligned
   picker.style.bottom='auto';picker.style.right='auto';
-  picker.classList.toggle('show');
+  // After show, measure width
+  picker.style.visibility='hidden';
+  picker.classList.add('show');
+  const pw=picker.offsetWidth;
+  picker.style.visibility='';
+  let left=rect.right-pw;
+  if(left<8)left=8;
+  picker.style.top=(rect.top-42)+'px';
+  picker.style.left=left+'px';
 }
 function pickEmoji(emoji){
   document.getElementById('emojiPicker').classList.remove('show');
@@ -613,6 +619,24 @@ document.getElementById('feedWrap').addEventListener('scroll',function(){
 function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
 
 window.addEventListener('load',()=>{
+  // Try restore session
+  try{
+    const saved=sessionStorage.getItem('feedUser');
+    if(saved){
+      currentUser=JSON.parse(saved);
+      const av=document.getElementById('userAvatar');
+      if(currentUser.picture) av.innerHTML=`<img src="${esc(currentUser.picture)}" class="user-avatar" title="${esc(currentUser.name)}">`;
+      else av.innerHTML=`<div class="user-initial">${(currentUser.name[0]||'?').toUpperCase()}</div>`;
+      if(currentUser.email===SUPER_ADMIN){
+        const badge=document.getElementById('visitorsBadge');
+        if(badge){badge.style.display='inline-flex';loadVisitorsCount();}
+      }
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('app').style.display='flex';
+      loadFeed();
+      return;
+    }
+  }catch(e){}
   if(window.google?.accounts) initGoogleLogin();
   else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogleLogin);
 });
