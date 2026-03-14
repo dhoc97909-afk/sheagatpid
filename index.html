@@ -48,21 +48,18 @@ header{
 }
 #adminStrip.show{display:flex;}
 .admin-strip-label{opacity:.75;margin-left:6px;}
-.admin-user-chip{
-  display:inline-flex;align-items:center;gap:4px;
-  background:rgba(255,255,255,.2);border-radius:99px;padding:2px 8px;font-size:11px;
+#adminUserCount{
+  background:rgba(255,255,255,.25);border-radius:99px;
+  padding:2px 10px;font-size:12px;font-weight:800;
 }
-.admin-user-chip img{width:16px;height:16px;border-radius:50%;object-fit:cover;}
 
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
 #feedInner{max-width:680px;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:6px;}
 
-/* MESSAGE ROW
-   direction:ltr forces avatar(first child) to the physical LEFT
-   and bubble to the RIGHT of it, regardless of page RTL */
+/* MESSAGE ROW — direction:rtl so avatar is on the physical RIGHT */
 .msg-row{
-  display:flex;direction:ltr;
+  display:flex;direction:rtl;
   align-items:flex-start;gap:8px;
   padding:2px 0;
   animation:mi .3s cubic-bezier(.16,1,.3,1) both;
@@ -72,24 +69,24 @@ header{
 .msg-av{
   width:36px;height:36px;border-radius:50%;object-fit:cover;
   flex-shrink:0;align-self:flex-start;
-  margin-top:17px; /* align with bubble content below the name */
+  margin-top:17px;
 }
 
 /* Column: name label above bubble */
 .msg-col{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
 
-/* Sender name OUTSIDE the bubble — no emoji */
+/* Sender name OUTSIDE the bubble */
 .msg-meta{
   direction:rtl;font-size:12px;font-weight:700;
   color:#666;padding-right:4px;
 }
 
 /* BUBBLE
-   Avatar is on LEFT → sharp corner = top-left = first value
-   border-radius: top-left  top-right  bottom-right  bottom-left  */
+   Avatar is on RIGHT → sharp corner = top-right
+   border-radius: top-left  top-right  bottom-right  bottom-left */
 .bubble{
   background:#fff;direction:rtl;
-  border-radius:4px 18px 18px 18px;
+  border-radius:18px 4px 18px 18px;
   padding:10px 14px 8px;
   max-width:100%;min-width:180px;
   box-shadow:0 1px 2px rgba(0,0,0,.10);
@@ -125,7 +122,7 @@ header{
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
 .rxn-count{font-size:12px;font-weight:700;color:#374151;font-family:'Heebo',sans-serif;}
 
-/* SVG reaction-add button */
+/* SVG reaction-add button — smiley only, no plus */
 .rxn-add-btn{
   background:none;border:none;cursor:pointer;
   padding:3px;border-radius:99px;line-height:0;
@@ -139,21 +136,28 @@ header{
 .cmt-btn:hover{color:#1a56db;}
 .cmt-btn.has-cmt{color:#1a56db;}
 
-/* ── EMOJI PICKER — small floating panel near button ── */
+/* ── EMOJI PICKER — horizontal scrollable strip ── */
 #emojiPicker{
   position:fixed;
   background:#fff;border:1px solid #e5e7eb;
-  border-radius:16px;padding:8px 10px;
-  box-shadow:0 8px 28px rgba(0,0,0,.16);
+  border-radius:99px;
+  padding:4px 8px;
+  box-shadow:0 6px 22px rgba(0,0,0,.14);
   z-index:600;display:none;
-  flex-wrap:wrap;gap:1px;width:220px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  max-width:calc(100vw - 20px);
+  white-space:nowrap;
+  gap:0;
+  scrollbar-width:none;
   animation:pickerPop .18s cubic-bezier(.34,1.4,.64,1);
 }
+#emojiPicker::-webkit-scrollbar{display:none;}
 @keyframes pickerPop{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 #emojiPicker.show{display:flex;}
 .ep-btn{
-  background:none;border:none;font-size:22px;cursor:pointer;
-  padding:5px 6px;border-radius:8px;line-height:1;
+  background:none;border:none;font-size:16px;cursor:pointer;
+  padding:4px 5px;border-radius:8px;line-height:1;flex-shrink:0;
   font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
   transition:background .1s,transform .1s;
 }
@@ -175,7 +179,6 @@ header{
   transition:transform .3s cubic-bezier(.16,1,.3,1);
 }
 #commentsPanel.open{transform:translateX(0);}
-/* shift down when admin strip is visible */
 #commentsPanel.admin-offset{top:86px;height:calc(100% - 86px);}
 
 .cp-hdr{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
@@ -184,7 +187,6 @@ header{
 .cp-close:hover{background:#f3f4f6;}
 .cp-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
 
-/* Comment: picture only, no name */
 .ci{display:flex;gap:8px;animation:cian .22s ease;}
 @keyframes cian{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .ci-av{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-start;}
@@ -229,7 +231,7 @@ header{
 @media(max-width:480px){
   .msg-col{flex:1;}
   #commentsPanel{width:100vw;}
-  .ep-btn{font-size:20px;}
+  .ep-btn{font-size:15px;}
 }
 </style>
 </head>
@@ -258,10 +260,10 @@ header{
     <div class="hdr-user"><div id="userAvatar"></div></div>
   </header>
 
-  <!-- Admin: who is connected (david only) -->
+  <!-- Admin: total login count -->
   <div id="adminStrip">
-    <span class="admin-strip-label">מחוברים עכשיו:</span>
-    <div id="adminUserList" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+    <span class="admin-strip-label">משתמשים שהתחברו עם גוגל:</span>
+    <span id="adminUserCount">0</span>
   </div>
 
   <div id="feedWrap">
@@ -276,7 +278,7 @@ header{
   </button>
 </div>
 
-<!-- EMOJI PICKER — small floating -->
+<!-- EMOJI PICKER — horizontal strip -->
 <div id="emojiPicker">
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
   <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
@@ -323,14 +325,12 @@ let me=null, items=[], lastTs=0, newCount=0, atBottom=true;
 let activePicker=null, activeCmtMsgId=null;
 let rxnCache={}, cmtCount={};
 
-/* SVG add-reaction icon: smiley face + plus sign (top-right corner) */
+/* SVG reaction-add button — smiley face only, no plus */
 const REACT_SVG=`<svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="10" cy="12" r="8" stroke="currentColor" stroke-width="1.65"/>
-  <circle cx="7.6" cy="10.3" r="1.1" fill="currentColor"/>
-  <circle cx="12.4" cy="10.3" r="1.1" fill="currentColor"/>
-  <path d="M7.1 13.7c.55 1.45 1.7 2.1 2.9 2.1s2.35-.65 2.9-2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="17" y1="3" x2="17" y2="8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-  <line x1="14.3" y1="5.75" x2="19.7" y2="5.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.65"/>
+  <circle cx="8.5" cy="9.5" r="1.1" fill="currentColor"/>
+  <circle cx="13.5" cy="9.5" r="1.1" fill="currentColor"/>
+  <path d="M8 13.2c.65 1.5 2 2.2 3 2.2s2.35-.72 3-2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
 function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -370,11 +370,9 @@ function applyLogin(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
 
-  // Register login
   fetch(BACKEND+'/feed_login',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({email:me.email,name:me.name,picture:me.picture})}).catch(()=>{});
 
-  // Admin features
   if(isAdmin()){
     const strip=document.getElementById('adminStrip');
     strip.classList.add('show');
@@ -390,13 +388,8 @@ async function loadAdminUsers(){
   try{
     const r=await fetch(BACKEND+'/feed_logins?email='+encodeURIComponent(ADMIN_EMAIL));
     const d=await r.json();
-    const list=(d.logins||[]).slice(0,20);
-    document.getElementById('adminUserList').innerHTML=list.map(u=>{
-      const av=u.picture
-        ?`<img src="${esc(u.picture)}" onerror="this.style.display='none'">`
-        :``;
-      return `<span class="admin-user-chip">${av}<span>${esc(u.name||u.email)}</span></span>`;
-    }).join('');
+    const count=(d.logins||[]).length;
+    document.getElementById('adminUserCount').textContent=count;
   }catch(e){}
 }
 
@@ -481,13 +474,12 @@ function renderRxn(msgId,rxns){
   }
 }
 
-/* ── EMOJI PICKER — floating above button ── */
+/* ── EMOJI PICKER ── */
 function openPicker(ev,msgId){
   ev.stopPropagation();
   activePicker=msgId;
   const p=document.getElementById('emojiPicker');
 
-  // Measure picker dimensions while hidden
   p.style.visibility='hidden';p.style.display='flex';
   const pH=p.offsetHeight, pW=p.offsetWidth;
   p.style.display='';p.style.visibility='';
@@ -552,7 +544,6 @@ async function loadComments(msgId){
 }
 
 function buildCmt(msgId,c){
-  // Admin can delete ANY comment; others only their own
   const canDelete=isAdmin()||(c.email===me?.email);
   const av=c.picture
     ?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.parentNode.innerHTML='<div class=ci-av-i>${(c.name||'?')[0].toUpperCase()}</div>'">`
