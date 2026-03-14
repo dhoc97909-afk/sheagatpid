@@ -3,177 +3,154 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
-<title>שאגת הארי — עדכונים</title>
+<title>שאגת הארי</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Assistant','Noto Color Emoji',sans-serif;-webkit-font-smoothing:antialiased;}
-:root{
-  --red:#d90000;--blue:#1877f2;
-  --ink:#1c1e21;--ink2:#374151;--ink3:#65676b;
-  --rule:#e4e6eb;--bg:#f0f2f5;--white:#fff;
-  --shadow:0 1px 4px rgba(0,0,0,.14);
-  --shadow-md:0 4px 16px rgba(0,0,0,.12);
-  --header-h:58px;
-}
+html,body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialiased;background:#eae9e4;}
 
 /* LOGIN */
-#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;}
-.login-card{background:var(--white);border-radius:18px;padding:40px 36px;text-align:center;box-shadow:var(--shadow-md);max-width:320px;width:90%;}
-.login-logo{font-size:32px;font-weight:900;color:var(--ink);margin-bottom:4px;letter-spacing:-.03em;}
-.login-logo span{color:var(--red);}
-.login-sub{font-size:13px;color:var(--ink3);margin-bottom:26px;font-weight:500;}
-.login-error{font-size:12px;color:var(--red);margin-top:12px;display:none;font-weight:700;}
+#loginScreen{position:fixed;inset:0;background:#eae9e4;display:flex;align-items:center;justify-content:center;z-index:1000;}
+.login-card{background:#fff;border-radius:18px;padding:38px 32px;text-align:center;box-shadow:0 4px 32px rgba(0,0,0,.12);max-width:320px;width:90%;}
+.login-logo-img{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:block;object-fit:cover;}
+.login-title{font-size:20px;font-weight:900;color:#111;margin-bottom:4px;}
+.login-sub{font-size:13px;color:#888;margin-bottom:24px;}
+.login-err{font-size:12px;color:#e02020;margin-top:10px;display:none;font-weight:600;}
 
 /* APP */
-#app{height:100%;display:flex;flex-direction:column;display:none;background:var(--bg);}
+#app{height:100%;display:none;flex-direction:column;}
 
-/* HEADER */
-header{background:var(--white);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;padding:0 16px;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-.brand{font-size:20px;font-weight:900;color:var(--ink);letter-spacing:-.03em;}
-.brand span{color:var(--red);}
-.header-right{display:flex;align-items:center;gap:10px;}
-.user-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid var(--rule);}
-.user-initial{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-
-/* ADMIN BADGE */
-#adminBtn{background:none;border:1.5px solid var(--rule);border-radius:99px;padding:3px 11px;font-size:11px;font-weight:800;color:var(--ink3);cursor:pointer;font-family:'Assistant',sans-serif;display:none;align-items:center;gap:5px;}
-#adminBtn:hover{background:#f0f2f5;}
+/* HEADER — telegram-style */
+header{
+  background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  height:56px;padding:0 14px;
+  display:flex;align-items:center;gap:12px;
+  flex-shrink:0;
+  position:sticky;top:0;z-index:100;
+}
+.hdr-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.hdr-info{flex:1;min-width:0;}
+.hdr-name{font-size:15px;font-weight:800;color:#111;line-height:1.2;}
+.hdr-status{font-size:12px;color:#4caf7d;font-weight:600;display:flex;align-items:center;gap:4px;}
+.hdr-dot{width:5px;height:5px;border-radius:50%;background:#4caf7d;animation:dp 1.6s ease-in-out infinite;}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.3}}
+.hdr-user{display:flex;align-items:center;gap:8px;}
+.hdr-user img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee;}
+.hdr-user-init{width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
 
 /* FEED */
-#feedWrap{flex:1;overflow-y:auto;padding:14px 0 20px;scroll-behavior:smooth;}
-#feedInner{max-width:600px;width:100%;margin:0 auto 0 auto;margin-right:auto;margin-left:max(16px, calc(50% - 480px));padding:0 12px;display:flex;flex-direction:column;gap:8px;}
+#feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
+#feedInner{max-width:680px;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:3px;}
 
-/* MSG */
-.msg{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);position:relative;}
-.msg.is-red{border-right:4px solid var(--red);}
-.msg.is-news{border-right:4px solid var(--blue);}
+/* MESSAGE ROW — telegram style */
+.msg-row{display:flex;align-items:flex-end;gap:8px;padding:2px 0;animation:mi .3s cubic-bezier(.16,1,.3,1) both;}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-end;}
+.msg-av-placeholder{width:36px;flex-shrink:0;} /* spacer for consecutive */
 
-/* PROFILE BADGE — top right of image or top of card */
-.msg-profile-badge{position:absolute;top:10px;right:12px;z-index:5;display:flex;align-items:center;gap:6px;}
-.msg-profile-badge img{width:30px;height:30px;border-radius:50%;border:2px solid var(--white);box-shadow:0 1px 4px rgba(0,0,0,.15);}
-.msg-profile-badge span{font-size:11px;font-weight:700;color:var(--white);background:rgba(0,0,0,.45);padding:2px 8px;border-radius:99px;backdrop-filter:blur(4px);}
+/* BUBBLE */
+.bubble{
+  background:#fff;
+  border-radius:18px 18px 4px 18px;
+  padding:10px 14px 8px;
+  max-width:82%;
+  min-width:180px;
+  box-shadow:0 1px 2px rgba(0,0,0,.10);
+  position:relative;
+}
+.bubble.is-red{background:#fff9f9;border-right:3px solid #e02020;}
 
-/* Breaking */
-.breaking-head{background:var(--red);color:#fff;padding:11px 15px 11px 15px;display:flex;align-items:center;gap:9px;position:relative;}
-.break-tag{background:rgba(255,255,255,.2);font-size:9px;font-weight:900;letter-spacing:.15em;padding:2px 8px;border-radius:3px;white-space:nowrap;text-transform:uppercase;flex-shrink:0;}
-.breaking-title{font-size:17px;font-weight:800;line-height:1.4;padding-left:40px;}
+/* sender name */
+.bubble-sender{font-size:13px;font-weight:800;color:#e02020;margin-bottom:4px;}
+.bubble-sender.news-sender{color:#1a56db;}
 
-/* Body */
-.msg-body{padding:12px 14px 0;position:relative;}
-.msg-cat{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 9px;border-radius:3px;margin-bottom:8px;}
-.msg-cat.news{background:#e7f0ff;color:var(--blue);}
-.msg-cat.red-cat{background:#fef2f2;color:var(--red);}
-.msg-text{font-size:15px;line-height:1.75;color:var(--ink2);white-space:pre-wrap;word-break:break-word;}
-.msg-text strong{font-weight:800;color:var(--ink);}
-.msg-text em{font-style:italic;}
-.msg-text a{color:var(--blue);text-decoration:underline;}
+/* text */
+.bubble-text{font-size:15px;line-height:1.7;color:#111;white-space:pre-wrap;word-break:break-word;}
+.bubble-text strong{font-weight:800;}
+.bubble-text em{font-style:italic;}
+.bubble-text a{color:#1a56db;text-decoration:underline;}
 
-/* Profile badge OVER text (no image) */
-.msg-body .msg-profile-badge{top:8px;right:10px;}
+/* RED: headline bold */
+.bubble-headline{font-size:16px;font-weight:800;color:#111;line-height:1.5;margin-bottom:4px;}
 
-/* Image */
-.msg-img{margin-top:10px;border-radius:10px;overflow:hidden;position:relative;}
-.msg-img img{width:100%;display:block;max-height:340px;object-fit:cover;}
-.msg-img .msg-profile-badge{top:8px;right:8px;}
-.msg-vid{margin-top:10px;}
-.vid-btn{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;}
-.msg-btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
-.lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f0f2f5;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink2);text-decoration:none;}
+/* media */
+.bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;}
+.bubble-img img{width:100%;display:block;max-height:340px;object-fit:cover;}
+.bubble-vid{margin-top:9px;}
+.vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
+.bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
 
-/* REACTIONS STRIP */
-.reactions-strip{padding:8px 14px 0;display:flex;align-items:center;flex-wrap:nowrap;gap:5px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
-.reactions-strip::-webkit-scrollbar{display:none;}
-.rxn-chip{display:inline-flex;align-items:center;gap:3px;background:#f0f2f5;border:1.5px solid transparent;border-radius:99px;padding:4px 10px;font-size:14px;cursor:pointer;transition:all .13s;user-select:none;white-space:nowrap;font-family:'Assistant','Noto Color Emoji',sans-serif;}
-.rxn-chip:hover{background:#e4e6eb;}
-.rxn-chip.mine{background:#e7f0ff;border-color:#b3ceff;}
-.rxn-chip .rxn-c{font-size:12px;font-weight:700;color:var(--ink2);font-family:'Assistant',sans-serif;}
-.rxn-add{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:99px;background:#f0f2f5;border:none;cursor:pointer;font-size:16px;flex-shrink:0;font-family:'Assistant','Noto Color Emoji',sans-serif;}
-.rxn-add:hover{background:#e4e6eb;}
+/* timestamp bottom right */
+.bubble-foot{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-top:5px;}
+.bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-right:auto;}
 
-/* EMOJI PICKER — strip */
-.emoji-picker-strip{position:absolute;background:var(--white);border:1px solid var(--rule);border-radius:14px;padding:8px 10px;box-shadow:0 8px 28px rgba(0,0,0,.14);z-index:300;display:none;flex-direction:row;gap:3px;white-space:nowrap;}
-.emoji-picker-strip.show{display:flex;}
-.ep-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:4px 5px;border-radius:8px;transition:background .1s;line-height:1;font-family:'Assistant','Noto Color Emoji',sans-serif;}
-.ep-btn:hover{background:#f0f2f5;}
+/* REACTIONS */
+.rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.rxn-chip{display:inline-flex;align-items:center;gap:3px;background:#f3f4f6;border:1.5px solid transparent;border-radius:99px;padding:2px 9px;font-size:13px;cursor:pointer;transition:all .12s;user-select:none;font-family:'Heebo',sans-serif;}
+.rxn-chip:hover{background:#e5e7eb;}
+.rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
+.rxn-count{font-size:12px;font-weight:700;color:#374151;}
+.rxn-add-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:99px;line-height:1;transition:background .12s;color:#aaa;}
+.rxn-add-btn:hover{background:#f3f4f6;}
 
-/* MSG FOOTER */
-.msg-foot{padding:7px 14px 11px;display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
-.msg-time{font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:4px;font-weight:500;}
-.comment-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--rule);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:'Assistant',sans-serif;transition:all .13s;}
-.comment-btn:hover{border-color:#bbb;color:var(--ink2);}
-.comment-btn.active{color:var(--blue);border-color:#b3ceff;background:#e7f0ff;}
+/* comment btn */
+.cmt-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:color .12s;}
+.cmt-btn:hover{color:#1a56db;}
+.cmt-btn.has-cmt{color:#1a56db;}
+
+/* EMOJI PICKER */
+#emojiPicker{position:fixed;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:500;display:none;flex-wrap:wrap;gap:4px;width:226px;}
+#emojiPicker.show{display:flex;}
+.ep-btn{background:none;border:none;font-size:21px;cursor:pointer;padding:4px 5px;border-radius:8px;line-height:1;}
+.ep-btn:hover{background:#f3f4f6;}
 
 /* COMMENTS PANEL */
-#commentsPanel{
-  position:fixed;
-  left:0;right:auto;
-  top:var(--header-h);
-  width:300px;
-  max-width:90vw;
-  bottom:0;
-  background:var(--white);
-  box-shadow:4px 0 24px rgba(0,0,0,.11);
-  z-index:200;
-  display:flex;flex-direction:column;
-  transform:translateX(-100%);
-  transition:transform .3s cubic-bezier(.16,1,.3,1);
-  border-right:1px solid var(--rule);
-}
+#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.3);}
+#cpOverlay.show{display:block;}
+#commentsPanel{position:fixed;top:0;right:0;width:340px;max-width:100vw;height:100%;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:300;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);}
 #commentsPanel.open{transform:translateX(0);}
-.cp-header{padding:12px 14px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.cp-title{font-size:14px;font-weight:800;color:var(--ink);}
-.cp-close{background:none;border:none;font-size:17px;cursor:pointer;color:var(--ink3);padding:4px;border-radius:8px;}
-.cp-close:hover{background:#f0f2f5;}
-.cp-body{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:9px;}
-.comment-item{display:flex;gap:8px;animation:ci .22s ease;}
+.cp-hdr{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cp-title{font-size:15px;font-weight:800;color:#111;}
+.cp-close{background:none;border:none;font-size:17px;cursor:pointer;color:#aaa;padding:4px;border-radius:8px;}
+.cp-close:hover{background:#f3f4f6;}
+.cp-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.ci{display:flex;gap:8px;animation:ci .22s ease;}
 @keyframes ci{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.comment-av{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
-.comment-av-init{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.comment-bubble{background:#f0f2f5;border-radius:0 12px 12px 12px;padding:7px 10px;flex:1;position:relative;}
-.comment-text{font-size:13.5px;line-height:1.6;color:var(--ink2);word-break:break-word;}
-.comment-meta{font-size:10px;color:var(--ink3);margin-top:3px;}
-.comment-del{position:absolute;top:5px;left:7px;background:none;border:none;font-size:10px;color:var(--ink3);cursor:pointer;opacity:0;transition:opacity .13s;}
-.comment-bubble:hover .comment-del{opacity:1;}
-.no-comments{text-align:center;color:var(--ink3);font-size:13px;padding:28px 0;}
-.cp-input-row{padding:8px 12px;border-top:1px solid var(--rule);display:flex;gap:7px;align-items:flex-end;flex-shrink:0;}
-.cp-input{flex:1;border:1.5px solid var(--rule);border-radius:12px;padding:8px 11px;font-size:13.5px;font-family:'Assistant',sans-serif;resize:none;outline:none;max-height:70px;line-height:1.5;background:#f0f2f5;}
-.cp-input:focus{background:var(--white);border-color:#93c5fd;}
-.cp-send{background:var(--blue);color:#fff;border:none;border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
-.cp-send:hover{background:#1558c0;}
-
-/* ADMIN PANEL */
-#adminPanel{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;display:none;align-items:center;justify-content:center;}
-#adminPanel.show{display:flex;}
-.admin-box{background:var(--white);border-radius:16px;padding:24px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto;}
-.admin-box h3{font-size:16px;font-weight:900;margin-bottom:16px;color:var(--ink);}
-.admin-user-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:13px;}
-.admin-user-row img{width:32px;height:32px;border-radius:50%;object-fit:cover;}
-.admin-user-row .au-name{font-weight:700;color:var(--ink);}
-.admin-user-row .au-email{color:var(--ink3);font-size:11px;}
-.admin-user-row .au-time{color:var(--ink3);font-size:11px;margin-right:auto;}
-.admin-close{background:#f0f2f5;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Assistant',sans-serif;margin-top:16px;}
+.ci-av{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.ci-av-i{width:28px;height:28px;border-radius:50%;background:#1a56db;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ci-bubble{background:#f3f4f6;border-radius:0 12px 12px 12px;padding:7px 11px;flex:1;position:relative;}
+.ci-name{font-size:11px;font-weight:800;color:#111;margin-bottom:2px;}
+.ci-text{font-size:13px;line-height:1.6;color:#374151;word-break:break-word;}
+.ci-time{font-size:10px;color:#aaa;margin-top:3px;}
+.ci-del{position:absolute;top:5px;left:8px;background:none;border:none;font-size:11px;color:#ccc;cursor:pointer;opacity:0;transition:opacity .12s;}
+.ci-bubble:hover .ci-del{opacity:1;}
+.no-cmt{text-align:center;color:#aaa;font-size:13px;padding:30px 0;}
+.cp-inp-row{padding:10px 12px;border-top:1px solid #f0f0f0;display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.cp-inp{flex:1;border:1.5px solid #e5e7eb;border-radius:12px;padding:8px 12px;font-size:14px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:80px;line-height:1.5;}
+.cp-inp:focus{border-color:#93c5fd;}
+.cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
 /* SCROLL DOWN */
-#scrollDownBtn{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--white);border:1.5px solid var(--rule);border-radius:99px;padding:7px 17px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);font-family:'Assistant',sans-serif;z-index:50;}
+#scrollDownBtn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #e5e7eb;border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;color:#374151;cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,.11);font-family:'Heebo',sans-serif;z-index:50;}
 #scrollDownBtn.show{display:flex;}
-.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;display:none;}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:#e02020;flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
 #scrollDownBtn.has-new .unread-dot{display:block;}
 
-#prog{position:fixed;top:0;inset-inline:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:right;z-index:999;display:none;}
+#prog{position:fixed;top:0;inset-inline:0;height:2px;background:#1a56db;transform:scaleX(0);transform-origin:right;z-index:999;display:none;}
 #prog.on{display:block;animation:pr 1.1s ease-in-out infinite;}
 @keyframes pr{0%{transform:scaleX(0);transform-origin:right}50%{transform:scaleX(.55);transform-origin:right}100%{transform:scaleX(0);transform-origin:left}}
 
-#empty{display:none;text-align:center;padding:80px 20px;color:var(--ink3);}
-#empty i{font-size:36px;opacity:.16;margin-bottom:10px;display:block;}
+#empty{display:none;text-align:center;padding:60px 20px;color:#aaa;}
+#empty i{font-size:36px;opacity:.2;margin-bottom:10px;display:block;}
 
-@media(max-width:600px){
-  #feedInner{margin-left:auto!important;padding:0 8px;}
+@media(max-width:480px){
+  .bubble{max-width:90%;}
   #commentsPanel{width:100vw;}
-  .breaking-title{padding-left:0;}
 }
 </style>
 </head>
@@ -183,26 +160,30 @@ header{background:var(--white);border-bottom:1px solid var(--rule);position:stic
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="login-logo">שאגת <span>הארי</span></div>
+    <img class="login-logo-img" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png" onerror="this.style.display='none'">
+    <div class="login-title">שאגת הארי</div>
     <div class="login-sub">כניסה לצוות העריכה</div>
-    <div id="googleSignInBtn"></div>
-    <div class="login-error" id="loginError">אינך מורשה לצפות בפיד זה.</div>
+    <div id="googleBtn"></div>
+    <div class="login-err" id="loginErr">אינך מורשה לצפייה בפיד.</div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
   <header>
-    <span class="brand">שאגת <span>הארי</span></span>
-    <div class="header-right">
-      <button id="adminBtn" onclick="openAdmin()"><i class="fas fa-users" style="font-size:11px"></i> <span id="adminCount">0</span> מחוברים</button>
-      <div id="userAvatarWrap"></div>
+    <img class="hdr-avatar" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png" onerror="this.style.background='#e02020'">
+    <div class="hdr-info">
+      <div class="hdr-name">שאגת הארי</div>
+      <div class="hdr-status"><div class="hdr-dot"></div>מחובר · עדכונים חיים</div>
     </div>
+    <div class="hdr-user"><div id="userAvatar"></div></div>
   </header>
+
   <div id="feedWrap">
     <div id="feedInner"></div>
     <div id="empty"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
   </div>
+
   <button id="scrollDownBtn" onclick="scrollToBottom()">
     <div class="unread-dot"></div>
     <span id="scrollDownTxt">למטה</span>
@@ -210,8 +191,8 @@ header{background:var(--white);border-bottom:1px solid var(--rule);position:stic
   </button>
 </div>
 
-<!-- EMOJI PICKER STRIP -->
-<div id="emojiPicker" class="emoji-picker-strip">
+<!-- EMOJI PICKER -->
+<div id="emojiPicker">
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
   <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
   <button class="ep-btn" onclick="pickEmoji('😮')">😮</button>
@@ -222,82 +203,35 @@ header{background:var(--white);border-bottom:1px solid var(--rule);position:stic
   <button class="ep-btn" onclick="pickEmoji('✅')">✅</button>
   <button class="ep-btn" onclick="pickEmoji('🕊️')">🕊️</button>
   <button class="ep-btn" onclick="pickEmoji('💪')">💪</button>
+  <button class="ep-btn" onclick="pickEmoji('😡')">😡</button>
+  <button class="ep-btn" onclick="pickEmoji('🙏')">🙏</button>
 </div>
 
-<!-- COMMENTS PANEL (LEFT SIDE) -->
+<!-- COMMENTS PANEL -->
+<div class="cp-overlay" id="cpOverlay" onclick="closeComments()"></div>
 <div id="commentsPanel">
-  <div class="cp-header">
-    <span class="cp-title" id="cpTitle">תגובות</span>
+  <div class="cp-hdr">
+    <span class="cp-title">💬 תגובות</span>
     <button class="cp-close" onclick="closeComments()"><i class="fas fa-times"></i></button>
   </div>
   <div class="cp-body" id="cpBody"></div>
-  <div class="cp-input-row">
-    <textarea class="cp-input" id="cpInput" placeholder="כתוב תגובה..." rows="1"
-      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,70)+'px'"
+  <div class="cp-inp-row">
+    <textarea class="cp-inp" id="cpInp" placeholder="כתוב תגובה..." rows="1"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendComment();}"></textarea>
     <button class="cp-send" onclick="sendComment()"><i class="fas fa-paper-plane" style="font-size:12px"></i></button>
-  </div>
-</div>
-
-<!-- ADMIN PANEL -->
-<div id="adminPanel">
-  <div class="admin-box">
-    <h3>👥 משתמשים מחוברים</h3>
-    <div id="adminUsersList"></div>
-    <button class="admin-close" onclick="closeAdmin()">סגור</button>
   </div>
 </div>
 
 <script>
 const BACKEND='https://dhoc97909.pythonanywhere.com';
 const GOOGLE_CLIENT_ID='856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
-const SUPER_ADMIN='david@hamakom.ovh';
-// Feed logins log (client-side session only, server tracks via presence)
-let feedLogins=[];
+const LOGO='https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
 
-let currentUser=null;
-let items=[],lastTs=0,newCount=0,atBottom=true;
-let activePickerMsgId=null,activeCommentsMsgId=null;
-let reactionsCache={},commentsCountCache={};
+let me=null, items=[], lastTs=0, newCount=0, atBottom=true;
+let activePicker=null, activeCmtMsgId=null;
+let rxnCache={}, cmtCount={};
 
-/* ── AUTH ── */
-function initGoogleLogin(){
-  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleLogin});
-  google.accounts.id.renderButton(document.getElementById('googleSignInBtn'),{theme:'outline',size:'large',text:'signin_with',width:240,locale:'he'});
-}
-async function handleLogin(resp){
-  const parts=resp.credential.split('.');
-  let payload={};
-  try{payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){}
-  const email=(payload.email||'').toLowerCase();
-  try{
-    const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
-    const d=await r.json();
-    if(!d.allowed){document.getElementById('loginError').style.display='block';return;}
-  }catch(e){document.getElementById('loginError').style.display='block';return;}
-  const user={email,name:payload.name||email.split('@')[0],picture:payload.picture||''};
-  sessionStorage.setItem('feedUser',JSON.stringify(user));
-  applyUser(user);
-}
-function applyUser(user){
-  currentUser=user;
-  const wrap=document.getElementById('userAvatarWrap');
-  if(user.picture) wrap.innerHTML=`<img src="${esc(user.picture)}" class="user-avatar" title="${esc(user.name)}">`;
-  else wrap.innerHTML=`<div class="user-initial">${(user.name[0]||'?').toUpperCase()}</div>`;
-  if(user.email===SUPER_ADMIN){document.getElementById('adminBtn').style.display='flex';}
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  notifyLogin();
-  loadFeed();
-}
-async function notifyLogin(){
-  try{
-    await fetch(BACKEND+'/feed_login',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:currentUser.email,name:currentUser.name,picture:currentUser.picture,ts:Date.now()})});
-  }catch(e){}
-}
-
-/* ── UTILS ── */
 function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function rich(t){
   if(!t)return'';
@@ -309,225 +243,201 @@ function rich(t){
 }
 function timeLabel(e){
   const today=new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
-  return(e.date&&e.date!==today)?e.date+' · '+(e.time||''):(e.time||'');
+  return(e.date&&e.date!==today)?e.date+' '+e.time:(e.time||'');
+}
+
+/* ── AUTH ── */
+function initGoogle(){
+  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleLogin});
+  google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',locale:'he',width:240});
+}
+async function handleLogin(resp){
+  let payload={};
+  try{payload=JSON.parse(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){}
+  const email=(payload.email||'').toLowerCase();
+  try{
+    const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const d=await r.json();
+    if(!d.allowed){document.getElementById('loginErr').style.display='block';return;}
+  }catch(e){document.getElementById('loginErr').style.display='block';return;}
+  me={email,name:payload.name||email.split('@')[0],picture:payload.picture||''};
+  const av=document.getElementById('userAvatar');
+  av.innerHTML=me.picture?`<img src="${esc(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
+    :`<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${me.name[0].toUpperCase()}</div>`;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  loadFeed();
 }
 
 /* ── BUILD MSG ── */
-function profileBadgeHtml(e){
-  const logo=e.profile==='red'
-    ?'https://i.postimg.cc/ncKKRgq9/image.png'
-    :'https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
-  return `<div class="msg-profile-badge"><img src="${logo}" onerror="this.style.display='none'"></div>`;
-}
-
 function buildMsg(e){
   const red=e.profile==='red';
+  const id=e.id;
   const lines=(e.text||'').trim().split('\n');
   const h=lines[0]||'';
   const body=lines.slice(1).join('\n').trim();
-  const id=e.id;
 
-  // Breaking header (badge overlaid top-right)
-  let topHtml='';
+  let content='';
   if(red){
-    topHtml=`<div class="breaking-head" style="position:relative">
-      <span class="break-tag">🚨 Breaking</span>
-      <span class="breaking-title">${esc(h)}</span>
-      ${profileBadgeHtml(e)}
-    </div>`;
+    content=`<div class="bubble-headline">🚨 ${esc(h)}</div>`;
+    if(body) content+=`<div class="bubble-text" style="margin-top:4px">${rich(body)}</div>`;
+  } else {
+    content=`<div class="bubble-text">${rich(h+(body?'\n'+body:''))}</div>`;
   }
 
-  let catHtml='';
-  if(!red) catHtml=`<div class="msg-cat news"><i class="fas fa-bolt"></i> מבזק חדשות</div>`;
-  else if(body) catHtml=`<div class="msg-cat red-cat"><i class="fas fa-circle-exclamation"></i> עדכון</div>`;
-
-  const mainText=red?(body?`<div class="msg-text">${rich(body)}</div>`:''): `<div class="msg-text">${rich(h+(body?'\n'+body:''))}</div>`;
-
-  // Image — badge top-right of image
   let media='';
-  if(e.imgUrl){
-    media+=`<div class="msg-img" style="position:relative">
-      <img src="${esc(e.imgUrl)}" loading="lazy" onerror="this.closest('.msg-img').remove()">
-      ${profileBadgeHtml(e)}
-    </div>`;
-  }
-  if(e.videoUrl) media+=`<div class="msg-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:9px"></i> סרטון</a></div>`;
+  if(e.imgUrl) media+=`<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" onerror="this.closest('.bubble-img').remove()"></div>`;
+  if(e.videoUrl) media+=`<div class="bubble-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
 
   let btns='';
-  if(e.buttons&&e.buttons.length) btns='<div class="msg-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
+  if(e.buttons&&e.buttons.length) btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
 
-  // If no image and not red, badge inside body top-right
-  const bodyBadge=(!e.imgUrl&&!red)?profileBadgeHtml(e):'';
+  const n=cmtCount[id]||0;
+  const hasCmt=n>0;
 
-  const bodySection=(catHtml||mainText||media||btns)
-    ?`<div class="msg-body" style="position:relative">${bodyBadge}${catHtml}${mainText}${media}${btns}</div>`
-    :'';
-
-  const rxnBar=`<div class="reactions-strip" id="rxn-${id}">
-    <button class="rxn-add" onclick="openEmojiPicker(event,'${id}')">😊</button>
+  return `<div class="msg-row" data-id="${id}">
+    <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
+    <div class="bubble${red?' is-red':''}">
+      <div class="bubble-sender ${red?'':'news-sender'}">${red?'🚨 שאגת הארי':'📰 שאגת הארי'}</div>
+      ${content}${media}${btns}
+      <div class="rxn-row" id="rxn-${id}">
+        <button class="rxn-add-btn" onclick="openPicker(event,'${id}')">😊</button>
+      </div>
+      <div class="bubble-foot">
+        <span class="bubble-time">${timeLabel(e)}</span>
+        <button class="cmt-btn${hasCmt?' has-cmt':''}" id="cbtn-${id}" onclick="openComments('${id}')">
+          <i class="fas fa-comment" style="font-size:10px"></i> ${hasCmt?n+' תגובות':'תגובות'}
+        </button>
+      </div>
+    </div>
   </div>`;
-
-  const cnt=commentsCountCache[id]||0;
-  const foot=`<div class="msg-foot">
-    <span class="msg-time"><i class="far fa-clock" style="font-size:9px;opacity:.5"></i>${timeLabel(e)}</span>
-    <button class="comment-btn${cnt>0?' active':''}" id="cbtn-${id}" onclick="openComments('${id}')">
-      <i class="far fa-comment" style="font-size:10px"></i>${cnt>0?' '+cnt:''}  תגובות
-    </button>
-  </div>`;
-
-  return `<div class="msg is-${red?'red':'news'}" data-id="${id}">${topHtml}${bodySection}${rxnBar}${foot}</div>`;
 }
 
-/* ── REACTIONS ── */
-function renderReactions(msgId,reactions){
-  reactionsCache[msgId]=reactions;
+function renderRxn(msgId,rxns){
+  rxnCache[msgId]=rxns;
   const bar=document.getElementById('rxn-'+msgId);
   if(!bar)return;
-  // Keep add button
-  const addBtnOld=bar.querySelector('.rxn-add');
+  const addBtn=bar.querySelector('.rxn-add-btn');
   bar.innerHTML='';
-  Object.entries(reactions).forEach(([emoji,users])=>{
+  Object.entries(rxns).forEach(([emoji,users])=>{
     if(!users.length)return;
-    const mine=users.includes(currentUser?.email);
-    const chip=document.createElement('button');
-    chip.className='rxn-chip'+(mine?' mine':'');
-    chip.innerHTML=`<span style="font-family:'Assistant','Noto Color Emoji',sans-serif">${emoji}</span><span class="rxn-c">${users.length}</span>`;
-    chip.onclick=()=>doReact(msgId,emoji);
-    bar.appendChild(chip);
+    const mine=users.includes(me?.email);
+    const c=document.createElement('button');
+    c.className='rxn-chip'+(mine?' mine':'');
+    c.innerHTML=`${emoji}<span class="rxn-count">${users.length}</span>`;
+    c.onclick=()=>doReact(msgId,emoji);
+    bar.appendChild(c);
   });
-  const addBtn=addBtnOld||document.createElement('button');
-  addBtn.className='rxn-add';
-  addBtn.textContent='😊';
-  addBtn.onclick=(ev)=>openEmojiPicker(ev,msgId);
-  bar.appendChild(addBtn);
+  if(addBtn) bar.appendChild(addBtn);
+  else{const b=document.createElement('button');b.className='rxn-add-btn';b.textContent='😊';b.onclick=(e)=>openPicker(e,msgId);bar.appendChild(b);}
 }
 
-function openEmojiPicker(e,msgId){
+/* ── EMOJI ── */
+function openPicker(e,msgId){
   e.stopPropagation();
-  const picker=document.getElementById('emojiPicker');
-  activePickerMsgId=msgId;
-  const rect=e.currentTarget.getBoundingClientRect();
-  // Position above the button
-  picker.style.bottom=(window.innerHeight-rect.top+6)+'px';
-  picker.style.right=(window.innerWidth-rect.right)+'px';
-  picker.style.left='auto';picker.style.top='auto';
-  picker.classList.toggle('show');
+  activePicker=msgId;
+  const p=document.getElementById('emojiPicker');
+  const r=e.currentTarget.getBoundingClientRect();
+  const top=r.top-p.offsetHeight-8;
+  p.style.top=(top>10?top:r.bottom+8)+'px';
+  p.style.right=(window.innerWidth-r.right)+'px';
+  p.style.left='auto';
+  p.classList.toggle('show');
 }
-function pickEmoji(emoji){
+function pickEmoji(em){
   document.getElementById('emojiPicker').classList.remove('show');
-  if(activePickerMsgId)doReact(activePickerMsgId,emoji);
-  activePickerMsgId=null;
+  if(activePicker) doReact(activePicker,em);
+  activePicker=null;
 }
 document.addEventListener('click',()=>document.getElementById('emojiPicker').classList.remove('show'));
 
 async function doReact(msgId,emoji){
-  if(!currentUser)return;
+  if(!me)return;
   try{
     const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:currentUser.email,msgId,emoji})});
+      body:JSON.stringify({email:me.email,msgId,emoji})});
     const d=await r.json();
-    if(d.status==='ok')renderReactions(msgId,d.reactions);
+    if(d.status==='ok') renderRxn(msgId,d.reactions);
   }catch(e){}
 }
 
 /* ── COMMENTS ── */
 function openComments(msgId){
-  activeCommentsMsgId=msgId;
+  activeCmtMsgId=msgId;
   document.getElementById('commentsPanel').classList.add('open');
+  document.getElementById('cpOverlay').classList.add('show');
   loadComments(msgId);
 }
 function closeComments(){
   document.getElementById('commentsPanel').classList.remove('open');
-  activeCommentsMsgId=null;
+  document.getElementById('cpOverlay').classList.remove('show');
+  activeCmtMsgId=null;
 }
 async function loadComments(msgId){
-  const body=document.getElementById('cpBody');
-  body.innerHTML='<div style="text-align:center;padding:18px;color:var(--ink3);font-size:13px">טוען...</div>';
+  const b=document.getElementById('cpBody');
+  b.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">טוען...</div>';
   try{
     const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(msgId));
     const d=await r.json();
     const list=d.comments||[];
-    commentsCountCache[msgId]=list.length;
-    updateCommentBtn(msgId,list.length);
-    if(!list.length){body.innerHTML='<div class="no-comments">עדיין אין תגובות</div>';return;}
-    body.innerHTML=list.map(c=>buildComment(msgId,c)).join('');
-  }catch(e){body.innerHTML='<div class="no-comments">שגיאה</div>';}
+    cmtCount[msgId]=list.length;
+    updateCmtBtn(msgId,list.length);
+    b.innerHTML=list.length?list.map(c=>buildCmt(msgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
+  }catch(e){b.innerHTML='<div class="no-cmt">שגיאה</div>';}
 }
-function buildComment(msgId,c){
-  const canDel=currentUser?.email===c.email||currentUser?.email===SUPER_ADMIN;
-  const av=c.picture
-    ?`<img src="${esc(c.picture)}" class="comment-av" onerror="this.style.display='none'">`
-    :`<div class="comment-av-init">${(c.name||'?')[0].toUpperCase()}</div>`;
-  return `<div class="comment-item" id="ci-${c.id}">
-    ${av}
-    <div class="comment-bubble">
-      <div class="comment-text">${esc(c.text)}</div>
-      <div class="comment-meta">${c.time||''}</div>
-      ${canDel?`<button class="comment-del" onclick="deleteComment('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
-    </div>
-  </div>`;
+function buildCmt(msgId,c){
+  const mine=c.email===me?.email||me?.email==='david@hamakom.ovh';
+  const av=c.picture?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.style.display='none'">`
+    :`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
+  return `<div class="ci" id="ci-${c.id}">${av}<div class="ci-bubble">
+    <div class="ci-name">${esc(c.name||c.email)}</div>
+    <div class="ci-text">${esc(c.text)}</div>
+    <div class="ci-time">${c.time||''}</div>
+    ${mine?`<button class="ci-del" onclick="delCmt('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
+  </div></div>`;
 }
-function updateCommentBtn(msgId,cnt){
+function updateCmtBtn(msgId,n){
   const btn=document.getElementById('cbtn-'+msgId);
   if(!btn)return;
-  btn.className='comment-btn'+(cnt>0?' active':'');
-  btn.innerHTML=`<i class="far fa-comment" style="font-size:10px"></i>${cnt>0?' '+cnt:''} תגובות`;
+  btn.className='cmt-btn'+(n>0?' has-cmt':'');
+  btn.innerHTML=`<i class="fas fa-comment" style="font-size:10px"></i> ${n>0?n+' תגובות':'תגובות'}`;
 }
 async function sendComment(){
-  const input=document.getElementById('cpInput');
-  const text=input.value.trim();
-  if(!text||!currentUser||!activeCommentsMsgId)return;
-  input.value='';input.style.height='auto';
+  const inp=document.getElementById('cpInp');
+  const text=inp.value.trim();
+  if(!text||!me||!activeCmtMsgId)return;
+  inp.value='';inp.style.height='auto';
   try{
     const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:currentUser.email,name:currentUser.name,picture:currentUser.picture,msgId:activeCommentsMsgId,text})});
+      body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
     const d=await r.json();
     if(d.status==='ok'){
-      const body=document.getElementById('cpBody');
-      body.querySelector('.no-comments')?.remove();
+      const b=document.getElementById('cpBody');
+      b.querySelector('.no-cmt')?.remove();
       const div=document.createElement('div');
-      div.innerHTML=buildComment(activeCommentsMsgId,d.comment);
-      body.appendChild(div.firstChild);
-      body.scrollTop=body.scrollHeight;
-      commentsCountCache[activeCommentsMsgId]=(commentsCountCache[activeCommentsMsgId]||0)+1;
-      updateCommentBtn(activeCommentsMsgId,commentsCountCache[activeCommentsMsgId]);
+      div.innerHTML=buildCmt(activeCmtMsgId,d.comment);
+      b.appendChild(div.firstChild);
+      b.scrollTop=b.scrollHeight;
+      cmtCount[activeCmtMsgId]=(cmtCount[activeCmtMsgId]||0)+1;
+      updateCmtBtn(activeCmtMsgId,cmtCount[activeCmtMsgId]);
     }
   }catch(e){}
 }
-async function deleteComment(msgId,cid){
-  if(!currentUser)return;
+async function delCmt(msgId,cid){
+  if(!me)return;
   try{
     const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:currentUser.email,msgId,commentId:cid})});
+      body:JSON.stringify({email:me.email,msgId,commentId:cid})});
     const d=await r.json();
     if(d.status==='ok'){
       document.getElementById('ci-'+cid)?.remove();
-      commentsCountCache[msgId]=Math.max(0,(commentsCountCache[msgId]||1)-1);
-      updateCommentBtn(msgId,commentsCountCache[msgId]);
-      if(!document.querySelector('#cpBody .comment-item'))
-        document.getElementById('cpBody').innerHTML='<div class="no-comments">עדיין אין תגובות</div>';
+      cmtCount[msgId]=Math.max(0,(cmtCount[msgId]||1)-1);
+      updateCmtBtn(msgId,cmtCount[msgId]);
+      if(!document.querySelector('#cpBody .ci'))
+        document.getElementById('cpBody').innerHTML='<div class="no-cmt">עדיין אין תגובות</div>';
     }
   }catch(e){}
 }
-
-/* ── ADMIN ── */
-async function openAdmin(){
-  document.getElementById('adminPanel').classList.add('show');
-  try{
-    const r=await fetch(BACKEND+'/feed_logins?email='+encodeURIComponent(currentUser.email));
-    const d=await r.json();
-    const list=d.logins||[];
-    document.getElementById('adminCount').textContent=list.length;
-    const el=document.getElementById('adminUsersList');
-    if(!list.length){el.innerHTML='<div style="color:var(--ink3);font-size:13px;padding:8px 0">אין כניסות עדיין</div>';return;}
-    el.innerHTML=list.map(u=>`<div class="admin-user-row">
-      ${u.picture?`<img src="${esc(u.picture)}" onerror="this.style.display='none'">`:''}
-      <div><div class="au-name">${esc(u.name)}</div><div class="au-email">${esc(u.email)}</div></div>
-      <div class="au-time">${u.time||''}</div>
-    </div>`).join('');
-  }catch(e){}
-}
-function closeAdmin(){document.getElementById('adminPanel').classList.remove('show');}
 
 /* ── FEED ── */
 async function loadFeed(){
@@ -543,23 +453,25 @@ async function loadFeed(){
       if(!items.length){document.getElementById('empty').style.display='block';}
       else{
         inner.innerHTML=items.map(buildMsg).join('');
-        items.forEach(e=>loadReactions(e.id));
+        items.forEach(e=>loadRxn(e.id));
       }
-      const wrap=document.getElementById('feedWrap');
-      wrap.scrollTop=wrap.scrollHeight;
+      const w=document.getElementById('feedWrap');
+      w.scrollTop=w.scrollHeight;
     }
   }catch(e){}
   setLoading(false);
 }
-async function loadReactions(msgId){
+
+async function loadRxn(msgId){
   try{
     const r=await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
     const d=await r.json();
-    if(d.status==='ok')renderReactions(msgId,d.reactions);
+    if(d.status==='ok') renderRxn(msgId,d.reactions);
   }catch(e){}
 }
+
 async function pollNew(){
-  if(!lastTs||!currentUser)return;
+  if(!lastTs||!me)return;
   try{
     const r=await fetch(BACKEND+'/feed?since='+lastTs);
     const d=await r.json();
@@ -567,19 +479,16 @@ async function pollNew(){
       const ni=[...d.feed].reverse();
       lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
       items=[...items,...ni];
-      document.getElementById('empty').style.display='none';
       const inner=document.getElementById('feedInner');
+      document.getElementById('empty').style.display='none';
       ni.forEach(e=>{
         const div=document.createElement('div');
         div.innerHTML=buildMsg(e);
         inner.appendChild(div.firstChild);
-        loadReactions(e.id);
+        loadRxn(e.id);
       });
-      if(atBottom){
-        document.getElementById('feedWrap').scrollTop=999999;
-      } else {
-        newCount+=ni.length;updateScrollBtn();
-      }
+      if(atBottom){document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;}
+      else{newCount+=ni.length;updateScrollBtn();}
     }
   }catch(e){}
 }
@@ -595,21 +504,18 @@ function updateScrollBtn(){
     btn.classList.add('show');
     if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}
     else{btn.classList.remove('has-new');txt.textContent='למטה';}
-  } else {btn.classList.remove('show','has-new');newCount=0;}
+  }else{btn.classList.remove('show','has-new');newCount=0;}
 }
 document.getElementById('feedWrap').addEventListener('scroll',function(){
   atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;
   updateScrollBtn();
 },{passive:true});
+
 function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
 
 window.addEventListener('load',()=>{
-  // Try restore session first
-  const saved=sessionStorage.getItem('feedUser');
-  if(saved){try{applyUser(JSON.parse(saved));return;}catch(e){sessionStorage.removeItem('feedUser');}}
-  // Otherwise show login
-  if(window.google?.accounts)initGoogleLogin();
-  else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogleLogin);
+  if(window.google?.accounts)initGoogle();
+  else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogle);
 });
 setInterval(pollNew,6000);
 </script>
