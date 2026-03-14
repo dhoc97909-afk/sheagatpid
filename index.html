@@ -5,137 +5,163 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
 <title>שאגת הארי — עדכונים</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Heebo','Noto Color Emoji',sans-serif;-webkit-font-smoothing:antialiased;}
+html,body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialiased;}
 :root{
-  --red:#e02020;--blue:#1a56db;--blue2:#0f3460;
+  --red:#e02020;--blue:#1a56db;
   --ink:#111827;--ink2:#374151;--ink3:#6b7280;
   --rule:#e5e7eb;--bg:#f0f2f5;--white:#fff;
   --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
   --shadow-md:0 4px 20px rgba(0,0,0,.11);
 }
-emoji{font-family:'Noto Color Emoji',sans-serif;}
 
 /* LOGIN */
-#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;}
-.login-card{background:var(--white);border-radius:20px;padding:40px 36px;text-align:center;box-shadow:var(--shadow-md);max-width:320px;width:90%;}
-.login-logo-img{width:64px;height:64px;border-radius:12px;object-fit:cover;margin-bottom:10px;}
-.login-title{font-size:22px;font-weight:900;background:linear-gradient(135deg,#1a56db,#0f3460);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
-.login-sub{font-size:13px;color:var(--ink3);margin-bottom:26px;font-weight:500;}
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.login-card{background:var(--white);border-radius:20px;padding:40px 36px;text-align:center;box-shadow:var(--shadow-md);max-width:340px;width:90%;}
+.login-logo{font-size:36px;font-weight:900;color:var(--ink);margin-bottom:4px;letter-spacing:-.03em;}
+.login-logo span{color:var(--red);}
+.login-sub{font-size:13px;color:var(--ink3);margin-bottom:28px;font-weight:500;}
 .login-error{font-size:12px;color:var(--red);margin-top:12px;display:none;font-weight:600;}
 
-/* LAYOUT */
-#app{height:100%;display:none;flex-direction:row;}
-
-/* FEED SIDE */
-#feedSide{flex:1;min-width:0;display:flex;flex-direction:column;height:100%;}
+/* APP */
+#app{height:100%;display:flex;flex-direction:column;display:none;}
 
 /* HEADER */
-header{background:var(--white);border-bottom:1px solid var(--rule);padding:0 14px 0 10px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06);direction:rtl;}
-.brand{display:flex;align-items:center;gap:9px;text-decoration:none;}
-.brand-logo{width:36px;height:36px;border-radius:8px;object-fit:cover;}
-.brand-text{font-size:19px;font-weight:900;background:linear-gradient(135deg,#1a56db,#0f3460);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em;}
+header{background:var(--white);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;padding:0 14px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.brand{font-size:19px;font-weight:900;color:var(--ink);letter-spacing:-.03em;}
+.brand span{color:var(--red);}
+.header-right{display:flex;align-items:center;gap:10px;}
+.live-pill{display:flex;align-items:center;gap:5px;background:var(--red);color:#fff;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:.06em;}
+.dp{width:5px;height:5px;border-radius:50%;background:#fff;animation:dp 1.5s ease-in-out infinite;}
+@keyframes dp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
 .user-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid var(--rule);}
 .user-initial{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 
+/* visitors badge (david only) */
+#visitorsBadge{display:none;font-size:11px;font-weight:700;color:var(--ink3);background:#f3f4f6;border-radius:99px;padding:3px 10px;cursor:pointer;}
+#visitorsBadge:hover{background:var(--rule);}
+
 /* FEED */
-#feedWrap{flex:1;overflow-y:auto;padding:10px 0 20px;scroll-behavior:smooth;}
-#feedInner{max-width:580px;width:100%;margin-right:0;margin-left:auto;padding:0 10px 0 16px;display:flex;flex-direction:column;gap:8px;}
+#feedWrap{flex:1;overflow-y:auto;padding:12px 0 20px;}
+#feedInner{max-width:660px;width:100%;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:8px;}
 
 /* MSG */
 .msg{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s;}
 .msg:hover{box-shadow:0 4px 18px rgba(0,0,0,.09);}
 .msg.is-red{border-right:4px solid var(--red);}
 .msg.is-news{border-right:4px solid var(--blue);}
-.breaking-head{background:var(--red);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;}
+
+.breaking-head{background:var(--red);color:#fff;padding:11px 15px;display:flex;align-items:center;gap:9px;}
 .break-tag{background:rgba(255,255,255,.2);font-size:9px;font-weight:900;letter-spacing:.15em;padding:2px 8px;border-radius:3px;white-space:nowrap;text-transform:uppercase;flex-shrink:0;}
-.breaking-title{font-size:16px;font-weight:800;line-height:1.4;}
-.msg-body{padding:12px 14px 0;}
-.msg-cat{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 9px;border-radius:3px;margin-bottom:8px;}
+.breaking-title{font-size:17px;font-weight:800;line-height:1.4;}
+
+.msg-body{padding:13px 15px 0;}
+.msg-cat{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 9px;border-radius:3px;margin-bottom:9px;}
 .msg-cat.news{background:#eff6ff;color:var(--blue);}
 .msg-cat.red-cat{background:#fef2f2;color:var(--red);}
 .msg-text{font-size:15px;line-height:1.75;color:var(--ink2);white-space:pre-wrap;word-break:break-word;}
 .msg-text strong{font-weight:800;color:var(--ink);}
 .msg-text em{font-style:italic;}
 .msg-text a{color:var(--blue);text-decoration:underline;}
-.msg-img{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--rule);}
-.msg-img img{width:100%;display:block;max-height:340px;object-fit:cover;}
-.msg-vid{margin-top:10px;}
-.vid-btn{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;}
-.msg-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f9fafb;border:1.5px solid var(--rule);border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--ink2);text-decoration:none;}
 
-/* REACTIONS BAR — horizontal strip */
-.reactions-bar{padding:7px 14px 0;display:flex;align-items:center;flex-wrap:nowrap;overflow-x:auto;gap:4px;scrollbar-width:none;}
-.reactions-bar::-webkit-scrollbar{display:none;}
-.rxn-chip{display:inline-flex;align-items:center;gap:3px;background:#f3f4f6;border:1.5px solid transparent;border-radius:99px;padding:3px 9px;font-size:14px;cursor:pointer;transition:all .15s;user-select:none;white-space:nowrap;font-family:'Noto Color Emoji','Heebo',sans-serif;}
+/* image — full, no crop */
+.msg-img{margin-top:11px;border-radius:10px;overflow:hidden;border:1px solid var(--rule);}
+.msg-img img{width:100%;display:block;max-height:500px;object-fit:contain;background:#f9fafb;}
+
+.msg-vid{margin-top:11px;}
+.vid-btn{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;padding:8px 17px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;}
+.msg-btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;}
+.lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f9fafb;border:1.5px solid var(--rule);border-radius:8px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink2);text-decoration:none;}
+
+/* REACTIONS */
+.reactions-bar{padding:8px 15px 0;display:flex;align-items:center;flex-wrap:wrap;gap:5px;}
+/* chip: rounded rect not pill */
+.rxn-chip{display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;border:1.5px solid transparent;border-radius:8px;padding:3px 9px;font-size:13px;cursor:pointer;transition:all .15s;user-select:none;}
 .rxn-chip:hover{background:#e5e7eb;}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
-.rxn-chip .rxn-count{font-size:12px;font-weight:700;color:var(--ink2);font-family:'Heebo',sans-serif;}
-.rxn-add{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:99px;background:#f3f4f6;border:none;cursor:pointer;font-size:16px;flex-shrink:0;transition:background .15s;font-family:'Noto Color Emoji',sans-serif;}
+.rxn-chip .rxn-count{font-size:12px;font-weight:700;color:var(--ink2);}
+
+/* SVG emoji-add button */
+.rxn-add{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#f3f4f6;border:none;cursor:pointer;transition:background .15s;flex-shrink:0;padding:0;}
 .rxn-add:hover{background:#e5e7eb;}
 
+/* EMOJI PICKER — smaller */
+.emoji-picker{position:fixed;background:var(--white);border:1px solid var(--rule);border-radius:12px;padding:8px;box-shadow:0 8px 28px rgba(0,0,0,.13);z-index:500;display:none;flex-wrap:wrap;gap:3px;width:180px;}
+.emoji-picker.show{display:flex;}
+.ep-btn{background:none;border:none;font-size:18px;cursor:pointer;padding:3px 5px;border-radius:6px;transition:background .1s;line-height:1;}
+.ep-btn:hover{background:#f3f4f6;}
+
 /* MSG FOOTER */
-.msg-foot{padding:7px 14px 10px;display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
-.msg-time{font-size:11px;color:var(--ink3);font-weight:500;display:flex;align-items:center;gap:4px;}
-.msg-time i{font-size:9px;opacity:.4;}
-.comment-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--rule);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s;}
+.msg-foot{padding:8px 15px 11px;display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.msg-time{font-size:11px;color:var(--ink3);font-weight:500;display:flex;align-items:center;gap:5px;}
+.msg-time i{font-size:9px;opacity:.45;}
+.comment-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--rule);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s;}
 .comment-btn:hover{border-color:#9ca3af;color:var(--ink2);}
 .comment-btn.has-comments{color:var(--blue);border-color:#bfdbfe;background:#eff6ff;}
 
-/* EMOJI PICKER — horizontal strip */
-.emoji-picker{position:fixed;background:var(--white);border:1px solid var(--rule);border-radius:99px;padding:6px 10px;box-shadow:0 6px 28px rgba(0,0,0,.14);z-index:500;display:none;align-items:center;gap:2px;white-space:nowrap;}
-.emoji-picker.show{display:flex;}
-.ep-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:3px 5px;border-radius:50%;transition:background .1s;line-height:1;font-family:'Noto Color Emoji',sans-serif;}
-.ep-btn:hover{background:#f3f4f6;}
-
-/* COMMENTS PANEL — left side, doesn't cover feed */
-#commentsPanel{width:300px;min-width:260px;max-width:340px;height:100%;background:var(--white);border-right:1px solid var(--rule);display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .3s cubic-bezier(.16,1,.3,1);flex-shrink:0;overflow:hidden;}
+/* COMMENTS PANEL — opens from LEFT (since RTL right = visual left) */
+#commentsPanel{position:fixed;top:0;left:0;width:340px;max-width:100vw;height:100%;background:var(--white);box-shadow:4px 0 24px rgba(0,0,0,.12);z-index:300;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .3s cubic-bezier(.16,1,.3,1);}
 #commentsPanel.open{transform:translateX(0);}
-.cp-header{padding:13px 14px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.cp-title{font-size:14px;font-weight:800;color:var(--ink);}
-.cp-close{background:none;border:none;font-size:17px;cursor:pointer;color:var(--ink3);padding:4px;border-radius:8px;}
+.cp-header{padding:14px 16px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cp-title{font-size:15px;font-weight:800;color:var(--ink);}
+.cp-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3);padding:4px;border-radius:8px;}
 .cp-close:hover{background:#f3f4f6;}
-.cp-body{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
-.comment-item{display:flex;gap:8px;animation:ci .22s ease;}
-@keyframes ci{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.comment-av{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
-.comment-av-init{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.comment-bubble{background:#f3f4f6;border-radius:0 11px 11px 11px;padding:7px 10px;flex:1;position:relative;}
-.comment-text{font-size:13px;line-height:1.6;color:var(--ink2);word-break:break-word;}
-.comment-meta{font-size:10px;color:var(--ink3);margin-top:3px;}
-.comment-del{position:absolute;top:5px;left:7px;background:none;border:none;font-size:10px;color:var(--ink3);cursor:pointer;opacity:0;transition:opacity .15s;}
+.cp-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.comment-item{display:flex;gap:9px;animation:ci .25s ease;}
+@keyframes ci{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.comment-av{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.comment-av-init{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.comment-bubble{background:#f3f4f6;border-radius:0 12px 12px 12px;padding:8px 12px;flex:1;position:relative;}
+.comment-name{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.comment-text{font-size:13.5px;line-height:1.6;color:var(--ink2);word-break:break-word;}
+.comment-meta{font-size:10.5px;color:var(--ink3);margin-top:4px;}
+.comment-del{position:absolute;top:6px;left:8px;background:none;border:none;font-size:11px;color:var(--ink3);cursor:pointer;opacity:0;transition:opacity .15s;}
 .comment-bubble:hover .comment-del{opacity:1;}
-.no-comments{text-align:center;color:var(--ink3);font-size:13px;padding:28px 0;}
-.cp-input-row{padding:9px 12px;border-top:1px solid var(--rule);display:flex;gap:7px;align-items:flex-end;flex-shrink:0;}
-.cp-input{flex:1;border:1.5px solid var(--rule);border-radius:12px;padding:8px 12px;font-size:14px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:80px;line-height:1.5;}
+.no-comments{text-align:center;color:var(--ink3);font-size:13px;padding:30px 0;}
+.cp-input-row{padding:10px 14px;border-top:1px solid var(--rule);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.cp-input{flex:1;border:1.5px solid var(--rule);border-radius:12px;padding:9px 13px;font-size:14px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:80px;line-height:1.5;}
 .cp-input:focus{border-color:#93c5fd;}
-.cp-send{background:var(--blue);color:#fff;border:none;border-radius:9px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.cp-send{background:var(--blue);color:#fff;border:none;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;}
 .cp-send:hover{background:#1345b7;}
+.cp-overlay{position:fixed;inset:0;z-index:299;display:none;}
+.cp-overlay.show{display:block;}
+
+/* VISITORS PANEL */
+#visitorsPanel{position:fixed;top:54px;left:50%;transform:translateX(-50%);background:var(--white);border:1px solid var(--rule);border-radius:16px;box-shadow:var(--shadow-md);z-index:400;width:320px;max-width:95vw;display:none;max-height:70vh;flex-direction:column;}
+#visitorsPanel.show{display:flex;}
+.vp-header{padding:14px 16px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.vp-title{font-size:14px;font-weight:800;color:var(--ink);}
+.vp-close{background:none;border:none;font-size:16px;cursor:pointer;color:var(--ink3);}
+.vp-body{overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+.visitor-row{display:flex;align-items:center;gap:10px;}
+.visitor-av{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid var(--rule);}
+.visitor-av-init{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.visitor-info{flex:1;min-width:0;}
+.visitor-name{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.visitor-email{font-size:11px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* SCROLL DOWN */
-#scrollDownBtn{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--white);border:1.5px solid var(--rule);border-radius:99px;padding:7px 17px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,.12);font-family:'Heebo',sans-serif;z-index:50;}
+#scrollDownBtn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--white);border:1.5px solid var(--rule);border-radius:99px;padding:8px 18px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer;display:none;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(0,0,0,.12);font-family:'Heebo',sans-serif;z-index:50;}
 #scrollDownBtn.show{display:flex;}
-.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;display:none;}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
 #scrollDownBtn.has-new .unread-dot{display:block;}
 
-#prog{position:fixed;top:0;inset-inline:0;height:2px;background:var(--blue);transform:scaleX(0);transform-origin:right;z-index:999;display:none;}
+#prog{position:fixed;top:0;inset-inline:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:right;z-index:999;display:none;}
 #prog.on{display:block;animation:pr 1.1s ease-in-out infinite;}
 @keyframes pr{0%{transform:scaleX(0);transform-origin:right}50%{transform:scaleX(.55);transform-origin:right}100%{transform:scaleX(0);transform-origin:left}}
 
 #empty{display:none;text-align:center;padding:80px 20px;color:var(--ink3);}
-#empty i{font-size:36px;opacity:.15;margin-bottom:12px;display:block;}
+#empty i{font-size:38px;opacity:.18;margin-bottom:12px;display:block;}
 
-@media(max-width:600px){
-  #feedInner{max-width:100%;margin:0;padding:0 8px;}
-  #commentsPanel{position:fixed;top:0;right:0;width:100vw;max-width:100vw;height:100%;z-index:400;border:none;box-shadow:var(--shadow-md);transform:translateX(100%);}
-  #commentsPanel.open{transform:translateX(0);}
-  .cp-overlay{position:fixed;inset:0;z-index:399;background:rgba(0,0,0,.3);display:none;}
-  .cp-overlay.show{display:block;}
+@media(max-width:480px){
+  #commentsPanel{width:100vw;}
+  .msg-body{padding:11px 12px 0;}
+  .reactions-bar{padding:7px 12px 0;}
+  .msg-foot{padding:7px 12px 10px;}
 }
 </style>
 </head>
@@ -145,50 +171,37 @@ header{background:var(--white);border-bottom:1px solid var(--rule);padding:0 14p
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
-    <img class="login-logo-img" src="https://i.postimg.cc/fLtd28GS/h-lwgw-sl-hmlhmh.jpg" alt="לוגו">
-    <div class="login-title">שאגת הארי</div>
-    <div class="login-sub">כניסה לצוות העריכה</div>
+    <div class="login-logo">שאגת <span>הארי</span></div>
+    <div class="login-sub">כניסה לצפייה בעדכונים</div>
     <div id="googleSignInBtn"></div>
-    <div class="login-error" id="loginError">אינך מורשה לצפות בפיד זה.</div>
+    <div class="login-error" id="loginError"></div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
-  <!-- COMMENTS PANEL (LEFT) -->
-  <div class="cp-overlay" id="cpOverlay" onclick="closeComments()"></div>
-  <div id="commentsPanel">
-    <div class="cp-header">
-      <span class="cp-title" id="cpTitle">תגובות</span>
-      <button class="cp-close" onclick="closeComments()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="cp-body" id="cpBody"></div>
-    <div class="cp-input-row">
-      <textarea class="cp-input" id="cpInput" placeholder="כתוב תגובה..." rows="1"
-        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendComment();}"></textarea>
-      <button class="cp-send" onclick="sendComment()"><i class="fas fa-paper-plane" style="font-size:12px"></i></button>
-    </div>
-  </div>
-
-  <!-- FEED SIDE -->
-  <div id="feedSide">
-    <header>
-      <a class="brand" href="#">
-        <img class="brand-logo" src="https://i.postimg.cc/fLtd28GS/h-lwgw-sl-hmlhmh.jpg" alt="לוגו">
-        <span class="brand-text">שאגת הארי</span>
-      </a>
+  <header>
+    <span class="brand">שאגת <span>הארי</span></span>
+    <div class="header-right">
+      <span id="visitorsBadge" onclick="toggleVisitors()"></span>
+      <div class="live-pill"><div class="dp"></div>LIVE</div>
       <div id="userAvatar"></div>
-    </header>
-
-    <div id="feedWrap">
-      <div id="feedInner"></div>
-      <div id="empty"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
     </div>
+  </header>
+
+  <div id="feedWrap">
+    <div id="feedInner"></div>
+    <div id="empty"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
   </div>
+
+  <button id="scrollDownBtn" onclick="scrollToBottom()">
+    <div class="unread-dot"></div>
+    <span id="scrollDownTxt">למטה</span>
+    <i class="fas fa-arrow-down" style="font-size:11px"></i>
+  </button>
 </div>
 
-<!-- EMOJI PICKER — horizontal strip -->
+<!-- EMOJI PICKER -->
 <div id="emojiPicker" class="emoji-picker">
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
   <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
@@ -202,12 +215,30 @@ header{background:var(--white);border-bottom:1px solid var(--rule);padding:0 14p
   <button class="ep-btn" onclick="pickEmoji('💪')">💪</button>
 </div>
 
-<!-- SCROLL DOWN -->
-<button id="scrollDownBtn" onclick="scrollToBottom()">
-  <div class="unread-dot"></div>
-  <span id="scrollDownTxt">למטה</span>
-  <i class="fas fa-arrow-down" style="font-size:10px"></i>
-</button>
+<!-- COMMENTS PANEL -->
+<div class="cp-overlay" id="cpOverlay" onclick="closeComments()"></div>
+<div id="commentsPanel">
+  <div class="cp-header">
+    <span class="cp-title" id="cpTitle">תגובות</span>
+    <button class="cp-close" onclick="closeComments()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="cp-body" id="cpBody"></div>
+  <div class="cp-input-row">
+    <textarea class="cp-input" id="cpInput" placeholder="כתוב תגובה..." rows="1"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendComment();}"></textarea>
+    <button class="cp-send" onclick="sendComment()"><i class="fas fa-paper-plane" style="font-size:13px"></i></button>
+  </div>
+</div>
+
+<!-- VISITORS PANEL (david only) -->
+<div id="visitorsPanel">
+  <div class="vp-header">
+    <span class="vp-title" id="vpTitle">משתתפים</span>
+    <button class="vp-close" onclick="toggleVisitors()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="vp-body" id="vpBody"></div>
+</div>
 
 <script>
 const BACKEND='https://dhoc97909.pythonanywhere.com';
@@ -219,39 +250,92 @@ let items=[],lastTs=0,newCount=0,atBottom=true;
 let activePickerMsgId=null,activeCommentsMsgId=null;
 let reactionsCache={},commentsCountCache={};
 
-/* AUTH */
+/* ── AUTH ── */
 function initGoogleLogin(){
   google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleLogin});
   google.accounts.id.renderButton(document.getElementById('googleSignInBtn'),{theme:'outline',size:'large',text:'signin_with',width:240,locale:'he'});
 }
+
 async function handleLogin(resp){
   const parts=resp.credential.split('.');
   let payload={};
   try{payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){}
   const email=(payload.email||'').toLowerCase();
-  if(email===SUPER_ADMIN){
-    // super admin always allowed
-    setUser(email,payload);return;
-  }
+  const name=payload.name||email.split('@')[0];
+  const picture=payload.picture||'';
+
+  // Register visitor (anyone who logs in)
+  await fetch(BACKEND+'/visitor_register',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email,name,picture})}).catch(()=>{});
+
+  // Check if allowed
   try{
     const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
     const d=await r.json();
-    if(!d.allowed){showLoginError();return;}
-  }catch(e){showLoginError();return;}
-  setUser(email,payload);
-}
-function setUser(email,payload){
-  currentUser={email,name:payload.name||email.split('@')[0],picture:payload.picture||''};
+    if(!d.allowed){
+      document.getElementById('loginError').textContent='אינך מורשה לצפות בפיד זה.';
+      document.getElementById('loginError').style.display='block';
+      return;
+    }
+  }catch(e){
+    document.getElementById('loginError').textContent='שגיאת שרת, נסה שוב.';
+    document.getElementById('loginError').style.display='block';
+    return;
+  }
+
+  currentUser={email,name,picture};
   const av=document.getElementById('userAvatar');
-  if(currentUser.picture) av.innerHTML=`<img src="${esc(currentUser.picture)}" class="user-avatar" title="${esc(currentUser.name)}">`;
-  else av.innerHTML=`<div class="user-initial">${(currentUser.name[0]||'?').toUpperCase()}</div>`;
+  if(picture) av.innerHTML=`<img src="${esc(picture)}" class="user-avatar" title="${esc(name)}">`;
+  else av.innerHTML=`<div class="user-initial">${(name[0]||'?').toUpperCase()}</div>`;
+
+  // Show visitors badge for david
+  if(email===SUPER_ADMIN){
+    const badge=document.getElementById('visitorsBadge');
+    badge.style.display='inline-flex';
+    loadVisitorsCount();
+  }
+
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
   loadFeed();
 }
-function showLoginError(){document.getElementById('loginError').style.display='block';}
 
-/* UTILS */
+/* ── VISITORS (david only) ── */
+async function loadVisitorsCount(){
+  try{
+    const r=await fetch(BACKEND+'/visitors_list?email='+encodeURIComponent(SUPER_ADMIN));
+    const d=await r.json();
+    if(d.status==='ok'){
+      document.getElementById('visitorsBadge').textContent='👥 '+d.count+' משתתפים';
+    }
+  }catch(e){}
+}
+
+async function toggleVisitors(){
+  const panel=document.getElementById('visitorsPanel');
+  if(panel.classList.toggle('show')){
+    const body=document.getElementById('vpBody');
+    body.innerHTML='<div style="text-align:center;padding:16px;font-size:13px;color:var(--ink3)">טוען...</div>';
+    try{
+      const r=await fetch(BACKEND+'/visitors_list?email='+encodeURIComponent(SUPER_ADMIN));
+      const d=await r.json();
+      document.getElementById('vpTitle').textContent='משתתפים ('+d.count+')';
+      if(!d.visitors?.length){body.innerHTML='<div style="text-align:center;padding:16px;font-size:13px;color:var(--ink3)">אין עדיין</div>';return;}
+      body.innerHTML=d.visitors.map(v=>{
+        const av=v.picture?`<img src="${esc(v.picture)}" class="visitor-av" onerror="this.style.display='none'">`
+          :`<div class="visitor-av-init">${(v.name||'?')[0].toUpperCase()}</div>`;
+        return `<div class="visitor-row">${av}<div class="visitor-info"><div class="visitor-name">${esc(v.name||v.email)}</div><div class="visitor-email">${esc(v.email)}</div></div></div>`;
+      }).join('');
+    }catch(e){body.innerHTML='<div style="text-align:center;padding:16px;font-size:13px;color:var(--ink3)">שגיאה</div>';}
+  }
+}
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('visitorsPanel');
+  if(panel.classList.contains('show')&&!panel.contains(e.target)&&e.target!==document.getElementById('visitorsBadge'))
+    panel.classList.remove('show');
+});
+
+/* ── UTILS ── */
 function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function rich(t){
   if(!t)return'';
@@ -266,35 +350,56 @@ function timeLabel(e){
   return(e.date&&e.date!==today)?e.date+' · '+(e.time||''):(e.time||'');
 }
 
-/* BUILD MSG */
+/* SVG add-emoji button */
+function emojiAddSVG(msgId){
+  return `<button class="rxn-add" onclick="openEmojiPicker(event,'${msgId}')" title="הגב עם אימוג'י">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="8" r="7" stroke="#9ca3af" stroke-width="1.5"/>
+      <circle cx="5.5" cy="6.5" r="1" fill="#9ca3af"/>
+      <circle cx="10.5" cy="6.5" r="1" fill="#9ca3af"/>
+      <path d="M5 10c.8 1.2 2 1.8 3 1.8s2.2-.6 3-1.8" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="12" y1="2" x2="12" y2="5" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="10.5" y1="3.5" x2="13.5" y2="3.5" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>`;
+}
+
+/* ── BUILD MSG ── */
 function buildMsg(e){
   const red=e.profile==='red';
   const lines=(e.text||'').trim().split('\n');
   const h=lines[0]||'';
   const body=lines.slice(1).join('\n').trim();
   const id=e.id;
+
   let topHtml='';
   if(red) topHtml=`<div class="breaking-head"><span class="break-tag">🚨 Breaking</span><span class="breaking-title">${esc(h)}</span></div>`;
+
   let catHtml='';
   if(!red) catHtml=`<div class="msg-cat news"><i class="fas fa-bolt"></i> מבזק חדשות</div>`;
   else if(body) catHtml=`<div class="msg-cat red-cat"><i class="fas fa-circle-exclamation"></i> צבע אדום</div>`;
+
   const mainText=red?(body?`<div class="msg-text">${rich(body)}</div>`:''): `<div class="msg-text">${rich(h+(body?'\n'+body:''))}</div>`;
+
   let media='';
   if(e.imgUrl) media+=`<div class="msg-img"><img src="${esc(e.imgUrl)}" loading="lazy" onerror="this.closest('.msg-img').remove()"></div>`;
   if(e.videoUrl) media+=`<div class="msg-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
+
   let btns='';
   if(e.buttons&&e.buttons.length) btns='<div class="msg-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
+
   const bodySection=(catHtml||mainText||media||btns)?`<div class="msg-body">${catHtml}${mainText}${media}${btns}</div>`:'';
-  const rxnBar=`<div class="reactions-bar" id="rxn-${id}"><button class="rxn-add" onclick="openEmojiPicker(event,'${id}')">😊</button></div>`;
+  const rxnBar=`<div class="reactions-bar" id="rxn-${id}">${emojiAddSVG(id)}</div>`;
   const cntComments=commentsCountCache[id]||0;
-  const hasComments=cntComments>0;
+  const hasC=cntComments>0;
   const foot=`<div class="msg-foot">
     <span class="msg-time"><i class="fas fa-clock"></i>${timeLabel(e)}</span>
-    <button class="comment-btn${hasComments?' has-comments':''}" id="cbtn-${id}" onclick="openComments('${id}')">
-      <i class="fas fa-comment" style="font-size:10px"></i>
-      ${hasComments?cntComments+' תגובות':'תגובות'}
+    <button class="comment-btn${hasC?' has-comments':''}" id="cbtn-${id}" onclick="openComments('${id}')">
+      <i class="fas fa-comment${hasC?'':'-dots'}" style="font-size:10px"></i>
+      ${hasC?cntComments+' תגובות':'תגובות'}
     </button>
   </div>`;
+
   return `<div class="msg is-${red?'red':'news'}" data-id="${id}">${topHtml}${bodySection}${rxnBar}${foot}</div>`;
 }
 
@@ -302,7 +407,6 @@ function renderReactions(msgId,reactions){
   reactionsCache[msgId]=reactions;
   const bar=document.getElementById('rxn-'+msgId);
   if(!bar)return;
-  const btn=bar.querySelector('.rxn-add');
   bar.innerHTML='';
   Object.entries(reactions).forEach(([emoji,users])=>{
     if(!users.length)return;
@@ -313,29 +417,29 @@ function renderReactions(msgId,reactions){
     chip.onclick=()=>doReact(msgId,emoji);
     bar.appendChild(chip);
   });
-  const addBtn=document.createElement('button');
-  addBtn.className='rxn-add';addBtn.textContent='😊';
-  addBtn.onclick=(e)=>openEmojiPicker(e,msgId);
-  bar.appendChild(addBtn);
+  bar.insertAdjacentHTML('beforeend',emojiAddSVG(msgId));
 }
 
-/* EMOJI PICKER */
+/* ── EMOJI PICKER ── */
 function openEmojiPicker(e,msgId){
   e.stopPropagation();
-  activePickerMsgId=msgId;
   const picker=document.getElementById('emojiPicker');
+  activePickerMsgId=msgId;
   const rect=e.currentTarget.getBoundingClientRect();
-  picker.style.top=(rect.top-48)+'px';
-  picker.style.right=(window.innerWidth-rect.right+0)+'px';
-  picker.style.left='auto';
+  // Position above the button
+  const top=rect.top-8;
+  const pickerH=120;
+  picker.style.top=(top-pickerH)+'px';
+  picker.style.left=Math.max(8,rect.left-60)+'px';
+  picker.style.bottom='auto';picker.style.right='auto';
   picker.classList.toggle('show');
 }
 function pickEmoji(emoji){
   document.getElementById('emojiPicker').classList.remove('show');
-  if(activePickerMsgId)doReact(activePickerMsgId,emoji);
+  if(activePickerMsgId) doReact(activePickerMsgId,emoji);
   activePickerMsgId=null;
 }
-document.addEventListener('click',()=>document.getElementById('emojiPicker').classList.remove('show'));
+document.addEventListener('click',()=>{document.getElementById('emojiPicker').classList.remove('show');});
 
 async function doReact(msgId,emoji){
   if(!currentUser)return;
@@ -343,17 +447,15 @@ async function doReact(msgId,emoji){
     const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email:currentUser.email,msgId,emoji})});
     const d=await r.json();
-    if(d.status==='ok')renderReactions(msgId,d.reactions);
+    if(d.status==='ok') renderReactions(msgId,d.reactions);
   }catch(e){}
 }
 
-/* COMMENTS */
+/* ── COMMENTS ── */
 function openComments(msgId){
   activeCommentsMsgId=msgId;
-  const panel=document.getElementById('commentsPanel');
-  const overlay=document.getElementById('cpOverlay');
-  panel.classList.add('open');
-  overlay.classList.add('show');
+  document.getElementById('commentsPanel').classList.add('open');
+  document.getElementById('cpOverlay').classList.add('show');
   loadComments(msgId);
 }
 function closeComments(){
@@ -361,6 +463,7 @@ function closeComments(){
   document.getElementById('cpOverlay').classList.remove('show');
   activeCommentsMsgId=null;
 }
+
 async function loadComments(msgId){
   const body=document.getElementById('cpBody');
   body.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink3);font-size:13px">טוען...</div>';
@@ -370,31 +473,33 @@ async function loadComments(msgId){
     const list=d.comments||[];
     commentsCountCache[msgId]=list.length;
     updateCommentBtn(msgId,list.length);
-    if(!list.length){body.innerHTML='<div class="no-comments"><i class="fas fa-comment" style="font-size:22px;opacity:.15;display:block;margin-bottom:8px"></i>עדיין אין תגובות</div>';return;}
+    if(!list.length){body.innerHTML='<div class="no-comments"><i class="fas fa-comment" style="font-size:24px;opacity:.15;display:block;margin-bottom:8px"></i>עדיין אין תגובות</div>';return;}
     body.innerHTML=list.map(c=>buildComment(msgId,c)).join('');
   }catch(e){body.innerHTML='<div class="no-comments">שגיאה בטעינה</div>';}
 }
+
 function buildComment(msgId,c){
-  const canDel=c.email===currentUser?.email||currentUser?.email===SUPER_ADMIN;
-  // Only avatar, no name
-  const av=c.picture
-    ?`<img src="${esc(c.picture)}" class="comment-av" onerror="this.outerHTML='<div class=\\"comment-av-init\\">${(c.name||'?')[0].toUpperCase()}</div>'">`
+  const mine=c.email===currentUser?.email||currentUser?.email===SUPER_ADMIN;
+  const av=c.picture?`<img src="${esc(c.picture)}" class="comment-av" onerror="this.style.display='none'">`
     :`<div class="comment-av-init">${(c.name||'?')[0].toUpperCase()}</div>`;
   return `<div class="comment-item" id="ci-${c.id}">
     ${av}
     <div class="comment-bubble">
+      <div class="comment-name">${esc(c.name||c.email)}</div>
       <div class="comment-text">${esc(c.text)}</div>
       <div class="comment-meta">${c.time||''}</div>
-      ${canDel?`<button class="comment-del" onclick="deleteComment('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
+      ${mine?`<button class="comment-del" onclick="deleteComment('${msgId}','${c.id}')" title="מחק"><i class="fas fa-times"></i></button>`:''}
     </div>
   </div>`;
 }
+
 function updateCommentBtn(msgId,count){
   const btn=document.getElementById('cbtn-'+msgId);
   if(!btn)return;
   btn.className='comment-btn'+(count>0?' has-comments':'');
-  btn.innerHTML=`<i class="fas fa-comment" style="font-size:10px"></i> ${count>0?count+' תגובות':'תגובות'}`;
+  btn.innerHTML=`<i class="fas fa-comment${count>0?'':'-dots'}" style="font-size:10px"></i> ${count>0?count+' תגובות':'תגובות'}`;
 }
+
 async function sendComment(){
   const input=document.getElementById('cpInput');
   const text=input.value.trim();
@@ -416,6 +521,7 @@ async function sendComment(){
     }
   }catch(e){}
 }
+
 async function deleteComment(msgId,cid){
   if(!currentUser)return;
   try{
@@ -432,7 +538,7 @@ async function deleteComment(msgId,cid){
   }catch(e){}
 }
 
-/* FEED */
+/* ── FEED ── */
 async function loadFeed(){
   setLoading(true);
   try{
@@ -454,13 +560,15 @@ async function loadFeed(){
   }catch(e){}
   setLoading(false);
 }
+
 async function loadReactions(msgId){
   try{
     const r=await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
     const d=await r.json();
-    if(d.status==='ok')renderReactions(msgId,d.reactions);
+    if(d.status==='ok') renderReactions(msgId,d.reactions);
   }catch(e){}
 }
+
 async function pollNew(){
   if(!lastTs||!currentUser)return;
   try{
@@ -478,30 +586,23 @@ async function pollNew(){
         inner.appendChild(div.firstChild);
         loadReactions(e.id);
       });
-      if(atBottom){
-        document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
-      } else {
-        newCount+=ni.length;updateScrollBtn();
-      }
+      if(atBottom) document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
+      else{newCount+=ni.length;updateScrollBtn();}
     }
   }catch(e){}
 }
 
-/* SCROLL */
 function scrollToBottom(){
   document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});
   newCount=0;updateScrollBtn();
 }
 function updateScrollBtn(){
   const btn=document.getElementById('scrollDownBtn');
-  const txt=document.getElementById('scrollDownTxt');
   if(!atBottom){
     btn.classList.add('show');
-    if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}
-    else{btn.classList.remove('has-new');txt.textContent='למטה';}
-  } else {
-    btn.classList.remove('show','has-new');newCount=0;
-  }
+    if(newCount>0){btn.classList.add('has-new');document.getElementById('scrollDownTxt').textContent=newCount+' חדשות';}
+    else{btn.classList.remove('has-new');document.getElementById('scrollDownTxt').textContent='למטה';}
+  } else {btn.classList.remove('show','has-new');newCount=0;}
 }
 document.getElementById('feedWrap').addEventListener('scroll',function(){
   atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;
@@ -512,7 +613,7 @@ document.getElementById('feedWrap').addEventListener('scroll',function(){
 function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
 
 window.addEventListener('load',()=>{
-  if(window.google?.accounts)initGoogleLogin();
+  if(window.google?.accounts) initGoogleLogin();
   else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogleLogin);
 });
 setInterval(pollNew,6000);
