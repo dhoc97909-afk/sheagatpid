@@ -354,6 +354,8 @@ const STORAGE_KEY='shaagat_hari_user';
 let me=null, items=[], lastTs=0, newCount=0, atBottom=true;
 let activePicker=null, activeCmtMsgId=null;
 let rxnCache={}, cmtCount={};
+const knownIds=new Set();
+let polling=false;
 
 /* SVG reaction-add button — smiley face only, no plus */
 const REACT_SVG=`<svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -654,6 +656,7 @@ async function loadFeed(){
     const d=await r.json();
     if(d.status==='ok'){
       items=[...d.feed].reverse();
+      items.forEach(e=>knownIds.add(e.id));
       lastTs=items.length?Math.max(...items.map(e=>e.ts||0)):0;
       const inner=document.getElementById('feedInner');
       inner.innerHTML='';
@@ -672,22 +675,29 @@ async function loadRxn(msgId){
   }catch(e){}
 }
 async function pollNew(){
-  if(!lastTs||!me)return;
+  if(!lastTs||!me||polling)return;
+  polling=true;
   try{
     const r=await fetch(BACKEND+'/feed?since='+lastTs);
     const d=await r.json();
     if(d.status==='ok'&&d.feed?.length){
-      const ni=[...d.feed].reverse();
-      lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
-      items=[...items,...ni];
-      const inner=document.getElementById('feedInner');
-      document.getElementById('empty').style.display='none';
-      ni.forEach(e=>{const div=document.createElement('div');div.innerHTML=buildMsg(e);inner.appendChild(div.firstChild);loadRxn(e.id);});
-      pollCmtCounts();
-      if(atBottom)document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
-      else{newCount+=ni.length;updateScrollBtn();}
+      const ni=[...d.feed].reverse().filter(e=>!knownIds.has(e.id));
+      if(ni.length){
+        lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
+        ni.forEach(e=>knownIds.add(e.id));
+        items=[...items,...ni];
+        const inner=document.getElementById('feedInner');
+        document.getElementById('empty').style.display='none';
+        ni.forEach(e=>{const div=document.createElement('div');div.innerHTML=buildMsg(e);inner.appendChild(div.firstChild);loadRxn(e.id);});
+        pollCmtCounts();
+        if(atBottom)document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
+        else{newCount+=ni.length;updateScrollBtn();}
+      } else {
+        lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
+      }
     }
   }catch(e){}
+  polling=false;
 }
 function scrollToBottom(){document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});newCount=0;updateScrollBtn();}
 function updateScrollBtn(){
