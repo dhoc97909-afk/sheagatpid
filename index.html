@@ -460,6 +460,7 @@ function buildMsg(e){
   let btns='';
   if(e.buttons&&e.buttons.length) btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
   const n=cmtCount[id]||0;
+  const cmtLabel=n===0?'תגובות':n===1?'1 תגובה':n+' תגובות';
 
   return `<div class="msg-row" data-id="${id}">
     <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
@@ -473,7 +474,7 @@ function buildMsg(e){
         <div class="bubble-foot">
           <span class="bubble-time">${timeLabel(e)}</span>
           <button class="cmt-btn${n>0?' has-cmt':''}" id="cbtn-${id}" onclick="openComments('${id}')">
-            <i class="fas fa-comment" style="font-size:10px"></i> ${n>0?n+' תגובות':'תגובות'}
+            <i class="fas fa-comment" style="font-size:10px"></i> ${cmtLabel}
           </button>
         </div>
       </div>
@@ -593,7 +594,8 @@ function updateCmtBtn(msgId,n){
   const btn=document.getElementById('cbtn-'+msgId);
   if(!btn)return;
   btn.className='cmt-btn'+(n>0?' has-cmt':'');
-  btn.innerHTML=`<i class="fas fa-comment" style="font-size:10px"></i> ${n>0?n+' תגובות':'תגובות'}`;
+  const label=n===0?'תגובות':n===1?'1 תגובה':n+' תגובות';
+  btn.innerHTML=`<i class="fas fa-comment" style="font-size:10px"></i> ${label}`;
 }
 async function sendComment(){
   const inp=document.getElementById('cpInp');
@@ -715,6 +717,22 @@ async function pollComments(){
   }catch(e){}
 }
 setInterval(pollComments,3000);
+/* ── AUTO-REFRESH COMMENT COUNTS on all messages ── */
+async function pollCmtCounts(){
+  if(!me||!items.length)return;
+  await Promise.all(items.map(async e=>{
+    try{
+      const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(e.id));
+      const d=await r.json();
+      const n=(d.comments||[]).length;
+      if(n!==(cmtCount[e.id]||0)){
+        cmtCount[e.id]=n;
+        updateCmtBtn(e.id,n);
+      }
+    }catch(err){}
+  }));
+}
+setInterval(pollCmtCounts,4000);
 setInterval(pollNew,6000);
 
 /* ── AUTO-REFRESH REACTIONS (in-place, no scroll jump) ── */
