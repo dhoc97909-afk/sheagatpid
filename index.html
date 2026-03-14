@@ -717,20 +717,25 @@ async function pollComments(){
   }catch(e){}
 }
 setInterval(pollComments,3000);
-/* ── AUTO-REFRESH COMMENT COUNTS on all messages ── */
+/* ── AUTO-REFRESH COMMENT COUNTS — single batch request ── */
 async function pollCmtCounts(){
   if(!me||!items.length)return;
-  await Promise.all(items.map(async e=>{
-    try{
-      const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(e.id));
-      const d=await r.json();
-      const n=(d.comments||[]).length;
-      if(n!==(cmtCount[e.id]||0)){
-        cmtCount[e.id]=n;
-        updateCmtBtn(e.id,n);
-      }
-    }catch(err){}
-  }));
+  try{
+    const r=await fetch(BACKEND+'/feed_comment_counts',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({msgIds:items.map(e=>e.id)})
+    });
+    const d=await r.json();
+    if(d.status==='ok'){
+      Object.entries(d.counts).forEach(([mid,n])=>{
+        if(n!==(cmtCount[mid]||0)){
+          cmtCount[mid]=n;
+          updateCmtBtn(mid,n);
+        }
+      });
+    }
+  }catch(e){}
 }
 setInterval(pollCmtCounts,4000);
 setInterval(pollNew,6000);
