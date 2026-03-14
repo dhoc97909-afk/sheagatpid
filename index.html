@@ -25,12 +25,10 @@ html,body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:anti
 
 /* HEADER */
 header{
-  background:#fff;
-  border-bottom:1px solid rgba(0,0,0,.08);
+  background:#fff;border-bottom:1px solid rgba(0,0,0,.08);
   height:56px;padding:0 14px;
   display:flex;align-items:center;gap:12px;
-  flex-shrink:0;
-  position:sticky;top:0;z-index:100;
+  flex-shrink:0;position:sticky;top:0;z-index:100;
 }
 .hdr-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;}
 .hdr-info{flex:1;min-width:0;}
@@ -41,36 +39,62 @@ header{
 .hdr-user{display:flex;align-items:center;gap:8px;}
 .hdr-user img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee;}
 
+/* ADMIN STRIP */
+#adminStrip{
+  display:none;background:#1a56db;color:#fff;
+  font-size:11px;font-weight:700;
+  padding:5px 14px;flex-shrink:0;
+  flex-wrap:wrap;gap:6px;align-items:center;direction:rtl;
+}
+#adminStrip.show{display:flex;}
+.admin-strip-label{opacity:.75;margin-left:6px;}
+.admin-user-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.2);border-radius:99px;padding:2px 8px;font-size:11px;
+}
+.admin-user-chip img{width:16px;height:16px;border-radius:50%;object-fit:cover;}
+
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
-#feedInner{max-width:680px;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:3px;}
+#feedInner{max-width:680px;margin:0 auto;padding:0 10px;display:flex;flex-direction:column;gap:6px;}
 
-/* MESSAGE ROW — avatar LEFT, bubble to the right of avatar */
+/* MESSAGE ROW
+   direction:ltr forces avatar(first child) to the physical LEFT
+   and bubble to the RIGHT of it, regardless of page RTL */
 .msg-row{
-  display:flex;
-  flex-direction:row;        /* avatar on LEFT (start in LTR flow) */
-  align-items:flex-start;
-  gap:8px;
+  display:flex;direction:ltr;
+  align-items:flex-start;gap:8px;
   padding:2px 0;
   animation:mi .3s cubic-bezier(.16,1,.3,1) both;
 }
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.msg-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-start;}
 
-/* BUBBLE — top-left corner near avatar = sharp (4px), rest rounded */
+.msg-av{
+  width:36px;height:36px;border-radius:50%;object-fit:cover;
+  flex-shrink:0;align-self:flex-start;
+  margin-top:17px; /* align with bubble content below the name */
+}
+
+/* Column: name label above bubble */
+.msg-col{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+
+/* Sender name OUTSIDE the bubble — no emoji */
+.msg-meta{
+  direction:rtl;font-size:12px;font-weight:700;
+  color:#666;padding-right:4px;
+}
+
+/* BUBBLE
+   Avatar is on LEFT → sharp corner = top-left = first value
+   border-radius: top-left  top-right  bottom-right  bottom-left  */
 .bubble{
-  background:#fff;
+  background:#fff;direction:rtl;
   border-radius:4px 18px 18px 18px;
   padding:10px 14px 8px;
-  max-width:82%;
-  min-width:180px;
+  max-width:100%;min-width:180px;
   box-shadow:0 1px 2px rgba(0,0,0,.10);
-  position:relative;
 }
 .bubble.is-red{background:#fff9f9;border-right:3px solid #e02020;}
-
-.bubble-sender{font-size:13px;font-weight:800;color:#e02020;margin-bottom:4px;}
-.bubble-sender.news-sender{color:#1a56db;}
 
 .bubble-text{font-size:15px;line-height:1.7;color:#111;white-space:pre-wrap;word-break:break-word;}
 .bubble-text strong{font-weight:800;}
@@ -85,104 +109,107 @@ header{
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
 
-.bubble-foot{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-top:5px;}
-.bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-right:auto;}
+.bubble-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:5px;}
+.bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-left:auto;}
 
 /* REACTIONS */
-.rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center;}
 .rxn-chip{
   display:inline-flex;align-items:center;gap:3px;
   background:#f3f4f6;border:1.5px solid transparent;
-  border-radius:99px;padding:2px 9px;
+  border-radius:99px;padding:3px 9px;
   font-size:14px;cursor:pointer;transition:all .12s;user-select:none;
   font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji','Heebo',sans-serif;
 }
 .rxn-chip:hover{background:#e5e7eb;}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
 .rxn-count{font-size:12px;font-weight:700;color:#374151;font-family:'Heebo',sans-serif;}
+
+/* SVG reaction-add button */
 .rxn-add-btn{
   background:none;border:none;cursor:pointer;
-  font-size:17px;padding:2px 6px;border-radius:99px;line-height:1;
-  transition:background .12s;color:#aaa;
-  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+  padding:3px;border-radius:99px;line-height:0;
+  display:inline-flex;align-items:center;color:#bbb;
+  transition:color .12s,background .12s,transform .12s;
 }
-.rxn-add-btn:hover{background:#f3f4f6;}
+.rxn-add-btn:hover{color:#555;background:#f0f0f0;transform:scale(1.15);}
+.rxn-add-btn svg{width:20px;height:20px;display:block;}
 
 .cmt-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:color .12s;}
 .cmt-btn:hover{color:#1a56db;}
 .cmt-btn.has-cmt{color:#1a56db;}
 
-/* ─── EMOJI PICKER — horizontal strip fixed at bottom ─── */
+/* ── EMOJI PICKER — small floating panel near button ── */
 #emojiPicker{
   position:fixed;
-  bottom:0; left:0; right:0;
-  background:#fff;
-  border-top:1.5px solid #e5e7eb;
-  box-shadow:0 -6px 28px rgba(0,0,0,.13);
-  z-index:500;
-  display:none;
-  flex-direction:row;
-  align-items:center;
-  padding:8px 12px 12px;
-  /* account for iOS safe area */
-  padding-bottom:max(12px, env(safe-area-inset-bottom));
-  gap:2px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
-  animation:slideUp .2s cubic-bezier(.16,1,.3,1);
+  background:#fff;border:1px solid #e5e7eb;
+  border-radius:16px;padding:8px 10px;
+  box-shadow:0 8px 28px rgba(0,0,0,.16);
+  z-index:600;display:none;
+  flex-wrap:wrap;gap:1px;width:220px;
+  animation:pickerPop .18s cubic-bezier(.34,1.4,.64,1);
 }
-@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-#emojiPicker::-webkit-scrollbar{display:none;}
+@keyframes pickerPop{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 #emojiPicker.show{display:flex;}
-
 .ep-btn{
-  background:none;border:none;
-  font-size:28px;cursor:pointer;
-  padding:5px 7px;border-radius:10px;
-  line-height:1;flex-shrink:0;
+  background:none;border:none;font-size:22px;cursor:pointer;
+  padding:5px 6px;border-radius:8px;line-height:1;
   font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
-  transition:background .1s, transform .1s;
+  transition:background .1s,transform .1s;
 }
-.ep-btn:hover{background:#f3f4f6;transform:scale(1.25);}
-.ep-btn:active{transform:scale(0.9);}
+.ep-btn:hover{background:#f3f4f6;transform:scale(1.22);}
+.ep-btn:active{transform:scale(.9);}
 
-.ep-divider{width:1px;height:28px;background:#e5e7eb;flex-shrink:0;margin:0 4px;}
-
-.ep-close{
-  background:none;border:none;cursor:pointer;
-  font-size:13px;color:#aaa;
-  padding:6px 10px;border-radius:8px;
-  flex-shrink:0;margin-right:auto;
-  font-family:'Heebo',sans-serif;font-weight:600;
-  white-space:nowrap;
-}
-.ep-close:hover{background:#f3f4f6;color:#374151;}
-
-/* COMMENTS PANEL */
-#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.3);}
+/* ── COMMENTS PANEL — from LEFT, below header ── */
+#cpOverlay{position:fixed;inset:0;z-index:299;display:none;background:rgba(0,0,0,.28);}
 #cpOverlay.show{display:block;}
-#commentsPanel{position:fixed;top:0;right:0;width:340px;max-width:100vw;height:100%;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:300;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);}
+#commentsPanel{
+  position:fixed;
+  top:56px;left:0;right:auto;
+  width:310px;max-width:100vw;
+  height:calc(100% - 56px);
+  background:#fff;
+  box-shadow:4px 0 24px rgba(0,0,0,.12);
+  z-index:300;display:flex;flex-direction:column;
+  transform:translateX(-100%);
+  transition:transform .3s cubic-bezier(.16,1,.3,1);
+}
 #commentsPanel.open{transform:translateX(0);}
+/* shift down when admin strip is visible */
+#commentsPanel.admin-offset{top:86px;height:calc(100% - 86px);}
+
 .cp-hdr{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .cp-title{font-size:15px;font-weight:800;color:#111;}
 .cp-close{background:none;border:none;font-size:17px;cursor:pointer;color:#aaa;padding:4px;border-radius:8px;}
 .cp-close:hover{background:#f3f4f6;}
 .cp-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
-.ci{display:flex;gap:8px;animation:ci .22s ease;}
-@keyframes ci{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.ci-av{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
-.ci-av-i{width:28px;height:28px;border-radius:50%;background:#1a56db;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ci-bubble{background:#f3f4f6;border-radius:0 12px 12px 12px;padding:7px 11px;flex:1;position:relative;}
-.ci-name{font-size:11px;font-weight:800;color:#111;margin-bottom:2px;}
+
+/* Comment: picture only, no name */
+.ci{display:flex;gap:8px;animation:cian .22s ease;}
+@keyframes cian{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.ci-av{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-start;}
+.ci-av-i{
+  width:30px;height:30px;border-radius:50%;
+  background:#1a56db;color:#fff;font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;align-self:flex-start;
+}
+.ci-bubble{
+  background:#f3f4f6;border-radius:4px 12px 12px 12px;
+  padding:8px 12px;flex:1;position:relative;direction:rtl;
+}
 .ci-text{font-size:13px;line-height:1.6;color:#374151;word-break:break-word;}
 .ci-time{font-size:10px;color:#aaa;margin-top:3px;}
-.ci-del{position:absolute;top:5px;left:8px;background:none;border:none;font-size:11px;color:#ccc;cursor:pointer;opacity:0;transition:opacity .12s;}
+.ci-del{
+  position:absolute;top:6px;left:8px;
+  background:none;border:none;font-size:11px;color:#ccc;
+  cursor:pointer;opacity:0;transition:opacity .12s;
+}
 .ci-bubble:hover .ci-del{opacity:1;}
 .no-cmt{text-align:center;color:#aaa;font-size:13px;padding:30px 0;}
+
 .cp-inp-row{padding:10px 12px;border-top:1px solid #f0f0f0;display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
-.cp-inp{flex:1;border:1.5px solid #e5e7eb;border-radius:12px;padding:8px 12px;font-size:14px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:80px;line-height:1.5;}
+.cp-inp{flex:1;border:1.5px solid #e5e7eb;border-radius:12px;padding:8px 12px;font-size:14px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:80px;line-height:1.5;direction:rtl;}
 .cp-inp:focus{border-color:#93c5fd;}
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
@@ -200,9 +227,9 @@ header{
 #empty i{font-size:36px;opacity:.2;margin-bottom:10px;display:block;}
 
 @media(max-width:480px){
-  .bubble{max-width:90%;}
+  .msg-col{flex:1;}
   #commentsPanel{width:100vw;}
-  .ep-btn{font-size:26px;padding:4px 6px;}
+  .ep-btn{font-size:20px;}
 }
 </style>
 </head>
@@ -231,6 +258,12 @@ header{
     <div class="hdr-user"><div id="userAvatar"></div></div>
   </header>
 
+  <!-- Admin: who is connected (david only) -->
+  <div id="adminStrip">
+    <span class="admin-strip-label">מחוברים עכשיו:</span>
+    <div id="adminUserList" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+  </div>
+
   <div id="feedWrap">
     <div id="feedInner"></div>
     <div id="empty"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
@@ -243,7 +276,7 @@ header{
   </button>
 </div>
 
-<!-- EMOJI PICKER — horizontal strip, slides up from bottom -->
+<!-- EMOJI PICKER — small floating -->
 <div id="emojiPicker">
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
   <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
@@ -261,12 +294,10 @@ header{
   <button class="ep-btn" onclick="pickEmoji('😍')">😍</button>
   <button class="ep-btn" onclick="pickEmoji('🤯')">🤯</button>
   <button class="ep-btn" onclick="pickEmoji('😱')">😱</button>
-  <div class="ep-divider"></div>
-  <button class="ep-close" onclick="document.getElementById('emojiPicker').classList.remove('show')">סגור ✕</button>
 </div>
 
-<!-- COMMENTS PANEL -->
-<div class="cp-overlay" id="cpOverlay" onclick="closeComments()"></div>
+<!-- COMMENTS PANEL — slides in from LEFT -->
+<div id="cpOverlay" onclick="closeComments()"></div>
 <div id="commentsPanel">
   <div class="cp-hdr">
     <span class="cp-title">💬 תגובות</span>
@@ -292,6 +323,16 @@ let me=null, items=[], lastTs=0, newCount=0, atBottom=true;
 let activePicker=null, activeCmtMsgId=null;
 let rxnCache={}, cmtCount={};
 
+/* SVG add-reaction icon: smiley face + plus sign (top-right corner) */
+const REACT_SVG=`<svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="10" cy="12" r="8" stroke="currentColor" stroke-width="1.65"/>
+  <circle cx="7.6" cy="10.3" r="1.1" fill="currentColor"/>
+  <circle cx="12.4" cy="10.3" r="1.1" fill="currentColor"/>
+  <path d="M7.1 13.7c.55 1.45 1.7 2.1 2.9 2.1s2.35-.65 2.9-2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="17" y1="3" x2="17" y2="8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="14.3" y1="5.75" x2="19.7" y2="5.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+</svg>`;
+
 function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function rich(t){
   if(!t)return'';
@@ -305,10 +346,11 @@ function timeLabel(e){
   const today=new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
   return(e.date&&e.date!==today)?e.date+' '+e.time:(e.time||'');
 }
+function isAdmin(){return me?.email===ADMIN_EMAIL;}
 
-/* ── PERSISTENT AUTH ── */
-function saveUser(user){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(user));}catch(e){}}
-function loadSavedUser(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return JSON.parse(raw);}catch(e){}return null;}
+/* ── AUTH ── */
+function saveUser(u){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(u));}catch(e){}}
+function loadSavedUser(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
 function clearSavedUser(){try{localStorage.removeItem(STORAGE_KEY);}catch(e){}}
 
 async function verifyAndLogin(user){
@@ -327,10 +369,37 @@ function applyLogin(){
     :`<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${me.name[0].toUpperCase()}</div>`;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
+
+  // Register login
+  fetch(BACKEND+'/feed_login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:me.email,name:me.name,picture:me.picture})}).catch(()=>{});
+
+  // Admin features
+  if(isAdmin()){
+    const strip=document.getElementById('adminStrip');
+    strip.classList.add('show');
+    document.getElementById('commentsPanel').classList.add('admin-offset');
+    loadAdminUsers();
+    setInterval(loadAdminUsers,15000);
+  }
+
   loadFeed();
 }
 
-/* ── AUTH ── */
+async function loadAdminUsers(){
+  try{
+    const r=await fetch(BACKEND+'/feed_logins?email='+encodeURIComponent(ADMIN_EMAIL));
+    const d=await r.json();
+    const list=(d.logins||[]).slice(0,20);
+    document.getElementById('adminUserList').innerHTML=list.map(u=>{
+      const av=u.picture
+        ?`<img src="${esc(u.picture)}" onerror="this.style.display='none'">`
+        :``;
+      return `<span class="admin-user-chip">${av}<span>${esc(u.name||u.email)}</span></span>`;
+    }).join('');
+  }catch(e){}
+}
+
 function initGoogle(){
   google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleLogin,auto_select:true});
   const saved=loadSavedUser();
@@ -338,7 +407,6 @@ function initGoogle(){
   google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',locale:'he',width:240});
   google.accounts.id.prompt();
 }
-
 async function handleLogin(resp){
   let payload={};
   try{payload=JSON.parse(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){}
@@ -362,31 +430,28 @@ function buildMsg(e){
   } else {
     content=`<div class="bubble-text">${rich(h+(body?'\n'+body:''))}</div>`;
   }
-
   let media='';
   if(e.imgUrl) media+=`<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" onerror="this.closest('.bubble-img').remove()"></div>`;
   if(e.videoUrl) media+=`<div class="bubble-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
-
   let btns='';
   if(e.buttons&&e.buttons.length) btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
-
   const n=cmtCount[id]||0;
-  const hasCmt=n>0;
 
-  // Avatar on LEFT, bubble on RIGHT of avatar
   return `<div class="msg-row" data-id="${id}">
     <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
-    <div class="bubble${red?' is-red':''}">
-      <div class="bubble-sender ${red?'':'news-sender'}">${red?'🚨 שאגת הארי':'📰 שאגת הארי'}</div>
-      ${content}${media}${btns}
-      <div class="rxn-row" id="rxn-${id}">
-        <button class="rxn-add-btn" onclick="openPicker(event,'${id}')">😊</button>
-      </div>
-      <div class="bubble-foot">
-        <span class="bubble-time">${timeLabel(e)}</span>
-        <button class="cmt-btn${hasCmt?' has-cmt':''}" id="cbtn-${id}" onclick="openComments('${id}')">
-          <i class="fas fa-comment" style="font-size:10px"></i> ${hasCmt?n+' תגובות':'תגובות'}
-        </button>
+    <div class="msg-col">
+      <div class="msg-meta">שאגת הארי</div>
+      <div class="bubble${red?' is-red':''}">
+        ${content}${media}${btns}
+        <div class="rxn-row" id="rxn-${id}">
+          <button class="rxn-add-btn" onclick="openPicker(event,'${id}')" title="הוסף תגובה">${REACT_SVG}</button>
+        </div>
+        <div class="bubble-foot">
+          <span class="bubble-time">${timeLabel(e)}</span>
+          <button class="cmt-btn${n>0?' has-cmt':''}" id="cbtn-${id}" onclick="openComments('${id}')">
+            <i class="fas fa-comment" style="font-size:10px"></i> ${n>0?n+' תגובות':'תגובות'}
+          </button>
+        </div>
       </div>
     </div>
   </div>`;
@@ -403,19 +468,44 @@ function renderRxn(msgId,rxns){
     const mine=users.includes(me?.email);
     const c=document.createElement('button');
     c.className='rxn-chip'+(mine?' mine':'');
-    c.innerHTML=`<span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;font-size:14px">${emoji}</span><span class="rxn-count">${users.length}</span>`;
+    c.innerHTML=`<span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif">${emoji}</span><span class="rxn-count">${users.length}</span>`;
     c.onclick=()=>doReact(msgId,emoji);
     bar.appendChild(c);
   });
-  if(addBtn) bar.appendChild(addBtn);
-  else{const b=document.createElement('button');b.className='rxn-add-btn';b.textContent='😊';b.onclick=(ev)=>openPicker(ev,msgId);bar.appendChild(b);}
+  if(addBtn){bar.appendChild(addBtn);}
+  else{
+    const b=document.createElement('button');
+    b.className='rxn-add-btn';b.title='הוסף תגובה';b.innerHTML=REACT_SVG;
+    b.onclick=(ev)=>openPicker(ev,msgId);
+    bar.appendChild(b);
+  }
 }
 
-/* ── EMOJI PICKER — bottom strip ── */
-function openPicker(e,msgId){
-  e.stopPropagation();
+/* ── EMOJI PICKER — floating above button ── */
+function openPicker(ev,msgId){
+  ev.stopPropagation();
   activePicker=msgId;
   const p=document.getElementById('emojiPicker');
+
+  // Measure picker dimensions while hidden
+  p.style.visibility='hidden';p.style.display='flex';
+  const pH=p.offsetHeight, pW=p.offsetWidth;
+  p.style.display='';p.style.visibility='';
+
+  const rect=ev.currentTarget.getBoundingClientRect();
+  const headerH=document.getElementById('adminStrip').classList.contains('show')?86:56;
+  const M=8;
+
+  let top=rect.top-pH-M;
+  if(top<headerH+M) top=rect.bottom+M;
+  top=Math.max(headerH+M,top);
+
+  let left=rect.left+rect.width/2-pW/2;
+  if(left<M) left=M;
+  if(left+pW>window.innerWidth-M) left=window.innerWidth-pW-M;
+
+  p.style.top=top+'px';
+  p.style.left=left+'px';
   p.classList.toggle('show');
 }
 function pickEmoji(em){
@@ -424,11 +514,9 @@ function pickEmoji(em){
   activePicker=null;
 }
 document.addEventListener('click',e=>{
-  if(!e.target.closest('#emojiPicker')&&!e.target.closest('.rxn-add-btn')){
+  if(!e.target.closest('#emojiPicker')&&!e.target.closest('.rxn-add-btn'))
     document.getElementById('emojiPicker').classList.remove('show');
-  }
 });
-
 async function doReact(msgId,emoji){
   if(!me)return;
   try{
@@ -462,16 +550,23 @@ async function loadComments(msgId){
     b.innerHTML=list.length?list.map(c=>buildCmt(msgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
   }catch(e){b.innerHTML='<div class="no-cmt">שגיאה</div>';}
 }
+
 function buildCmt(msgId,c){
-  const canDelete=(me?.email===ADMIN_EMAIL)||(c.email===me?.email);
-  const av=c.picture?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.style.display='none'">`:`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
-  return `<div class="ci" id="ci-${c.id}">${av}<div class="ci-bubble">
-    <div class="ci-name">${esc(c.name||c.email)}</div>
-    <div class="ci-text">${esc(c.text)}</div>
-    <div class="ci-time">${c.time||''}</div>
-    ${canDelete?`<button class="ci-del" onclick="delCmt('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
-  </div></div>`;
+  // Admin can delete ANY comment; others only their own
+  const canDelete=isAdmin()||(c.email===me?.email);
+  const av=c.picture
+    ?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.parentNode.innerHTML='<div class=ci-av-i>${(c.name||'?')[0].toUpperCase()}</div>'">`
+    :`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
+  return `<div class="ci" id="ci-${c.id}">
+    ${av}
+    <div class="ci-bubble">
+      <div class="ci-text">${esc(c.text)}</div>
+      <div class="ci-time">${c.time||''}</div>
+      ${canDelete?`<button class="ci-del" onclick="delCmt('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
+    </div>
+  </div>`;
 }
+
 function updateCmtBtn(msgId,n){
   const btn=document.getElementById('cbtn-'+msgId);
   if(!btn)return;
@@ -484,15 +579,14 @@ async function sendComment(){
   if(!text||!me||!activeCmtMsgId)return;
   inp.value='';inp.style.height='auto';
   try{
-    const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
+    const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
     const d=await r.json();
     if(d.status==='ok'){
       const b=document.getElementById('cpBody');
       b.querySelector('.no-cmt')?.remove();
-      const div=document.createElement('div');
-      div.innerHTML=buildCmt(activeCmtMsgId,d.comment);
-      b.appendChild(div.firstChild);
-      b.scrollTop=b.scrollHeight;
+      const div=document.createElement('div');div.innerHTML=buildCmt(activeCmtMsgId,d.comment);
+      b.appendChild(div.firstChild);b.scrollTop=b.scrollHeight;
       cmtCount[activeCmtMsgId]=(cmtCount[activeCmtMsgId]||0)+1;
       updateCmtBtn(activeCmtMsgId,cmtCount[activeCmtMsgId]);
     }
@@ -501,7 +595,8 @@ async function sendComment(){
 async function delCmt(msgId,cid){
   if(!me)return;
   try{
-    const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,msgId,commentId:cid})});
+    const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:me.email,msgId,commentId:cid})});
     const d=await r.json();
     if(d.status==='ok'){
       document.getElementById('ci-'+cid)?.remove();
@@ -549,34 +644,19 @@ async function pollNew(){
       items=[...items,...ni];
       const inner=document.getElementById('feedInner');
       document.getElementById('empty').style.display='none';
-      ni.forEach(e=>{
-        const div=document.createElement('div');
-        div.innerHTML=buildMsg(e);
-        inner.appendChild(div.firstChild);
-        loadRxn(e.id);
-      });
+      ni.forEach(e=>{const div=document.createElement('div');div.innerHTML=buildMsg(e);inner.appendChild(div.firstChild);loadRxn(e.id);});
       if(atBottom)document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
       else{newCount+=ni.length;updateScrollBtn();}
     }
   }catch(e){}
 }
-function scrollToBottom(){
-  document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});
-  newCount=0;updateScrollBtn();
-}
+function scrollToBottom(){document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});newCount=0;updateScrollBtn();}
 function updateScrollBtn(){
-  const btn=document.getElementById('scrollDownBtn');
-  const txt=document.getElementById('scrollDownTxt');
-  if(!atBottom){
-    btn.classList.add('show');
-    if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}
-    else{btn.classList.remove('has-new');txt.textContent='למטה';}
-  }else{btn.classList.remove('show','has-new');newCount=0;}
+  const btn=document.getElementById('scrollDownBtn'),txt=document.getElementById('scrollDownTxt');
+  if(!atBottom){btn.classList.add('show');if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}else{btn.classList.remove('has-new');txt.textContent='למטה';}}
+  else{btn.classList.remove('show','has-new');newCount=0;}
 }
-document.getElementById('feedWrap').addEventListener('scroll',function(){
-  atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;
-  updateScrollBtn();
-},{passive:true});
+document.getElementById('feedWrap').addEventListener('scroll',function(){atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;updateScrollBtn();},{passive:true});
 function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
 window.addEventListener('load',()=>{
   if(window.google?.accounts)initGoogle();
