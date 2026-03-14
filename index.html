@@ -696,6 +696,14 @@ function closeLightbox(){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
 
 setInterval(pollNew,6000);
+
+/* ── AUTO-REFRESH REACTIONS (in-place, no scroll jump) ── */
+async function pollRxns(){
+  if(!me||!items.length)return;
+  // fetch all in parallel, renderRxn updates DOM in-place
+  await Promise.all(items.map(e=>loadRxn(e.id)));
+}
+setInterval(pollRxns,8000);
 </script>
 </body>
 </html>
