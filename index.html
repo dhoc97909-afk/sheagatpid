@@ -732,7 +732,7 @@ async function pollComments(){
   }catch(e){}
 }
 setInterval(pollComments,2000);
-/* ── AUTO-REFRESH COMMENT COUNTS — single batch request ── */
+/* ── AUTO-REFRESH COMMENT COUNTS ── */
 async function pollCmtCounts(){
   if(!me||!items.length)return;
   try{
@@ -741,18 +741,29 @@ async function pollCmtCounts(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({msgIds:items.map(e=>e.id)})
     });
-    const d=await r.json();
-    if(d.status==='ok'){
-      Object.entries(d.counts).forEach(([mid,n])=>{
-        if(n!==(cmtCount[mid]||0)){
-          cmtCount[mid]=n;
-          updateCmtBtn(mid,n);
-        }
-      });
+    if(r.ok){
+      const d=await r.json();
+      if(d.status==='ok'){
+        Object.entries(d.counts).forEach(([mid,n])=>{
+          if(n!==(cmtCount[mid]||0)){cmtCount[mid]=n;updateCmtBtn(mid,n);}
+        });
+        return;
+      }
     }
   }catch(e){}
+  // Fallback: individual requests
+  await Promise.all(items.map(async e=>{
+    try{
+      const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(e.id));
+      const d=await r.json();
+      const n=(d.comments||[]).length;
+      if(n!==(cmtCount[e.id]||0)){cmtCount[e.id]=n;updateCmtBtn(e.id,n);}
+    }catch(err){}
+  }));
 }
 setInterval(pollCmtCounts,2000);
+// Run immediately too, don't wait for first interval tick
+setTimeout(pollCmtCounts,500);
 setInterval(pollNew,3000);
 
 /* ── AUTO-REFRESH REACTIONS (in-place, no scroll jump) ── */
