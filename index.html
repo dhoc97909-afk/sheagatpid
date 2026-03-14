@@ -367,8 +367,15 @@ function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 function rich(t){
   if(!t)return'';
   let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  // **bold** or *bold*
+  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
+  // __underline__
+  s=s.replace(/__([^_\n]+)__/g,'<u>$1</u>');
+  // _italic_
   s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
+  // ~~strikethrough~~
+  s=s.replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
   s=s.replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
   return s;
 }
@@ -703,7 +710,7 @@ async function pollRxns(){
   // fetch all in parallel, renderRxn updates DOM in-place
   await Promise.all(items.map(e=>loadRxn(e.id)));
 }
-setInterval(pollRxns,8000);
+setInterval(pollRxns,3000);
 </script>
 </body>
 </html>
