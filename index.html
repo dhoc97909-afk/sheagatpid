@@ -697,6 +697,24 @@ function closeLightbox(){
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
 
+/* ── AUTO-REFRESH COMMENTS when panel open ── */
+async function pollComments(){
+  if(!activeCmtMsgId)return;
+  try{
+    const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(activeCmtMsgId));
+    const d=await r.json();
+    const list=d.comments||[];
+    // only update if count changed to avoid flicker
+    if(list.length===(cmtCount[activeCmtMsgId]||0))return;
+    cmtCount[activeCmtMsgId]=list.length;
+    updateCmtBtn(activeCmtMsgId,list.length);
+    const b=document.getElementById('cpBody');
+    const wasAtBottom=(b.scrollHeight-b.scrollTop-b.clientHeight)<60;
+    b.innerHTML=list.length?list.map(c=>buildCmt(activeCmtMsgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
+    if(wasAtBottom)b.scrollTop=b.scrollHeight;
+  }catch(e){}
+}
+setInterval(pollComments,3000);
 setInterval(pollNew,6000);
 
 /* ── AUTO-REFRESH REACTIONS (in-place, no scroll jump) ── */
