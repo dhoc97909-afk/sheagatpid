@@ -543,6 +543,15 @@ document.addEventListener('click',e=>{
 });
 async function doReact(msgId,emoji){
   if(!me)return;
+  // Optimistic update — change DOM immediately
+  const current=rxnCache[msgId]||{};
+  const users=[...(current[emoji]||[])];
+  const myIdx=users.indexOf(me.email);
+  if(myIdx>=0) users.splice(myIdx,1); else users.push(me.email);
+  const optimistic={...current};
+  if(users.length) optimistic[emoji]=users; else delete optimistic[emoji];
+  renderRxn(msgId,optimistic);
+  // Then confirm with server
   try{
     const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,msgId,emoji})});
     const d=await r.json();
@@ -722,7 +731,7 @@ async function pollComments(){
     if(wasAtBottom)b.scrollTop=b.scrollHeight;
   }catch(e){}
 }
-setInterval(pollComments,3000);
+setInterval(pollComments,2000);
 /* ── AUTO-REFRESH COMMENT COUNTS — single batch request ── */
 async function pollCmtCounts(){
   if(!me||!items.length)return;
@@ -743,8 +752,8 @@ async function pollCmtCounts(){
     }
   }catch(e){}
 }
-setInterval(pollCmtCounts,4000);
-setInterval(pollNew,6000);
+setInterval(pollCmtCounts,2000);
+setInterval(pollNew,3000);
 
 /* ── AUTO-REFRESH REACTIONS (in-place, no scroll jump) ── */
 async function pollRxns(){
@@ -752,7 +761,7 @@ async function pollRxns(){
   // fetch all in parallel, renderRxn updates DOM in-place
   await Promise.all(items.map(e=>loadRxn(e.id)));
 }
-setInterval(pollRxns,3000);
+setInterval(pollRxns,2000);
 </script>
 </body>
 </html>
