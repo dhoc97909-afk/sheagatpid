@@ -391,11 +391,6 @@ function loadSavedUser(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)retu
 function clearSavedUser(){try{localStorage.removeItem(STORAGE_KEY);}catch(e){}}
 
 async function verifyAndLogin(user){
-  try{
-    const r=await fetch(BACKEND+'/auth_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:user.email})});
-    const d=await r.json();
-    if(!d.allowed){clearSavedUser();document.getElementById('loginErr').style.display='block';return false;}
-  }catch(e){}
   me=user;saveUser(user);applyLogin();return true;
 }
 
