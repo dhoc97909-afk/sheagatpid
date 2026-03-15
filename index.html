@@ -403,14 +403,7 @@ function rich(t) {
 
 function timeLabel(e) {
   const today = new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
-  // מוסיפים שעתיים כי השרת רץ על UTC והשעה מוצגת בפיגור
-  const fixTime = (t) => {
-    if (!t || !t.includes(':')) return t;
-    const [h, m] = t.split(':').map(Number);
-    const fixed = ((h + 2) % 24).toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
-    return fixed;
-  };
-  return (e.date && e.date !== today) ? e.date + ' ' + fixTime(e.time) : fixTime(e.time || '');
+  return (e.date && e.date !== today) ? e.date + ' ' + e.time : (e.time || '');
 }
 
 function isAdmin() { return me?.email === ADMIN_EMAIL; }
