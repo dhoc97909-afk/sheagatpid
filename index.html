@@ -675,6 +675,7 @@ async function loadFeed() {
     const d = await r.json();
     if (d.status === 'ok') {
       items = [...d.feed].reverse();
+      // רושם את כל ה-IDs לפני כל דבר אחר — מונע כפילויות
       items.forEach(e => knownIds.add(e.id));
       lastTs = items.length ? Math.max(...items.map(e => e.ts || 0)) : 0;
       const inner = document.getElementById('feedInner');
@@ -685,16 +686,17 @@ async function loadFeed() {
         inner.innerHTML = items.map(buildMsg).join('');
       }
       document.getElementById('feedWrap').scrollTop = document.getElementById('feedWrap').scrollHeight;
-      // טעינה ראשונית של תגובות+reactions בבקשה אחת
-      if (items.length) await pollAll(true);
+      // reactions + כמות תגובות ראשוניים — setTimeout מאפשר ל-DOM להתייצב קודם
+      // ה-setInterval ו-setTimeout שבתחתית הקובץ יטפלו בזה, אין צורך לקרוא כאן
     }
   } catch(e) {}
   setLoading(false);
 }
 
 /* ══ POLLING מאוחד — בקשה אחת לכל מה שצריך ══ */
-async function pollAll(force) {
-  if (pollPending && !force) return;
+async function pollAll() {
+  // מנגנון נעילה: אם בקשה כבר רצה — לא מתחילים עוד אחת
+  if (pollPending) return;
   if (!me || !items.length) return;
   pollPending = true;
   try {
@@ -711,10 +713,15 @@ async function pollAll(force) {
 
     // ── מבזקים חדשים ──
     const newRaw = d.new_items || [];
+    // סינון כפילויות: רק IDs שעדיין לא ב-knownIds
     const ni = newRaw.filter(e => !knownIds.has(e.id));
     if (ni.length) {
+      // תחילה מעדכנים lastTs ו-knownIds — לפני כל שינוי DOM
+      // כך שבקשה מקבילה שתחזור באותו רגע תראה את ה-IDs החדשים
       lastTs = Math.max(...newRaw.map(e => e.ts || 0), lastTs);
-      ni.forEach(e => { knownIds.add(e.id); items.push(e); });
+      ni.forEach(e => knownIds.add(e.id));   // ← חייב לבוא לפני appendChild
+      items.push(...ni);
+
       const inner = document.getElementById('feedInner');
       document.getElementById('empty').style.display = 'none';
       ni.forEach(e => {
@@ -730,7 +737,7 @@ async function pollAll(force) {
 
     // ── reactions (עדכון in-place, ללא scroll) ──
     const rxns = d.reactions || {};
-    Object.entries(rxns).forEach(([mid, r]) => renderRxn(mid, r));
+    Object.entries(rxns).forEach(([mid, rxn]) => renderRxn(mid, rxn));
 
     // ── כמות תגובות ──
     const counts = d.comment_counts || {};
@@ -739,7 +746,10 @@ async function pollAll(force) {
     });
 
   } catch(e) {}
-  pollPending = false;
+  finally {
+    // finally מבטיח שה-lock תמיד ישתחרר — גם במקרה של שגיאה
+    pollPending = false;
+  }
 }
 
 /* polling לתגובות בפאנל הפתוח — נשאר נפרד כי צריך עדכון מהיר יותר */
