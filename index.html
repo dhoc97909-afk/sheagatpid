@@ -425,6 +425,13 @@ function applyLogin() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 
+  // רישום הכניסה לשרת — מעדכן משתמש קיים או מוסיף חדש
+  fetch(BACKEND + '/feed_login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: me.email, name: me.name, picture: me.picture })
+  }).catch(() => {});
+
   if (isAdmin()) {
     document.getElementById('adminBadge').classList.add('show');
     loadAdminUsers();
