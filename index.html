@@ -100,26 +100,33 @@ header{
 .bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-left:auto;}
 
 /* REACTIONS */
-.rxn-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center;}
+.rxn-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;align-items:center;}
 .rxn-chip{
-  display:inline-flex;align-items:center;gap:4px;
+  display:inline-flex;align-items:center;gap:2px;
   background:#f3f4f6;border:1px solid #e5e7eb;
-  border-radius:8px;padding:3px 8px;
-  font-size:15px;cursor:pointer;transition:all .12s;user-select:none;
-  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji','Heebo',sans-serif;
+  border-radius:99px;padding:1px 6px 1px 4px;
+  cursor:pointer;transition:all .12s;user-select:none;
+  line-height:1;
 }
-.rxn-chip:hover{background:#e5e7eb;border-color:#d1d5db;}
+.rxn-chip:hover{background:#e5e7eb;border-color:#d1d5db;transform:scale(1.08);}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
-.rxn-count{font-size:12px;font-weight:700;color:#374151;font-family:'Heebo',sans-serif;}
+.rxn-chip.mine:hover{background:#dbeafe;}
+.rxn-emoji{
+  font-size:13px;line-height:1;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+}
+.rxn-count{font-size:11px;font-weight:700;color:#6b7280;font-family:'Heebo',sans-serif;}
+.rxn-chip.mine .rxn-count{color:#1a56db;}
 
 .rxn-add-btn{
   background:none;border:none;cursor:pointer;
-  padding:3px;border-radius:99px;line-height:0;
-  display:inline-flex;align-items:center;color:#bbb;
+  padding:2px;border-radius:99px;line-height:0;
+  display:inline-flex;align-items:center;color:#ccc;
   transition:color .12s,background .12s,transform .12s;
 }
-.rxn-add-btn:hover{color:#555;background:#f0f0f0;transform:scale(1.15);}
-.rxn-add-btn svg{width:20px;height:20px;display:block;}
+.rxn-add-btn:hover{color:#666;background:#f0f0f0;transform:scale(1.15);}
+.rxn-add-btn svg{width:16px;height:16px;display:block;}
+.rxn-add-btn.maxed{opacity:0.3;cursor:default;pointer-events:none;}
 
 .cmt-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:color .12s;}
 .cmt-btn:hover{color:#1a56db;}
@@ -492,19 +499,28 @@ function renderRxn(msgId, rxns) {
   if (!bar) return;
   const addBtn = bar.querySelector('.rxn-add-btn');
   bar.innerHTML = '';
-  Object.entries(rxns).forEach(([emoji, users]) => {
-    if (!users.length) return;
+
+  // סוגי אימוג'י פעילים (מפתחות עם לפחות משתמש אחד)
+  const activeTypes = Object.entries(rxns).filter(([, users]) => users.length);
+
+  activeTypes.forEach(([emoji, users]) => {
     const mine = users.includes(me?.email);
     const c = document.createElement('button');
     c.className = 'rxn-chip' + (mine ? ' mine' : '');
-    c.innerHTML = `<span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif">${esc(emoji)}</span><span class="rxn-count">${users.length}</span>`;
+    c.innerHTML = `<span class="rxn-emoji">${esc(emoji)}</span><span class="rxn-count">${users.length}</span>`;
     c.onclick = () => doReact(msgId, emoji);
     bar.appendChild(c);
   });
-  if (addBtn) { bar.appendChild(addBtn); }
-  else {
+
+  // כפתור הוספה — מושבת אם כבר יש 5 סוגים שונים
+  if (addBtn) {
+    addBtn.classList.toggle('maxed', activeTypes.length >= 5);
+    bar.appendChild(addBtn);
+  } else {
     const b = document.createElement('button');
-    b.className = 'rxn-add-btn'; b.title = 'הוסף תגובה'; b.innerHTML = REACT_SVG;
+    b.className = 'rxn-add-btn' + (activeTypes.length >= 5 ? ' maxed' : '');
+    b.title = activeTypes.length >= 5 ? 'הגעת למגבלת 5 סוגי תגובות' : 'הוסף תגובה';
+    b.innerHTML = REACT_SVG;
     b.onclick = (ev) => openPicker(ev, msgId);
     bar.appendChild(b);
   }
@@ -544,8 +560,13 @@ document.addEventListener('click', e => {
 
 async function doReact(msgId, emoji) {
   if (!me) return;
-  // ולידציה בסיסית
   if (typeof emoji !== 'string' || emoji.length > MAX_EMOJI_LEN) return;
+
+  const current = rxnCache[msgId] || {};
+  // בדיקת מגבלת 5 סוגים בצד הלקוח — מונע optimistic update מיותר
+  const activeTypes = Object.entries(current).filter(([, u]) => u.length);
+  const isNewType = !(emoji in current);
+  if (isNewType && activeTypes.length >= 5) return; // כבר 5 סוגים, לא מוסיפים
 
   // Optimistic update
   const current = rxnCache[msgId] || {};
