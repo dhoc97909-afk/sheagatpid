@@ -365,7 +365,7 @@ const BACKEND = 'https://dhoc97909.pythonanywhere.com';
 const GOOGLE_CLIENT_ID = '856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
 const LOGO = 'https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
 const ADMIN_EMAIL = 'david@hamakom.ovh';
-const STORAGE_KEY = 'shaagat_hari_user_v2';
+const STORAGE_KEY = 'shaagat_hari_user';
 
 // ── מגבלות תוכן (אבטחה בסיסית) ──
 const MAX_COMMENT_LEN = 500;
@@ -403,7 +403,14 @@ function rich(t) {
 
 function timeLabel(e) {
   const today = new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
-  return (e.date && e.date !== today) ? e.date + ' ' + e.time : (e.time || '');
+  // מוסיפים שעתיים כי השרת רץ על UTC והשעה מוצגת בפיגור
+  const fixTime = (t) => {
+    if (!t || !t.includes(':')) return t;
+    const [h, m] = t.split(':').map(Number);
+    const fixed = ((h + 2) % 24).toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
+    return fixed;
+  };
+  return (e.date && e.date !== today) ? e.date + ' ' + fixTime(e.time) : fixTime(e.time || '');
 }
 
 function isAdmin() { return me?.email === ADMIN_EMAIL; }
