@@ -96,36 +96,42 @@ header{
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
 
-.bubble-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:5px;}
-.bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-left:auto;}
+.bubble-foot{
+  display:flex;align-items:center;gap:5px;
+  margin-top:6px;flex-wrap:wrap;
+}
+.bubble-time{font-size:11px;color:#aaa;font-weight:500;margin-left:auto;white-space:nowrap;}
 
-/* REACTIONS */
-.rxn-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;align-items:center;}
+/* REACTIONS — בתוך bubble-foot */
+.rxn-row{display:contents;} /* מאפשר לצ'יפים לשבת ישירות בתוך bubble-foot */
 .rxn-chip{
-  display:inline-flex;align-items:center;gap:2px;
+  display:inline-flex;align-items:center;justify-content:center;gap:2px;
   background:#f3f4f6;border:1px solid #e5e7eb;
-  border-radius:99px;padding:1px 6px 1px 4px;
-  cursor:pointer;transition:all .12s;user-select:none;
-  line-height:1;
+  border-radius:6px;
+  padding:2px 5px;
+  height:22px;
+  cursor:pointer;transition:background .12s,border-color .12s,transform .1s;
+  user-select:none;line-height:1;
 }
 .rxn-chip:hover{background:#e5e7eb;border-color:#d1d5db;transform:scale(1.08);}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
 .rxn-chip.mine:hover{background:#dbeafe;}
 .rxn-emoji{
-  font-size:13px;line-height:1;
+  font-size:12px;line-height:1;
   font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
 }
-.rxn-count{font-size:11px;font-weight:700;color:#6b7280;font-family:'Heebo',sans-serif;}
+.rxn-count{font-size:10px;font-weight:700;color:#6b7280;font-family:'Heebo',sans-serif;}
 .rxn-chip.mine .rxn-count{color:#1a56db;}
 
 .rxn-add-btn{
   background:none;border:none;cursor:pointer;
-  padding:2px;border-radius:99px;line-height:0;
+  padding:1px;border-radius:6px;line-height:0;
   display:inline-flex;align-items:center;color:#ccc;
   transition:color .12s,background .12s,transform .12s;
+  height:22px;width:22px;justify-content:center;
 }
-.rxn-add-btn:hover{color:#666;background:#f0f0f0;transform:scale(1.15);}
-.rxn-add-btn svg{width:16px;height:16px;display:block;}
+.rxn-add-btn:hover{color:#666;background:#f0f0f0;transform:scale(1.12);}
+.rxn-add-btn svg{width:14px;height:14px;display:block;}
 .rxn-add-btn.maxed{opacity:0.3;cursor:default;pointer-events:none;}
 
 .cmt-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-size:12px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:color .12s;}
@@ -479,11 +485,11 @@ function buildMsg(e) {
       <div class="msg-meta">שאגת הארי</div>
       <div class="bubble${red ? ' is-red' : ''}">
         ${content}${media}${btns}
-        <div class="rxn-row" id="rxn-${escAttr(id)}">
-          <button class="rxn-add-btn" onclick="openPicker(event,'${escAttr(id)}')" title="הוסף תגובה">${REACT_SVG}</button>
-        </div>
         <div class="bubble-foot">
           <span class="bubble-time">${esc(timeLabel(e))}</span>
+          <div class="rxn-row" id="rxn-${escAttr(id)}">
+            <button class="rxn-add-btn" onclick="openPicker(event,'${escAttr(id)}')" title="הוסף תגובה">${REACT_SVG}</button>
+          </div>
           <button class="cmt-btn${n > 0 ? ' has-cmt' : ''}" id="cbtn-${escAttr(id)}" onclick="openComments('${escAttr(id)}')">
             <i class="fas fa-comment" style="font-size:10px"></i> ${cmtLabel}
           </button>
