@@ -425,17 +425,24 @@ function applyLogin() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 
-  // רישום הכניסה לשרת — מעדכן משתמש קיים או מוסיף חדש
+  // רישום הכניסה לשרת — מחכים לסיום לפני שמרעננים את הספירה
   fetch(BACKEND + '/feed_login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: me.email, name: me.name, picture: me.picture })
-  }).catch(() => {});
+  }).then(r => r.json()).then(d => {
+    // מעדכן את הספירה מיד מהתשובה — לא צריך לחכות ל-interval
+    if (isAdmin() && d.count != null) {
+      document.getElementById('adminUserCount').textContent = d.count;
+    }
+  }).catch(() => {}).finally(() => {
+    if (isAdmin()) loadAdminUsers();
+  });
 
   if (isAdmin()) {
     document.getElementById('adminBadge').classList.add('show');
     loadAdminUsers();
-    setInterval(loadAdminUsers, 30000); // הורדנו מ-15 ל-30 שניות
+    setInterval(loadAdminUsers, 30000);
   }
 
   loadFeed();
