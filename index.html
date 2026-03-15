@@ -563,13 +563,12 @@ async function doReact(msgId, emoji) {
   if (typeof emoji !== 'string' || emoji.length > MAX_EMOJI_LEN) return;
 
   const current = rxnCache[msgId] || {};
-  // בדיקת מגבלת 5 סוגים בצד הלקוח — מונע optimistic update מיותר
+  // בדיקת מגבלת 5 סוגים בצד הלקוח
   const activeTypes = Object.entries(current).filter(([, u]) => u.length);
   const isNewType = !(emoji in current);
-  if (isNewType && activeTypes.length >= 5) return; // כבר 5 סוגים, לא מוסיפים
+  if (isNewType && activeTypes.length >= 5) return;
 
   // Optimistic update
-  const current = rxnCache[msgId] || {};
   const users = [...(current[emoji] || [])];
   const myIdx = users.indexOf(me.email);
   if (myIdx >= 0) users.splice(myIdx, 1); else users.push(me.email);
