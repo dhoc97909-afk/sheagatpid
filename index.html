@@ -39,9 +39,6 @@ header{
 .hdr-user{display:flex;align-items:center;gap:8px;}
 .hdr-user img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee;}
 
-/* ADMIN STRIP — hidden, replaced by inline badge */
-#adminStrip{display:none;}
-/* Admin badge next to user avatar in header */
 #adminBadge{
   display:none;align-items:center;gap:4px;
   background:#f0f4ff;border:1px solid #c7d7fa;
@@ -56,7 +53,7 @@ header{
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
 #feedInner{max-width:680px;margin:0 140px 0 auto;padding:0 10px 0 60px;display:flex;flex-direction:column;gap:6px;}
 
-/* MESSAGE ROW — direction:rtl so avatar is on the physical RIGHT */
+/* MESSAGE ROW */
 .msg-row{
   display:flex;direction:rtl;
   align-items:flex-start;gap:8px;
@@ -71,18 +68,12 @@ header{
   margin-top:17px;
 }
 
-/* Column: name label above bubble */
 .msg-col{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
-
-/* Sender name OUTSIDE the bubble */
 .msg-meta{
   direction:rtl;font-size:12px;font-weight:700;
   color:#666;padding-right:4px;
 }
 
-/* BUBBLE
-   Avatar is on RIGHT → sharp corner = top-right
-   border-radius: top-left  top-right  bottom-right  bottom-left */
 .bubble{
   background:#fff;direction:rtl;
   border-radius:18px 4px 18px 18px;
@@ -121,7 +112,6 @@ header{
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
 .rxn-count{font-size:12px;font-weight:700;color:#374151;font-family:'Heebo',sans-serif;}
 
-/* SVG reaction-add button — smiley only, no plus */
 .rxn-add-btn{
   background:none;border:none;cursor:pointer;
   padding:3px;border-radius:99px;line-height:0;
@@ -135,7 +125,7 @@ header{
 .cmt-btn:hover{color:#1a56db;}
 .cmt-btn.has-cmt{color:#1a56db;}
 
-/* ── EMOJI PICKER — horizontal strip, square chip buttons ── */
+/* EMOJI PICKER */
 #emojiPicker{
   position:fixed;
   background:#fff;border:1px solid #e5e7eb;
@@ -164,7 +154,7 @@ header{
 .ep-btn:hover{background:#e5e7eb;border-color:#d1d5db;transform:scale(1.15);}
 .ep-btn:active{transform:scale(.9);}
 
-/* ── COMMENTS PANEL — from LEFT, below header ── */
+/* COMMENTS PANEL */
 #cpOverlay{display:none;}
 #commentsPanel{
   position:fixed;
@@ -178,7 +168,6 @@ header{
   transition:transform .3s cubic-bezier(.16,1,.3,1);
 }
 #commentsPanel.open{transform:translateX(0);}
-#commentsPanel.admin-offset{top:86px;height:calc(100% - 86px);}
 
 .cp-hdr{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .cp-title{font-size:15px;font-weight:800;color:#111;}
@@ -227,7 +216,7 @@ header{
 #empty{display:none;text-align:center;padding:60px 20px;color:#aaa;}
 #empty i{font-size:36px;opacity:.2;margin-bottom:10px;display:block;}
 
-/* ── IMAGE LIGHTBOX ── */
+/* LIGHTBOX */
 #lightbox{
   position:fixed;inset:0;z-index:900;
   background:rgba(0,0,0,.88);
@@ -287,9 +276,6 @@ header{
     </div>
   </header>
 
-  <!-- Admin strip hidden, count shown in header -->
-  <div id="adminStrip"></div>
-
   <div id="feedWrap">
     <div id="feedInner"></div>
     <div id="empty"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
@@ -302,7 +288,7 @@ header{
   </button>
 </div>
 
-<!-- EMOJI PICKER — horizontal strip -->
+<!-- EMOJI PICKER -->
 <div id="emojiPicker">
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
   <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
@@ -322,7 +308,7 @@ header{
   <button class="ep-btn" onclick="pickEmoji('😱')">😱</button>
 </div>
 
-<!-- COMMENTS PANEL — slides in from LEFT -->
+<!-- COMMENTS PANEL -->
 <div id="cpOverlay" onclick="closeComments()"></div>
 <div id="commentsPanel">
   <div class="cp-hdr">
@@ -345,137 +331,153 @@ header{
 </div>
 
 <script>
-const BACKEND='https://dhoc97909.pythonanywhere.com';
-const GOOGLE_CLIENT_ID='856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
-const LOGO='https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
-const ADMIN_EMAIL='david@hamakom.ovh';
-const STORAGE_KEY='shaagat_hari_user';
+const BACKEND = 'https://dhoc97909.pythonanywhere.com';
+const GOOGLE_CLIENT_ID = '856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
+const LOGO = 'https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
+const ADMIN_EMAIL = 'david@hamakom.ovh';
+const STORAGE_KEY = 'shaagat_hari_user';
 
-let me=null, items=[], lastTs=0, newCount=0, atBottom=true;
-let activePicker=null, activeCmtMsgId=null;
-let rxnCache={}, cmtCount={};
-const knownIds=new Set();
-let polling=false;
+// ── מגבלות תוכן (אבטחה בסיסית) ──
+const MAX_COMMENT_LEN = 500;
+const MAX_EMOJI_LEN   = 8;
 
-/* SVG reaction-add button — smiley face only, no plus */
-const REACT_SVG=`<svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+let me = null, items = [], lastTs = 0, newCount = 0, atBottom = true;
+let activePicker = null, activeCmtMsgId = null;
+let rxnCache = {}, cmtCount = {};
+const knownIds = new Set();
+let pollPending = false; // מונע בקשות כפולות
+
+const REACT_SVG = `<svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
   <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.65"/>
   <circle cx="8.5" cy="9.5" r="1.1" fill="currentColor"/>
   <circle cx="13.5" cy="9.5" r="1.1" fill="currentColor"/>
   <path d="M8 13.2c.65 1.5 2 2.2 3 2.2s2.35-.72 3-2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
-function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function rich(t){
-  if(!t)return'';
-  let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-  // **bold** or *bold*
-  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
-  s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
-  // __underline__
-  s=s.replace(/__([^_\n]+)__/g,'<u>$1</u>');
-  // _italic_
-  s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
-  // ~~strikethrough~~
-  s=s.replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
-  s=s.replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+// ── sanitize בסיסי ──
+function esc(t) { return (t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(t) { return esc(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function rich(t) {
+  if (!t) return '';
+  let s = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  s = s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+  s = s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
+  s = s.replace(/__([^_\n]+)__/g,'<u>$1</u>');
+  s = s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
+  s = s.replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
+  // קישורים — רק http/https
+  s = s.replace(/(https?:\/\/[^\s<>"']{1,500})/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
   return s;
 }
-function timeLabel(e){
-  const today=new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
-  return(e.date&&e.date!==today)?e.date+' '+e.time:(e.time||'');
+
+function timeLabel(e) {
+  const today = new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return (e.date && e.date !== today) ? e.date + ' ' + e.time : (e.time || '');
 }
-function isAdmin(){return me?.email===ADMIN_EMAIL;}
+
+function isAdmin() { return me?.email === ADMIN_EMAIL; }
 
 /* ── AUTH ── */
-function saveUser(u){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(u));}catch(e){}}
-function loadSavedUser(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
-function clearSavedUser(){try{localStorage.removeItem(STORAGE_KEY);}catch(e){}}
+function saveUser(u) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)); } catch(e) {} }
+function loadSavedUser() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch(e) {} return null; }
+function clearSavedUser() { try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} }
 
-async function verifyAndLogin(user){
-  me=user;saveUser(user);applyLogin();return true;
+async function verifyAndLogin(user) {
+  me = user; saveUser(user); applyLogin(); return true;
 }
 
-function applyLogin(){
-  const av=document.getElementById('userAvatar');
-  av.innerHTML=me.picture
-    ?`<img src="${esc(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
-    :`<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${me.name[0].toUpperCase()}</div>`;
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('app').style.display='flex';
+function applyLogin() {
+  const av = document.getElementById('userAvatar');
+  av.innerHTML = me.picture
+    ? `<img src="${escAttr(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
+    : `<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${esc(me.name[0].toUpperCase())}</div>`;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
 
-  fetch(BACKEND+'/feed_login',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:me.email,name:me.name,picture:me.picture})}).catch(()=>{});
-
-  if(isAdmin()){
+  if (isAdmin()) {
     document.getElementById('adminBadge').classList.add('show');
     loadAdminUsers();
-    setInterval(loadAdminUsers,15000);
+    setInterval(loadAdminUsers, 30000); // הורדנו מ-15 ל-30 שניות
   }
 
   loadFeed();
 }
 
-async function loadAdminUsers(){
-  try{
-    const r=await fetch(BACKEND+'/feed_logins?email='+encodeURIComponent(ADMIN_EMAIL));
-    const d=await r.json();
-    const count=(d.logins||[]).length;
-    document.getElementById('adminUserCount').textContent=count;
-  }catch(e){}
+async function loadAdminUsers() {
+  try {
+    const r = await fetch(BACKEND + '/feed_logins?email=' + encodeURIComponent(ADMIN_EMAIL));
+    const d = await r.json();
+    document.getElementById('adminUserCount').textContent = (d.logins || []).length;
+  } catch(e) {}
 }
 
-function initGoogle(){
-  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleLogin,auto_select:true});
-  const saved=loadSavedUser();
-  if(saved){verifyAndLogin(saved);return;}
-  google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',locale:'he',width:240});
+function initGoogle() {
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleLogin, auto_select: true });
+  const saved = loadSavedUser();
+  if (saved) { verifyAndLogin(saved); return; }
+  google.accounts.id.renderButton(document.getElementById('googleBtn'), { theme:'outline', size:'large', locale:'he', width:240 });
   google.accounts.id.prompt();
 }
-async function handleLogin(resp){
-  let payload={};
-  try{payload=JSON.parse(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){}
-  const email=(payload.email||'').toLowerCase();
-  const user={email,name:payload.name||email.split('@')[0],picture:payload.picture||''};
+
+async function handleLogin(resp) {
+  let payload = {};
+  try {
+    const parts = resp.credential.split('.');
+    if (parts.length !== 3) throw new Error('invalid token');
+    payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+  } catch(e) { return; }
+  const email = (payload.email || '').toLowerCase();
+  if (!email || !email.includes('@')) return;
+  const user = { email, name: payload.name || email.split('@')[0], picture: payload.picture || '' };
   await verifyAndLogin(user);
 }
 
 /* ── BUILD MSG ── */
-function buildMsg(e){
-  const red=e.profile==='red';
-  const id=e.id;
-  const lines=(e.text||'').trim().split('\n');
-  const h=lines[0]||'';
-  const body=lines.slice(1).join('\n').trim();
+function buildMsg(e) {
+  const red = e.profile === 'red';
+  const id = e.id;
+  const lines = (e.text || '').trim().split('\n');
+  const h = lines[0] || '';
+  const body = lines.slice(1).join('\n').trim();
 
-  let content='';
-  if(red){
-    content=`<div class="bubble-headline">🚨 ${esc(h)}</div>`;
-    if(body) content+=`<div class="bubble-text" style="margin-top:4px">${rich(body)}</div>`;
+  let content = '';
+  if (red) {
+    content = `<div class="bubble-headline">🚨 ${esc(h)}</div>`;
+    if (body) content += `<div class="bubble-text" style="margin-top:4px">${rich(body)}</div>`;
   } else {
-    content=`<div class="bubble-text">${rich(h+(body?'\n'+body:''))}</div>`;
+    content = `<div class="bubble-text">${rich(h + (body ? '\n' + body : ''))}</div>`;
   }
-  let media='';
-  if(e.imgUrl) media+=`<div class="bubble-img"><img src="${esc(e.imgUrl)}" loading="lazy" style="cursor:pointer" onclick="openLightbox('${esc(e.imgUrl)}')" onerror="this.closest('.bubble-img').remove()"></div>`;
 
-  if(e.videoUrl) media+=`<div class="bubble-vid"><a class="vid-btn" href="${esc(e.videoUrl)}" target="_blank"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
-  let btns='';
-  if(e.buttons&&e.buttons.length) btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${esc(b.url)}" target="_blank">${esc(b.text)}</a>`).join('')+'</div>';
-  const n=cmtCount[id]||0;
-  const cmtLabel=n===0?'תגובות':n===1?'1 תגובה':n+' תגובות';
+  let media = '';
+  if (e.imgUrl) {
+    const safeUrl = escAttr(e.imgUrl);
+    media += `<div class="bubble-img"><img src="${safeUrl}" loading="lazy" style="cursor:pointer" onclick="openLightbox('${safeUrl}')" onerror="this.closest('.bubble-img').remove()"></div>`;
+  }
+  if (e.videoUrl) media += `<div class="bubble-vid"><a class="vid-btn" href="${escAttr(e.videoUrl)}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
 
-  return `<div class="msg-row" data-id="${id}">
+  let btns = '';
+  if (e.buttons && e.buttons.length) {
+    btns = '<div class="bubble-btns">' + e.buttons.map(b =>
+      `<a class="lnk-btn" href="${escAttr(b.url)}" target="_blank" rel="noopener noreferrer">${esc(b.text)}</a>`
+    ).join('') + '</div>';
+  }
+
+  const n = cmtCount[id] || 0;
+  const cmtLabel = n === 0 ? 'תגובות' : n === 1 ? '1 תגובה' : n + ' תגובות';
+
+  return `<div class="msg-row" data-id="${escAttr(id)}">
     <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
     <div class="msg-col">
       <div class="msg-meta">שאגת הארי</div>
-      <div class="bubble${red?' is-red':''}">
+      <div class="bubble${red ? ' is-red' : ''}">
         ${content}${media}${btns}
-        <div class="rxn-row" id="rxn-${id}">
-          <button class="rxn-add-btn" onclick="openPicker(event,'${id}')" title="הוסף תגובה">${REACT_SVG}</button>
+        <div class="rxn-row" id="rxn-${escAttr(id)}">
+          <button class="rxn-add-btn" onclick="openPicker(event,'${escAttr(id)}')" title="הוסף תגובה">${REACT_SVG}</button>
         </div>
         <div class="bubble-foot">
-          <span class="bubble-time">${timeLabel(e)}</span>
-          <button class="cmt-btn${n>0?' has-cmt':''}" id="cbtn-${id}" onclick="openComments('${id}')">
+          <span class="bubble-time">${esc(timeLabel(e))}</span>
+          <button class="cmt-btn${n > 0 ? ' has-cmt' : ''}" id="cbtn-${escAttr(id)}" onclick="openComments('${escAttr(id)}')">
             <i class="fas fa-comment" style="font-size:10px"></i> ${cmtLabel}
           </button>
         </div>
@@ -484,305 +486,330 @@ function buildMsg(e){
   </div>`;
 }
 
-function renderRxn(msgId,rxns){
-  rxnCache[msgId]=rxns;
-  const bar=document.getElementById('rxn-'+msgId);
-  if(!bar)return;
-  const addBtn=bar.querySelector('.rxn-add-btn');
-  bar.innerHTML='';
-  Object.entries(rxns).forEach(([emoji,users])=>{
-    if(!users.length)return;
-    const mine=users.includes(me?.email);
-    const c=document.createElement('button');
-    c.className='rxn-chip'+(mine?' mine':'');
-    c.innerHTML=`<span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif">${emoji}</span><span class="rxn-count">${users.length}</span>`;
-    c.onclick=()=>doReact(msgId,emoji);
+function renderRxn(msgId, rxns) {
+  rxnCache[msgId] = rxns;
+  const bar = document.getElementById('rxn-' + msgId);
+  if (!bar) return;
+  const addBtn = bar.querySelector('.rxn-add-btn');
+  bar.innerHTML = '';
+  Object.entries(rxns).forEach(([emoji, users]) => {
+    if (!users.length) return;
+    const mine = users.includes(me?.email);
+    const c = document.createElement('button');
+    c.className = 'rxn-chip' + (mine ? ' mine' : '');
+    c.innerHTML = `<span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif">${esc(emoji)}</span><span class="rxn-count">${users.length}</span>`;
+    c.onclick = () => doReact(msgId, emoji);
     bar.appendChild(c);
   });
-  if(addBtn){bar.appendChild(addBtn);}
-  else{
-    const b=document.createElement('button');
-    b.className='rxn-add-btn';b.title='הוסף תגובה';b.innerHTML=REACT_SVG;
-    b.onclick=(ev)=>openPicker(ev,msgId);
+  if (addBtn) { bar.appendChild(addBtn); }
+  else {
+    const b = document.createElement('button');
+    b.className = 'rxn-add-btn'; b.title = 'הוסף תגובה'; b.innerHTML = REACT_SVG;
+    b.onclick = (ev) => openPicker(ev, msgId);
     bar.appendChild(b);
   }
 }
 
 /* ── EMOJI PICKER ── */
-function openPicker(ev,msgId){
+function openPicker(ev, msgId) {
   ev.stopPropagation();
-  activePicker=msgId;
-  const p=document.getElementById('emojiPicker');
-
-  p.style.visibility='hidden';p.style.display='flex';
-  const pH=p.offsetHeight, pW=p.offsetWidth;
-  p.style.display='';p.style.visibility='';
-
-  const rect=ev.currentTarget.getBoundingClientRect();
-  const headerH=document.getElementById('adminStrip').classList.contains('show')?86:56;
-  const M=8;
-
-  let top=rect.top-pH-M;
-  if(top<headerH+M) top=rect.bottom+M;
-  top=Math.max(headerH+M,top);
-
-  let left=rect.left+rect.width/2-pW/2;
-  if(left<M) left=M;
-  if(left+pW>window.innerWidth-M) left=window.innerWidth-pW-M;
-
-  p.style.top=top+'px';
-  p.style.left=left+'px';
+  activePicker = msgId;
+  const p = document.getElementById('emojiPicker');
+  p.style.visibility = 'hidden'; p.style.display = 'flex';
+  const pH = p.offsetHeight, pW = p.offsetWidth;
+  p.style.display = ''; p.style.visibility = '';
+  const rect = ev.currentTarget.getBoundingClientRect();
+  const M = 8;
+  let top = rect.top - pH - M;
+  if (top < 56 + M) top = rect.bottom + M;
+  top = Math.max(56 + M, top);
+  let left = rect.left + rect.width / 2 - pW / 2;
+  if (left < M) left = M;
+  if (left + pW > window.innerWidth - M) left = window.innerWidth - pW - M;
+  p.style.top = top + 'px';
+  p.style.left = left + 'px';
   p.classList.toggle('show');
 }
-function pickEmoji(em){
+
+function pickEmoji(em) {
   document.getElementById('emojiPicker').classList.remove('show');
-  if(activePicker) doReact(activePicker,em);
-  activePicker=null;
+  if (activePicker) doReact(activePicker, em);
+  activePicker = null;
 }
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#emojiPicker')&&!e.target.closest('.rxn-add-btn'))
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#emojiPicker') && !e.target.closest('.rxn-add-btn'))
     document.getElementById('emojiPicker').classList.remove('show');
 });
-async function doReact(msgId,emoji){
-  if(!me)return;
-  // Optimistic update — change DOM immediately
-  const current=rxnCache[msgId]||{};
-  const users=[...(current[emoji]||[])];
-  const myIdx=users.indexOf(me.email);
-  if(myIdx>=0) users.splice(myIdx,1); else users.push(me.email);
-  const optimistic={...current};
-  if(users.length) optimistic[emoji]=users; else delete optimistic[emoji];
-  renderRxn(msgId,optimistic);
-  // Then confirm with server
-  try{
-    const r=await fetch(BACKEND+'/feed_react',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,msgId,emoji})});
-    const d=await r.json();
-    if(d.status==='ok') renderRxn(msgId,d.reactions);
-  }catch(e){}
+
+async function doReact(msgId, emoji) {
+  if (!me) return;
+  // ולידציה בסיסית
+  if (typeof emoji !== 'string' || emoji.length > MAX_EMOJI_LEN) return;
+
+  // Optimistic update
+  const current = rxnCache[msgId] || {};
+  const users = [...(current[emoji] || [])];
+  const myIdx = users.indexOf(me.email);
+  if (myIdx >= 0) users.splice(myIdx, 1); else users.push(me.email);
+  const optimistic = { ...current };
+  if (users.length) optimistic[emoji] = users; else delete optimistic[emoji];
+  renderRxn(msgId, optimistic);
+
+  try {
+    const r = await fetch(BACKEND + '/feed_react', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: me.email, msgId, emoji })
+    });
+    const d = await r.json();
+    if (d.status === 'ok') renderRxn(msgId, d.reactions);
+  } catch(e) {}
 }
 
 /* ── COMMENTS ── */
-function openComments(msgId){
-  activeCmtMsgId=msgId;
+function openComments(msgId) {
+  activeCmtMsgId = msgId;
   document.getElementById('commentsPanel').classList.add('open');
   document.getElementById('cpOverlay').classList.add('show');
   loadComments(msgId);
 }
-function closeComments(){
+
+function closeComments() {
   document.getElementById('commentsPanel').classList.remove('open');
   document.getElementById('cpOverlay').classList.remove('show');
-  activeCmtMsgId=null;
-}
-async function loadComments(msgId){
-  const b=document.getElementById('cpBody');
-  // Show cached count instantly if we have it, no "loading" spinner
-  const cached=b.dataset.msgId===msgId;
-  if(!cached) b.innerHTML='';
-  b.dataset.msgId=msgId;
-  try{
-    const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(msgId));
-    const d=await r.json();
-    const list=d.comments||[];
-    cmtCount[msgId]=list.length;
-    updateCmtBtn(msgId,list.length);
-    const wasAtBottom=(b.scrollHeight-b.scrollTop-b.clientHeight)<60;
-    b.innerHTML=list.length?list.map(c=>buildCmt(msgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
-    if(wasAtBottom||!cached) b.scrollTop=b.scrollHeight;
-  }catch(e){if(!b.innerHTML)b.innerHTML='<div class="no-cmt">שגיאה</div>';}
+  activeCmtMsgId = null;
 }
 
-function buildCmt(msgId,c){
-  const canDelete=isAdmin()||(c.email===me?.email);
-  const av=c.picture
-    ?`<img class="ci-av" src="${esc(c.picture)}" onerror="this.parentNode.innerHTML='<div class=ci-av-i>${(c.name||'?')[0].toUpperCase()}</div>'">`
-    :`<div class="ci-av-i">${(c.name||'?')[0].toUpperCase()}</div>`;
-  return `<div class="ci" id="ci-${c.id}">
+async function loadComments(msgId) {
+  const b = document.getElementById('cpBody');
+  const cached = b.dataset.msgId === msgId;
+  if (!cached) b.innerHTML = '';
+  b.dataset.msgId = msgId;
+  try {
+    const r = await fetch(BACKEND + '/feed_comments?msgId=' + encodeURIComponent(msgId));
+    const d = await r.json();
+    const list = d.comments || [];
+    cmtCount[msgId] = list.length;
+    updateCmtBtn(msgId, list.length);
+    const wasAtBottom = (b.scrollHeight - b.scrollTop - b.clientHeight) < 60;
+    b.innerHTML = list.length ? list.map(c => buildCmt(msgId, c)).join('') : '<div class="no-cmt">עדיין אין תגובות</div>';
+    if (wasAtBottom || !cached) b.scrollTop = b.scrollHeight;
+  } catch(e) { if (!b.innerHTML) b.innerHTML = '<div class="no-cmt">שגיאה</div>'; }
+}
+
+function buildCmt(msgId, c) {
+  const canDelete = isAdmin() || (c.email === me?.email);
+  const av = c.picture
+    ? `<img class="ci-av" src="${escAttr(c.picture)}" onerror="this.parentNode.innerHTML='<div class=ci-av-i>${esc((c.name || '?')[0].toUpperCase())}</div>'">`
+    : `<div class="ci-av-i">${esc((c.name || '?')[0].toUpperCase())}</div>`;
+  return `<div class="ci" id="ci-${escAttr(c.id)}">
     ${av}
     <div class="ci-bubble">
       <div class="ci-text">${esc(c.text)}</div>
-      <div class="ci-time">${c.time||''}</div>
-      ${canDelete?`<button class="ci-del" onclick="delCmt('${msgId}','${c.id}')"><i class="fas fa-times"></i></button>`:''}
+      <div class="ci-time">${esc(c.time || '')}</div>
+      ${canDelete ? `<button class="ci-del" onclick="delCmt('${escAttr(msgId)}','${escAttr(c.id)}')"><i class="fas fa-times"></i></button>` : ''}
     </div>
   </div>`;
 }
 
-function updateCmtBtn(msgId,n){
-  const btn=document.getElementById('cbtn-'+msgId);
-  if(!btn)return;
-  btn.className='cmt-btn'+(n>0?' has-cmt':'');
-  const label=n===0?'תגובות':n===1?'1 תגובה':n+' תגובות';
-  btn.innerHTML=`<i class="fas fa-comment" style="font-size:10px"></i> ${label}`;
+function updateCmtBtn(msgId, n) {
+  const btn = document.getElementById('cbtn-' + msgId);
+  if (!btn) return;
+  btn.className = 'cmt-btn' + (n > 0 ? ' has-cmt' : '');
+  const label = n === 0 ? 'תגובות' : n === 1 ? '1 תגובה' : n + ' תגובות';
+  btn.innerHTML = `<i class="fas fa-comment" style="font-size:10px"></i> ${label}`;
 }
-async function sendComment(){
-  const inp=document.getElementById('cpInp');
-  const text=inp.value.trim();
-  if(!text||!me||!activeCmtMsgId)return;
-  inp.value='';inp.style.height='auto';
-  try{
-    const r=await fetch(BACKEND+'/feed_comment_add',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:me.email,name:me.name,picture:me.picture,msgId:activeCmtMsgId,text})});
-    const d=await r.json();
-    if(d.status==='ok'){
-      const b=document.getElementById('cpBody');
+
+async function sendComment() {
+  const inp = document.getElementById('cpInp');
+  const text = inp.value.trim();
+  if (!text || !me || !activeCmtMsgId) return;
+  // ולידציה אורך
+  if (text.length > MAX_COMMENT_LEN) { alert('תגובה ארוכה מדי (מקסימום ' + MAX_COMMENT_LEN + ' תווים)'); return; }
+  inp.value = ''; inp.style.height = 'auto';
+  try {
+    const r = await fetch(BACKEND + '/feed_comment_add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: me.email, name: me.name, picture: me.picture, msgId: activeCmtMsgId, text })
+    });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      const b = document.getElementById('cpBody');
       b.querySelector('.no-cmt')?.remove();
-      const div=document.createElement('div');div.innerHTML=buildCmt(activeCmtMsgId,d.comment);
-      b.appendChild(div.firstChild);b.scrollTop=b.scrollHeight;
-      cmtCount[activeCmtMsgId]=(cmtCount[activeCmtMsgId]||0)+1;
-      updateCmtBtn(activeCmtMsgId,cmtCount[activeCmtMsgId]);
+      const div = document.createElement('div');
+      div.innerHTML = buildCmt(activeCmtMsgId, d.comment);
+      b.appendChild(div.firstChild);
+      b.scrollTop = b.scrollHeight;
+      cmtCount[activeCmtMsgId] = (cmtCount[activeCmtMsgId] || 0) + 1;
+      updateCmtBtn(activeCmtMsgId, cmtCount[activeCmtMsgId]);
     }
-  }catch(e){}
+  } catch(e) {}
 }
-async function delCmt(msgId,cid){
-  if(!me)return;
-  try{
-    const r=await fetch(BACKEND+'/feed_comment_delete',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:me.email,msgId,commentId:cid})});
-    const d=await r.json();
-    if(d.status==='ok'){
-      document.getElementById('ci-'+cid)?.remove();
-      cmtCount[msgId]=Math.max(0,(cmtCount[msgId]||1)-1);
-      updateCmtBtn(msgId,cmtCount[msgId]);
-      if(!document.querySelector('#cpBody .ci'))
-        document.getElementById('cpBody').innerHTML='<div class="no-cmt">עדיין אין תגובות</div>';
+
+async function delCmt(msgId, cid) {
+  if (!me) return;
+  try {
+    const r = await fetch(BACKEND + '/feed_comment_delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: me.email, msgId, commentId: cid })
+    });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      document.getElementById('ci-' + cid)?.remove();
+      cmtCount[msgId] = Math.max(0, (cmtCount[msgId] || 1) - 1);
+      updateCmtBtn(msgId, cmtCount[msgId]);
+      if (!document.querySelector('#cpBody .ci'))
+        document.getElementById('cpBody').innerHTML = '<div class="no-cmt">עדיין אין תגובות</div>';
     }
-  }catch(e){}
+  } catch(e) {}
 }
 
 /* ── FEED ── */
-async function loadFeed(){
+async function loadFeed() {
   setLoading(true);
-  try{
-    const r=await fetch(BACKEND+'/feed');
-    const d=await r.json();
-    if(d.status==='ok'){
-      items=[...d.feed].reverse();
-      items.forEach(e=>knownIds.add(e.id));
-      lastTs=items.length?Math.max(...items.map(e=>e.ts||0)):0;
-      const inner=document.getElementById('feedInner');
-      inner.innerHTML='';
-      if(!items.length){document.getElementById('empty').style.display='block';}
-      else{inner.innerHTML=items.map(buildMsg).join('');items.forEach(e=>loadRxn(e.id));pollCmtCounts();}
-      document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
+  try {
+    const r = await fetch(BACKEND + '/feed');
+    const d = await r.json();
+    if (d.status === 'ok') {
+      items = [...d.feed].reverse();
+      items.forEach(e => knownIds.add(e.id));
+      lastTs = items.length ? Math.max(...items.map(e => e.ts || 0)) : 0;
+      const inner = document.getElementById('feedInner');
+      inner.innerHTML = '';
+      if (!items.length) {
+        document.getElementById('empty').style.display = 'block';
+      } else {
+        inner.innerHTML = items.map(buildMsg).join('');
+      }
+      document.getElementById('feedWrap').scrollTop = document.getElementById('feedWrap').scrollHeight;
+      // טעינה ראשונית של תגובות+reactions בבקשה אחת
+      if (items.length) await pollAll(true);
     }
-  }catch(e){}
+  } catch(e) {}
   setLoading(false);
 }
-async function loadRxn(msgId){
-  try{
-    const r=await fetch(BACKEND+'/feed_reactions?msgId='+encodeURIComponent(msgId));
-    const d=await r.json();
-    if(d.status==='ok') renderRxn(msgId,d.reactions);
-  }catch(e){}
-}
-async function pollNew(){
-  if(!lastTs||!me||polling)return;
-  polling=true;
-  try{
-    const r=await fetch(BACKEND+'/feed?since='+lastTs);
-    const d=await r.json();
-    if(d.status==='ok'&&d.feed?.length){
-      const ni=[...d.feed].reverse().filter(e=>!knownIds.has(e.id));
-      if(ni.length){
-        lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
-        ni.forEach(e=>knownIds.add(e.id));
-        items=[...items,...ni];
-        const inner=document.getElementById('feedInner');
-        document.getElementById('empty').style.display='none';
-        ni.forEach(e=>{const div=document.createElement('div');div.innerHTML=buildMsg(e);inner.appendChild(div.firstChild);loadRxn(e.id);});
-        pollCmtCounts();
-        if(atBottom)document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
-        else{newCount+=ni.length;updateScrollBtn();}
-      } else {
-        lastTs=Math.max(...d.feed.map(e=>e.ts||0),lastTs);
-      }
-    }
-  }catch(e){}
-  polling=false;
-}
-function scrollToBottom(){document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});newCount=0;updateScrollBtn();}
-function updateScrollBtn(){
-  const btn=document.getElementById('scrollDownBtn'),txt=document.getElementById('scrollDownTxt');
-  if(!atBottom){btn.classList.add('show');if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}else{btn.classList.remove('has-new');txt.textContent='למטה';}}
-  else{btn.classList.remove('show','has-new');newCount=0;}
-}
-document.getElementById('feedWrap').addEventListener('scroll',function(){atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;updateScrollBtn();},{passive:true});
-function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
-window.addEventListener('load',()=>{
-  if(window.google?.accounts)initGoogle();
-  else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogle);
-});
-/* ── LIGHTBOX ── */
-function openLightbox(src){
-  document.getElementById('lbImg').src=src;
-  document.getElementById('lightbox').classList.add('show');
-  document.body.style.overflow='hidden';
-}
-function closeLightbox(){
-  document.getElementById('lightbox').classList.remove('show');
-  document.getElementById('lbImg').src='';
-  document.body.style.overflow='';
-}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
 
-/* ── AUTO-REFRESH COMMENTS when panel open ── */
-async function pollComments(){
-  if(!activeCmtMsgId)return;
-  try{
-    const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(activeCmtMsgId));
-    const d=await r.json();
-    const list=d.comments||[];
-    // only update if count changed to avoid flicker
-    if(list.length===(cmtCount[activeCmtMsgId]||0))return;
-    cmtCount[activeCmtMsgId]=list.length;
-    updateCmtBtn(activeCmtMsgId,list.length);
-    const b=document.getElementById('cpBody');
-    const wasAtBottom=(b.scrollHeight-b.scrollTop-b.clientHeight)<60;
-    b.innerHTML=list.length?list.map(c=>buildCmt(activeCmtMsgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
-    if(wasAtBottom)b.scrollTop=b.scrollHeight;
-  }catch(e){}
-}
-setInterval(pollComments,2000);
-/* ── AUTO-REFRESH COMMENT COUNTS ── */
-async function pollCmtCounts(){
-  if(!me||!items.length)return;
-  try{
-    const r=await fetch(BACKEND+'/feed_comment_counts',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({msgIds:items.map(e=>e.id)})
+/* ══ POLLING מאוחד — בקשה אחת לכל מה שצריך ══ */
+async function pollAll(force) {
+  if (pollPending && !force) return;
+  if (!me || !items.length) return;
+  pollPending = true;
+  try {
+    const r = await fetch(BACKEND + '/feed_poll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        msgIds: items.map(e => e.id),
+        since: lastTs
+      })
     });
-    if(r.ok){
-      const d=await r.json();
-      if(d.status==='ok'){
-        Object.entries(d.counts).forEach(([mid,n])=>{
-          if(n!==(cmtCount[mid]||0)){cmtCount[mid]=n;updateCmtBtn(mid,n);}
-        });
-        return;
-      }
-    }
-  }catch(e){}
-  // Fallback: individual requests
-  await Promise.all(items.map(async e=>{
-    try{
-      const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(e.id));
-      const d=await r.json();
-      const n=(d.comments||[]).length;
-      if(n!==(cmtCount[e.id]||0)){cmtCount[e.id]=n;updateCmtBtn(e.id,n);}
-    }catch(err){}
-  }));
-}
-setInterval(pollCmtCounts,2000);
-// Run immediately too, don't wait for first interval tick
-setTimeout(pollCmtCounts,500);
-setInterval(pollNew,3000);
+    const d = await r.json();
+    if (d.status !== 'ok') return;
 
-/* ── AUTO-REFRESH REACTIONS (in-place, no scroll jump) ── */
-async function pollRxns(){
-  if(!me||!items.length)return;
-  // fetch all in parallel, renderRxn updates DOM in-place
-  await Promise.all(items.map(e=>loadRxn(e.id)));
+    // ── מבזקים חדשים ──
+    const newRaw = d.new_items || [];
+    const ni = newRaw.filter(e => !knownIds.has(e.id));
+    if (ni.length) {
+      lastTs = Math.max(...newRaw.map(e => e.ts || 0), lastTs);
+      ni.forEach(e => { knownIds.add(e.id); items.push(e); });
+      const inner = document.getElementById('feedInner');
+      document.getElementById('empty').style.display = 'none';
+      ni.forEach(e => {
+        const div = document.createElement('div');
+        div.innerHTML = buildMsg(e);
+        inner.appendChild(div.firstChild);
+      });
+      if (atBottom) document.getElementById('feedWrap').scrollTop = 999999;
+      else { newCount += ni.length; updateScrollBtn(); }
+    } else if (newRaw.length) {
+      lastTs = Math.max(...newRaw.map(e => e.ts || 0), lastTs);
+    }
+
+    // ── reactions (עדכון in-place, ללא scroll) ──
+    const rxns = d.reactions || {};
+    Object.entries(rxns).forEach(([mid, r]) => renderRxn(mid, r));
+
+    // ── כמות תגובות ──
+    const counts = d.comment_counts || {};
+    Object.entries(counts).forEach(([mid, n]) => {
+      if (n !== (cmtCount[mid] || 0)) { cmtCount[mid] = n; updateCmtBtn(mid, n); }
+    });
+
+  } catch(e) {}
+  pollPending = false;
 }
-setInterval(pollRxns,2000);
+
+/* polling לתגובות בפאנל הפתוח — נשאר נפרד כי צריך עדכון מהיר יותר */
+async function pollOpenComments() {
+  if (!activeCmtMsgId) return;
+  try {
+    const r = await fetch(BACKEND + '/feed_comments?msgId=' + encodeURIComponent(activeCmtMsgId));
+    const d = await r.json();
+    const list = d.comments || [];
+    if (list.length === (cmtCount[activeCmtMsgId] || 0)) return; // אין שינוי
+    cmtCount[activeCmtMsgId] = list.length;
+    updateCmtBtn(activeCmtMsgId, list.length);
+    const b = document.getElementById('cpBody');
+    const wasAtBottom = (b.scrollHeight - b.scrollTop - b.clientHeight) < 60;
+    b.innerHTML = list.length ? list.map(c => buildCmt(activeCmtMsgId, c)).join('') : '<div class="no-cmt">עדיין אין תגובות</div>';
+    if (wasAtBottom) b.scrollTop = b.scrollHeight;
+  } catch(e) {}
+}
+
+function scrollToBottom() {
+  document.getElementById('feedWrap').scrollTo({ top: 999999, behavior: 'smooth' });
+  newCount = 0; updateScrollBtn();
+}
+
+function updateScrollBtn() {
+  const btn = document.getElementById('scrollDownBtn'), txt = document.getElementById('scrollDownTxt');
+  if (!atBottom) {
+    btn.classList.add('show');
+    if (newCount > 0) { btn.classList.add('has-new'); txt.textContent = newCount + ' חדשות'; }
+    else { btn.classList.remove('has-new'); txt.textContent = 'למטה'; }
+  } else {
+    btn.classList.remove('show', 'has-new'); newCount = 0;
+  }
+}
+
+document.getElementById('feedWrap').addEventListener('scroll', function() {
+  atBottom = (this.scrollHeight - this.scrollTop - this.clientHeight) < 80;
+  updateScrollBtn();
+}, { passive: true });
+
+function setLoading(v) { document.getElementById('prog').classList.toggle('on', v); }
+
+// ── אתחול Google ──
+window.addEventListener('load', () => {
+  if (window.google?.accounts) initGoogle();
+  else document.querySelector('script[src*="gsi"]').addEventListener('load', initGoogle);
+});
+
+/* ── LIGHTBOX ── */
+function openLightbox(src) {
+  // ולידציה: רק URL תקין
+  if (!src || !src.match(/^https?:\/\//)) return;
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lbImg').src = '';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+/* ══ INTERVALS מאוחדים ══
+   לפני: 4 setInterval = 60+ בקשות כל 2 שניות
+   אחרי: 2 setInterval = בקשה אחת כל 3 שניות + polling לפאנל פתוח
+*/
+setInterval(pollAll, 3000);            // הכל בבקשה אחת
+setInterval(pollOpenComments, 3000);   // רק כשהפאנל פתוח, אחרת return מיד
+setTimeout(pollAll, 800);              // עדכון ראשוני מהיר
 </script>
 </body>
 </html>
