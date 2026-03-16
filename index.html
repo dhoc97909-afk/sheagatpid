@@ -403,12 +403,14 @@ function rich(t) {
 
 function timeLabel(e) {
   const today = new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const fixTime = (t) => {
-    if (!t || !t.includes(':')) return t;
-    const [h, m] = t.split(':').map(Number);
-    return ((h + 2) % 24).toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
-  };
-  return (e.date && e.date !== today) ? e.date + ' ' + fixTime(e.time) : fixTime(e.time || '');
+  return (e.date && e.date !== today) ? e.date + ' ' + e.time : (e.time || '');
+}
+
+// תיקון שעון UTC לשעון ישראל — רק לשעות שמגיעות מהשרת (תגובות)
+function fixServerTime(t) {
+  if (!t || !t.includes(':')) return t;
+  const [h, m] = t.split(':').map(Number);
+  return ((h + 2) % 24).toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
 }
 
 function isAdmin() { return me?.email === ADMIN_EMAIL; }
@@ -672,7 +674,7 @@ function buildCmt(msgId, c) {
     ${av}
     <div class="ci-bubble">
       <div class="ci-text">${esc(c.text)}</div>
-      <div class="ci-time">${esc(c.time || '')}</div>
+      <div class="ci-time">${esc(fixServerTime(c.time || ''))}</div>
       ${canDelete ? `<button class="ci-del" onclick="delCmt('${escAttr(msgId)}','${escAttr(c.id)}')"><i class="fas fa-times"></i></button>` : ''}
     </div>
   </div>`;
