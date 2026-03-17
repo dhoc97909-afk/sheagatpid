@@ -75,9 +75,11 @@ header{
 
 .msg-col{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
 .msg-meta{
-  direction:rtl;font-size:12px;font-weight:700;
-  color:#666;padding-right:4px;
+  direction:rtl;display:flex;align-items:baseline;gap:6px;
+  padding-right:4px;
 }
+.msg-meta-name{font-size:12px;font-weight:700;color:#666;}
+.msg-meta-time{font-size:11px;font-weight:500;color:#aaa;}
 
 .bubble{
   background:#fff;direction:rtl;
@@ -520,11 +522,13 @@ function buildMsg(e) {
   return `<div class="msg-row" data-id="${escAttr(id)}">
     <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
     <div class="msg-col">
-      <div class="msg-meta">שאגת הארי</div>
+      <div class="msg-meta">
+        <span class="msg-meta-name">שאגת הארי</span>
+        <span class="msg-meta-time">${esc(timeLabel(e))}</span>
+      </div>
       <div class="bubble${red ? ' is-red' : ''}">
         ${content}${media}${btns}
         <div class="bubble-foot">
-          <span class="bubble-time">${esc(timeLabel(e))}</span>
           <div class="rxn-row" id="rxn-${escAttr(id)}">
             <button class="rxn-add-btn" onclick="openPicker(event,'${escAttr(id)}')" title="הוסף תגובה">${REACT_SVG}</button>
           </div>
