@@ -233,11 +233,28 @@ header{
 .cp-inp:focus{border-color:#93c5fd;}
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
-/* SEARCH BAR */
+/* SEARCH */
+#searchBtn{
+  background:none;border:none;cursor:pointer;
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#888;transition:background .15s,color .15s;flex-shrink:0;
+}
+#searchBtn:hover{background:#f3f4f6;color:#333;}
+#searchBtn.active{background:#eff6ff;color:#1a56db;}
+
 #searchBar{
-  padding:8px 12px;background:#fff;
+  overflow:hidden;max-height:0;
+  transition:max-height .28s cubic-bezier(.16,1,.3,1),
+             padding .28s cubic-bezier(.16,1,.3,1),
+             border-color .28s;
+  padding:0 12px;background:#fff;
+  border-bottom:1px solid transparent;
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+#searchBar.open{
+  max-height:54px;padding:8px 12px;
   border-bottom:1px solid rgba(0,0,0,.07);
-  flex-shrink:0;display:flex;align-items:center;gap:8px;
 }
 #searchInput{
   flex:1;border:1.5px solid #e5e7eb;border-radius:99px;
@@ -249,7 +266,7 @@ header{
 #searchInput::placeholder{color:#bbb;}
 #searchClear{
   background:none;border:none;cursor:pointer;color:#bbb;
-  font-size:16px;padding:2px 4px;display:none;line-height:1;
+  font-size:16px;padding:2px 4px;display:none;line-height:1;flex-shrink:0;
 }
 #searchClear.show{display:block;}
 #searchResults{
@@ -342,6 +359,9 @@ header{
       <div class="hdr-status"><div class="hdr-dot"></div>מחובר · עדכונים חיים</div>
     </div>
     <div class="hdr-user">
+      <button id="searchBtn" onclick="toggleSearch()" title="חיפוש">
+        <i class="fas fa-search" style="font-size:14px"></i>
+      </button>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar"></div>
     </div>
@@ -831,25 +851,26 @@ async function loadMore() {
       const older = d.feed.filter(e => !knownIds.has(e.id)).reverse();
       if (!older.length) { allLoaded = true; return; }
       older.forEach(e => { knownIds.add(e.id); items.unshift(e); });
-      oldestTs = Math.min(...older.map(e => e.ts || 0));
+      oldestTs = Math.min(...older.map(e => e.ts || Infinity));
       allLoaded = d.feed.length < 20;
       const inner = document.getElementById('feedInner');
       const wrap = document.getElementById('feedWrap');
       const prevHeight = wrap.scrollHeight;
       const prevTop = wrap.scrollTop;
-      // מוסיף ההודעות הישנות לראש
-      const frag = older.map(buildMsg).join('');
-      inner.insertAdjacentHTML('afterbegin', frag);
-      // שומר על מיקום הגלילה
+      inner.insertAdjacentHTML('afterbegin', older.map(buildMsg).join(''));
+      // שומר מיקום גלילה — לא קופץ לראש
       wrap.scrollTop = prevTop + (wrap.scrollHeight - prevHeight);
-      // טוען reactions + counts להודעות החדשות
       if (older.length) setTimeout(pollAll, 100);
     } else {
       allLoaded = true;
     }
-  } catch(e) {}
-  loadingMore = false;
-  document.getElementById('loadMoreSpinner').classList.remove('show');
+  } catch(e) {
+    console.error('loadMore error', e);
+  } finally {
+    // always reset — גם אם היתה שגיאה
+    loadingMore = false;
+    document.getElementById('loadMoreSpinner').classList.remove('show');
+  }
 }
 
 /* ══ POLLING מאוחד — בקשה אחת לכל מה שצריך ══ */
@@ -979,19 +1000,34 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbo
 /* ── SEARCH ── */
 let searchTimer = null;
 
+function toggleSearch() {
+  const bar = document.getElementById('searchBar');
+  const btn = document.getElementById('searchBtn');
+  const isOpen = bar.classList.contains('open');
+  if (isOpen) {
+    clearSearch();
+  } else {
+    bar.classList.add('open');
+    btn.classList.add('active');
+    setTimeout(() => document.getElementById('searchInput').focus(), 280);
+  }
+}
+
 function onSearch(val) {
   const clear = document.getElementById('searchClear');
   clear.classList.toggle('show', val.length > 0);
   clearTimeout(searchTimer);
-  if (!val.trim()) { clearSearch(); return; }
+  if (!val.trim()) {
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('feedWrap').style.display = '';
+    return;
+  }
   searchTimer = setTimeout(() => doSearch(val.trim()), 250);
 }
 
 function doSearch(q) {
   const qLow = q.toLowerCase();
-  const results = items.filter(e =>
-    (e.text || '').toLowerCase().includes(qLow)
-  );
+  const results = items.filter(e => (e.text || '').toLowerCase().includes(qLow));
   const feedWrap = document.getElementById('feedWrap');
   const searchResults = document.getElementById('searchResults');
   const inner = document.getElementById('searchResultsInner');
@@ -1006,16 +1042,13 @@ function doSearch(q) {
     return;
   }
   empty.style.display = 'none';
-  // מדגיש את מילות החיפוש
-  inner.innerHTML = results.map(e => {
-    const msg = buildMsg(e);
-    // מדגיש את הטקסט שמחפשים
-    return msg.replace(
-      new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  inner.innerHTML = results.map(e =>
+    buildMsg(e).replace(
+      new RegExp(`(${escaped})`, 'gi'),
       '<mark style="background:#fff176;border-radius:3px;padding:0 1px">$1</mark>'
-    );
-  }).join('');
-  // מעדכן reactions לתוצאות
+    )
+  ).join('');
   results.forEach(e => { if (rxnCache[e.id]) renderRxn(e.id, rxnCache[e.id]); });
 }
 
@@ -1026,6 +1059,8 @@ function clearSearch() {
   document.getElementById('searchResultsInner').innerHTML = '';
   document.getElementById('searchEmpty').style.display = 'none';
   document.getElementById('feedWrap').style.display = '';
+  document.getElementById('searchBar').classList.remove('open');
+  document.getElementById('searchBtn').classList.remove('active');
 }
 
 /* ══ INTERVALS ══ */
