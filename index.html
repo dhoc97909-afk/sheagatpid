@@ -233,7 +233,46 @@ header{
 .cp-inp:focus{border-color:#93c5fd;}
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
-/* SCROLL DOWN */
+/* SEARCH BAR */
+#searchBar{
+  padding:8px 12px;background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.07);
+  flex-shrink:0;display:flex;align-items:center;gap:8px;
+}
+#searchInput{
+  flex:1;border:1.5px solid #e5e7eb;border-radius:99px;
+  padding:7px 14px;font-size:14px;font-family:'Heebo',sans-serif;
+  outline:none;direction:rtl;background:#f8f9fa;
+  transition:border-color .2s,background .2s;
+}
+#searchInput:focus{border-color:#1a56db;background:#fff;}
+#searchInput::placeholder{color:#bbb;}
+#searchClear{
+  background:none;border:none;cursor:pointer;color:#bbb;
+  font-size:16px;padding:2px 4px;display:none;line-height:1;
+}
+#searchClear.show{display:block;}
+#searchResults{
+  display:none;flex:1;overflow-y:auto;padding:10px 0 24px;
+}
+#searchResultsInner{max-width:780px;margin:0 60px 0 auto;padding:0 10px 0 20px;display:flex;flex-direction:column;gap:6px;}
+@media(max-width:600px){
+  #searchResultsInner{margin:0;padding:0 8px;}
+}
+#searchEmpty{text-align:center;padding:40px 20px;color:#aaa;font-size:14px;display:none;}
+
+/* LOAD MORE SPINNER */
+#loadMoreSpinner{
+  display:none;align-items:center;justify-content:center;
+  padding:16px;gap:8px;color:#aaa;font-size:13px;font-family:'Heebo',sans-serif;
+}
+#loadMoreSpinner.show{display:flex;}
+.lm-ring{
+  width:22px;height:22px;border-radius:50%;
+  border:2.5px solid #e5e7eb;border-top-color:#1a56db;
+  animation:spin .7s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 #scrollDownBtn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #e5e7eb;border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;color:#374151;cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,.11);font-family:'Heebo',sans-serif;z-index:50;}
 #scrollDownBtn.show{display:flex;}
 .unread-dot{width:8px;height:8px;border-radius:50%;background:#e02020;flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
@@ -308,9 +347,22 @@ header{
     </div>
   </header>
 
+  <div id="searchBar">
+    <i class="fas fa-search" style="color:#bbb;font-size:13px;flex-shrink:0"></i>
+    <input id="searchInput" type="text" placeholder="חיפוש במבזקים..." oninput="onSearch(this.value)" />
+    <button id="searchClear" onclick="clearSearch()"><i class="fas fa-times"></i></button>
+  </div>
+
   <div id="feedWrap">
+    <div id="loadMoreSpinner"><div class="lm-ring"></div>טוען עוד...</div>
     <div id="feedInner"></div>
     <div id="empty"><i class="fas fa-satellite-dish"></i><p>ממתין לעדכונים...</p></div>
+  </div>
+
+  <!-- תוצאות חיפוש -->
+  <div id="searchResults">
+    <div id="searchResultsInner"></div>
+    <div id="searchEmpty">לא נמצאו תוצאות</div>
   </div>
 
   <button id="scrollDownBtn" onclick="scrollToBottom()">
@@ -377,7 +429,10 @@ let me = null, items = [], lastTs = 0, newCount = 0, atBottom = true;
 let activePicker = null, activeCmtMsgId = null;
 let rxnCache = {}, cmtCount = {};
 const knownIds = new Set();
-let pollPending = false; // מונע בקשות כפולות
+let pollPending = false;
+let oldestTs = 0;        // ה-ts הישן ביותר שנטען — לפגינציה
+let allLoaded = false;   // האם טענו את כל ההיסטוריה
+let loadingMore = false; // מונע טעינות כפולות // מונע בקשות כפולות
 
 const REACT_SVG = `<svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
   <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.65"/>
@@ -742,13 +797,14 @@ async function delCmt(msgId, cid) {
 async function loadFeed() {
   setLoading(true);
   try {
-    const r = await fetch(BACKEND + '/feed');
+    const r = await fetch(BACKEND + '/feed?limit=20');
     const d = await r.json();
     if (d.status === 'ok') {
       items = [...d.feed].reverse();
-      // רושם את כל ה-IDs לפני כל דבר אחר — מונע כפילויות
       items.forEach(e => knownIds.add(e.id));
       lastTs = items.length ? Math.max(...items.map(e => e.ts || 0)) : 0;
+      oldestTs = items.length ? Math.min(...items.map(e => e.ts || 0)) : 0;
+      allLoaded = d.feed.length < 20; // פחות מ-20 = אין עוד
       const inner = document.getElementById('feedInner');
       inner.innerHTML = '';
       if (!items.length) {
@@ -757,11 +813,43 @@ async function loadFeed() {
         inner.innerHTML = items.map(buildMsg).join('');
       }
       document.getElementById('feedWrap').scrollTop = document.getElementById('feedWrap').scrollHeight;
-      // reactions + כמות תגובות ראשוניים — setTimeout מאפשר ל-DOM להתייצב קודם
-      // ה-setInterval ו-setTimeout שבתחתית הקובץ יטפלו בזה, אין צורך לקרוא כאן
+      if (items.length) await pollAll(true);
     }
   } catch(e) {}
   setLoading(false);
+}
+
+/* טעינת הודעות ישנות יותר בגלילה למעלה */
+async function loadMore() {
+  if (loadingMore || allLoaded || !oldestTs) return;
+  loadingMore = true;
+  document.getElementById('loadMoreSpinner').classList.add('show');
+  try {
+    const r = await fetch(BACKEND + `/feed?before=${oldestTs}&limit=20`);
+    const d = await r.json();
+    if (d.status === 'ok' && d.feed.length) {
+      const older = d.feed.filter(e => !knownIds.has(e.id)).reverse();
+      if (!older.length) { allLoaded = true; return; }
+      older.forEach(e => { knownIds.add(e.id); items.unshift(e); });
+      oldestTs = Math.min(...older.map(e => e.ts || 0));
+      allLoaded = d.feed.length < 20;
+      const inner = document.getElementById('feedInner');
+      const wrap = document.getElementById('feedWrap');
+      const prevHeight = wrap.scrollHeight;
+      const prevTop = wrap.scrollTop;
+      // מוסיף ההודעות הישנות לראש
+      const frag = older.map(buildMsg).join('');
+      inner.insertAdjacentHTML('afterbegin', frag);
+      // שומר על מיקום הגלילה
+      wrap.scrollTop = prevTop + (wrap.scrollHeight - prevHeight);
+      // טוען reactions + counts להודעות החדשות
+      if (older.length) setTimeout(pollAll, 100);
+    } else {
+      allLoaded = true;
+    }
+  } catch(e) {}
+  loadingMore = false;
+  document.getElementById('loadMoreSpinner').classList.remove('show');
 }
 
 /* ══ POLLING מאוחד — בקשה אחת לכל מה שצריך ══ */
@@ -859,6 +947,10 @@ function updateScrollBtn() {
 document.getElementById('feedWrap').addEventListener('scroll', function() {
   atBottom = (this.scrollHeight - this.scrollTop - this.clientHeight) < 80;
   updateScrollBtn();
+  // טעינת עוד הודעות כשגוללים לראש
+  if (this.scrollTop < 120 && !loadingMore && !allLoaded) {
+    loadMore();
+  }
 }, { passive: true });
 
 function setLoading(v) { document.getElementById('prog').classList.toggle('on', v); }
@@ -884,10 +976,59 @@ function closeLightbox() {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-/* ══ INTERVALS מאוחדים ══
-   לפני: 4 setInterval = 60+ בקשות כל 2 שניות
-   אחרי: 2 setInterval = בקשה אחת כל 3 שניות + polling לפאנל פתוח
-*/
+/* ── SEARCH ── */
+let searchTimer = null;
+
+function onSearch(val) {
+  const clear = document.getElementById('searchClear');
+  clear.classList.toggle('show', val.length > 0);
+  clearTimeout(searchTimer);
+  if (!val.trim()) { clearSearch(); return; }
+  searchTimer = setTimeout(() => doSearch(val.trim()), 250);
+}
+
+function doSearch(q) {
+  const qLow = q.toLowerCase();
+  const results = items.filter(e =>
+    (e.text || '').toLowerCase().includes(qLow)
+  );
+  const feedWrap = document.getElementById('feedWrap');
+  const searchResults = document.getElementById('searchResults');
+  const inner = document.getElementById('searchResultsInner');
+  const empty = document.getElementById('searchEmpty');
+
+  feedWrap.style.display = 'none';
+  searchResults.style.display = 'block';
+
+  if (!results.length) {
+    inner.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  // מדגיש את מילות החיפוש
+  inner.innerHTML = results.map(e => {
+    const msg = buildMsg(e);
+    // מדגיש את הטקסט שמחפשים
+    return msg.replace(
+      new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
+      '<mark style="background:#fff176;border-radius:3px;padding:0 1px">$1</mark>'
+    );
+  }).join('');
+  // מעדכן reactions לתוצאות
+  results.forEach(e => { if (rxnCache[e.id]) renderRxn(e.id, rxnCache[e.id]); });
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('show');
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('searchResultsInner').innerHTML = '';
+  document.getElementById('searchEmpty').style.display = 'none';
+  document.getElementById('feedWrap').style.display = '';
+}
+
+/* ══ INTERVALS ══ */
 setInterval(pollAll, 3000);            // הכל בבקשה אחת
 setInterval(pollOpenComments, 3000);   // רק כשהפאנל פתוח, אחרת return מיד
 setTimeout(pollAll, 800);              // עדכון ראשוני מהיר
