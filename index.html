@@ -1011,25 +1011,26 @@ async function loadMore() {
     const d = await r.json();
     if (d.status === 'ok' && d.feed.length) {
       const older = d.feed.filter(e => !knownIds.has(e.id)).reverse();
-      if (!older.length) { allLoaded = true; return; }
-      older.forEach(e => { knownIds.add(e.id); items.unshift(e); });
-      oldestTs = Math.min(...older.map(e => e.ts || Infinity));
-       allLoaded = older.length < 20; // הגענו לסוף כשקיבלנו פחות מ-20 חדשות
-      const inner = document.getElementById('feedInner');
-      const wrap = document.getElementById('feedWrap');
-      const prevHeight = wrap.scrollHeight;
-      const prevTop = wrap.scrollTop;
-      inner.insertAdjacentHTML('afterbegin', older.map(buildMsg).join(''));
-      // שומר מיקום גלילה — לא קופץ לראש
-      wrap.scrollTop = prevTop + (wrap.scrollHeight - prevHeight);
-      if (older.length) setTimeout(pollAll, 100);
+      if (!older.length) {
+        allLoaded = true;
+      } else {
+        older.forEach(e => { knownIds.add(e.id); items.unshift(e); });
+        oldestTs = Math.min(...older.map(e => e.ts || Infinity));
+        allLoaded = older.length < 20;
+        const inner = document.getElementById('feedInner');
+        const wrap = document.getElementById('feedWrap');
+        const prevHeight = wrap.scrollHeight;
+        const prevTop = wrap.scrollTop;
+        inner.insertAdjacentHTML('afterbegin', older.map(buildMsg).join(''));
+        wrap.scrollTop = prevTop + (wrap.scrollHeight - prevHeight);
+        if (older.length) setTimeout(pollAll, 100);
+      }
     } else {
       allLoaded = true;
     }
   } catch(e) {
     console.error('loadMore error', e);
   } finally {
-    // always reset — גם אם היתה שגיאה
     loadingMore = false;
     document.getElementById('loadMoreSpinner').classList.remove('show');
   }
