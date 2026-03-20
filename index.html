@@ -23,6 +23,27 @@ html,body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:anti
 /* APP */
 #app{height:100%;display:none;flex-direction:column;}
 
+/* AD SIDEBAR */
+#adSidebar{
+  display:none;
+  width:180px;min-width:180px;
+  background:#fff;
+  border-right:1px solid rgba(0,0,0,.08);
+  flex-shrink:0;
+  position:sticky;top:0;height:100vh;
+  overflow:hidden;
+}
+#adSidebar a{display:block;height:100%;}
+#adSidebar img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* כשיש פרסומת בצד — body עובר ל-row */
+body.has-side-ad #app{flex-direction:column;}
+body.has-side-ad{flex-direction:row-reverse;}
+
+@media(max-width:600px){
+  #adSidebar{display:none!important;}
+}
+
 /* HEADER */
 header{
   background:#fff;border-bottom:1px solid rgba(0,0,0,.08);
@@ -345,6 +366,13 @@ header{
   </div>
 </div>
 
+<!-- AD SIDEBAR -->
+<div id="adSidebar">
+  <a id="adSidebarLink" href="#" target="_blank" rel="noopener noreferrer">
+    <img id="adSidebarImg" src="" alt="פרסומת">
+  </a>
+</div>
+
 <!-- APP -->
 <div id="app">
   <header>
@@ -416,6 +444,15 @@ header{
     <button onclick="closeAdPanel()" style="position:absolute;top:14px;left:14px;background:#f3f4f6;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;color:#666;font-size:14px">✕</button>
     <div style="font-size:16px;font-weight:800;color:#111;margin-bottom:16px;text-align:right">📢 ניהול פרסומת</div>
     <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="font-size:12px;font-weight:700;color:#666;text-align:right">סוג תצוגה</label>
+      <div style="display:flex;gap:8px">
+        <label style="flex:1;display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#374151">
+          <input type="radio" name="adType" value="popup" id="adTypePopup" style="accent-color:#1a56db"> פופאפ
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#374151">
+          <input type="radio" name="adType" value="side" id="adTypeSide" style="accent-color:#1a56db"> עמודה צדדית
+        </label>
+      </div>
       <label style="font-size:12px;font-weight:700;color:#666;text-align:right">קישור לתמונה (URL)</label>
       <input id="adImageUrl" type="text" placeholder="https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif">
       <label style="font-size:12px;font-weight:700;color:#666;text-align:right">קישור ללחיצה (URL)</label>
@@ -546,7 +583,15 @@ async function loadAd() {
   try {
     const r = await fetch(BACKEND + '/ad_get');
     const d = await r.json();
-    if (d.status === 'ok' && d.ad && d.ad.imageUrl) showAdPopup(d.ad);
+    if (d.status === 'ok' && d.ad && d.ad.imageUrl) {
+      if (d.ad.displayType === 'side') {
+        showAdSide(d.ad);
+      } else {
+        if (shouldShowAd()) showAdPopup(d.ad);
+      }
+    } else {
+      hideSideAd();
+    }
   } catch(e) {}
 }
 
@@ -559,11 +604,27 @@ function markAdShown() {
   localStorage.setItem(AD_KEY, String(Date.now()));
 }
 
+function showAdSide(ad) {
+  const sidebar = document.getElementById('adSidebar');
+  const link = document.getElementById('adSidebarLink');
+  const img = document.getElementById('adSidebarImg');
+  img.src = ad.imageUrl;
+  link.href = ad.linkUrl || '#';
+  sidebar.style.display = 'block';
+  document.body.classList.add('has-side-ad');
+}
+
+function hideSideAd() {
+  document.getElementById('adSidebar').style.display = 'none';
+  document.body.classList.remove('has-side-ad');
+}
+
 function showAdPopup(ad) {
-  if (!shouldShowAd()) return;
+  const existing = document.getElementById('adOverlay');
+  if (existing) return;
   const overlay = document.createElement('div');
   overlay.id = 'adOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center';
   overlay.innerHTML = `
     <div style="position:relative;max-width:420px;width:90%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)">
       <button onclick="closeAd()" style="position:absolute;top:10px;right:10px;z-index:2;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Heebo',sans-serif">✕</button>
@@ -1172,9 +1233,15 @@ async function openAdPanel() {
     if (d.ad && d.ad.imageUrl) {
       document.getElementById('adImageUrl').value = d.ad.imageUrl || '';
       document.getElementById('adLinkUrl').value = d.ad.linkUrl || '';
+      const type = d.ad.displayType || 'popup';
+      document.getElementById(type === 'side' ? 'adTypeSide' : 'adTypePopup').checked = true;
       showAdPreview(d.ad.imageUrl);
+    } else {
+      document.getElementById('adTypePopup').checked = true;
     }
-  } catch(e) {}
+  } catch(e) {
+    document.getElementById('adTypePopup').checked = true;
+  }
 }
 
 function closeAdPanel() {
@@ -1191,15 +1258,20 @@ function showAdPreview(url) {
 async function saveAd() {
   const imageUrl = document.getElementById('adImageUrl').value.trim();
   const linkUrl = document.getElementById('adLinkUrl').value.trim();
+  const displayType = document.querySelector('input[name="adType"]:checked')?.value || 'popup';
   if (!imageUrl) { showAdMsg('יש להזין קישור לתמונה', 'red'); return; }
   try {
     const r = await fetch(BACKEND + '/ad_set', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: me.email, imageUrl, linkUrl })
+      body: JSON.stringify({ email: me.email, imageUrl, linkUrl, displayType })
     });
     const d = await r.json();
-    if (d.status === 'ok') { showAdMsg('נשמר ✓', 'green'); showAdPreview(imageUrl); }
-    else showAdMsg(d.msg || 'שגיאה', 'red');
+    if (d.status === 'ok') {
+      showAdMsg('נשמר ✓', 'green');
+      showAdPreview(imageUrl);
+      // מיד מפעיל את הפרסומת
+      loadAd();
+    } else showAdMsg(d.msg || 'שגיאה', 'red');
   } catch(e) { showAdMsg('שגיאת שרת', 'red'); }
 }
 
@@ -1207,11 +1279,12 @@ async function deleteAd() {
   try {
     await fetch(BACKEND + '/ad_set', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: me.email, imageUrl: '', linkUrl: '' })
+      body: JSON.stringify({ email: me.email, imageUrl: '', linkUrl: '', displayType: 'popup' })
     });
     document.getElementById('adImageUrl').value = '';
     document.getElementById('adLinkUrl').value = '';
     document.getElementById('adPreview').style.display = 'none';
+    hideSideAd();
     showAdMsg('הוסרה ✓', 'green');
   } catch(e) {}
 }
