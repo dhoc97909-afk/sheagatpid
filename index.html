@@ -11,7 +11,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;}
-body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialiased;background:#eae9e4;display:flex;flex-direction:row;}
+body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialiased;background:#eae9e4;display:flex;flex-direction:row-reverse;}
 
 /* LOGIN */
 #loginScreen{position:fixed;inset:0;background:#eae9e4;display:flex;align-items:center;justify-content:center;z-index:1000;}
@@ -27,19 +27,21 @@ body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialias
 /* AD SIDEBAR */
 #adSidebar{
   display:none;
-  width:180px;min-width:180px;
+  width:360px;min-width:360px;
   background:#fff;
   border-left:1px solid rgba(0,0,0,.08);
   flex-shrink:0;
-  position:sticky;top:0;height:100vh;
-  overflow:hidden;
+  position:sticky;top:56px;height:calc(100vh - 56px);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;
 }
-#adSidebar a{display:block;height:100%;}
-#adSidebar img{width:100%;height:100%;object-fit:cover;display:block;}
+#adSidebar::-webkit-scrollbar{display:none;}
+#adSidebar a{display:block;width:100%;}
+#adSidebar img{width:100%;height:auto;display:block;}
 
 
 
-@media(max-width:768px){
+@media(max-width:900px){
   #adSidebar{display:none!important;}
 }
 
