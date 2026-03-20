@@ -477,9 +477,24 @@ body.dark #searchInput{color:#e5e7eb;}
 
 <!-- ADMIN PANEL MODAL -->
 <div id="adminPanelModal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
-  <div style="position:relative;width:92vw;max-width:1100px;height:88vh;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4)">
-    <button onclick="closeAdminPanel()" style="position:absolute;top:10px;right:12px;z-index:10;background:rgba(0,0,0,.4);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-    <iframe id="adminPanelFrame" src="" style="width:100%;height:100%;border:none;" allow="clipboard-read; clipboard-write"></iframe>
+  <div style="position:relative;width:96vw;max-width:1400px;height:90vh;background:#f0f2f5;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4);display:flex;flex-direction:row;">
+    <button onclick="closeAdminPanel()" style="position:absolute;top:10px;right:12px;z-index:20;background:rgba(0,0,0,.4);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+
+    <!-- ימין: פאנל ניהול -->
+    <div style="flex:1;min-width:0;height:100%;overflow:hidden;">
+      <iframe id="adminPanelFrame" src="" style="width:100%;height:100%;border:none;" allow="clipboard-read; clipboard-write"></iframe>
+    </div>
+
+    <!-- מחיצה -->
+    <div style="width:1px;background:#d1d5db;flex-shrink:0;"></div>
+
+    <!-- שמאל: פיד צפייה בלבד -->
+    <div style="width:320px;min-width:280px;flex-shrink:0;background:#fff;display:flex;flex-direction:column;height:100%;">
+      <div style="padding:12px 14px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:800;color:#333;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <i class="fas fa-newspaper" style="color:#1a56db;font-size:12px"></i> תצוגת פיד
+      </div>
+      <div id="adminFeedPreview" style="flex:1;overflow-y:auto;padding:10px 10px 20px;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin;"></div>
+    </div>
   </div>
 </div>
 
@@ -1391,6 +1406,41 @@ function openAdminPanel() {
   const frame = document.getElementById('adminPanelFrame');
   frame.src = 'https://dhoc97909-afk.github.io/sheagat/';
   modal.style.display = 'flex';
+  renderAdminFeedPreview();
+}
+
+function renderAdminFeedPreview() {
+  const container = document.getElementById('adminFeedPreview');
+  if (!container) return;
+  if (!items.length) {
+    container.innerHTML = '<div style="text-align:center;padding:30px 10px;color:#aaa;font-size:13px">אין הודעות</div>';
+    return;
+  }
+  // מציג מהחדש לישן
+  const reversed = [...items].reverse();
+  container.innerHTML = reversed.map(e => {
+    const red = e.profile === 'red';
+    const lines = (e.text || '').trim().split('\n');
+    const preview = lines[0]?.substring(0, 80) || '';
+    const hasMore = (e.text || '').length > 80 || lines.length > 1;
+    return `<div style="
+      background:${red ? '#fff9f9' : '#fff'};
+      border-radius:12px 3px 12px 12px;
+      padding:8px 10px;
+      border:1px solid ${red ? '#fecaca' : '#f0f0f0'};
+      ${red ? 'border-right:3px solid #e02020;' : ''}
+      font-size:13px;line-height:1.5;color:#111;direction:rtl;
+      box-shadow:0 1px 3px rgba(0,0,0,.06);
+    ">
+      <div style="font-size:10px;color:#aaa;margin-bottom:4px;display:flex;align-items:center;gap:4px;">
+        ${red ? '<span style="color:#e02020;font-weight:700">🚨</span>' : ''}
+        <span>${e.time || ''}</span>
+        ${e.groupCount ? `<span style="margin-right:auto;background:#f3f4f6;border-radius:4px;padding:1px 5px;">${e.groupCount} קבוצות</span>` : ''}
+      </div>
+      <div style="font-weight:${red ? '700' : '500'}">${esc(preview)}${hasMore ? '<span style="color:#aaa">…</span>' : ''}</div>
+      ${e.imgUrl ? `<div style="margin-top:5px;border-radius:6px;overflow:hidden;"><img src="${escAttr(e.imgUrl)}" style="width:100%;max-height:80px;object-fit:cover;display:block;" onerror="this.closest('div').remove()"></div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 function closeAdminPanel() {
