@@ -132,7 +132,7 @@ header{
 .bubble-foot{
   display:flex;align-items:center;gap:5px;
   margin-top:2px;flex-wrap:wrap;
-  padding-right:18px; /* מתחיל מהעיקול של הפינה הימנית */
+  padding-right:10px;
 }
 
 /* REACTIONS — מרובע כמו קודם, מתחת לבועה */
@@ -435,8 +435,8 @@ body.dark .hdr-icon-btn:hover, body.dark #searchBtn:hover, body.dark #darkBtn:ho
         <i class="fas fa-ad" style="font-size:13px"></i>
       </button>
       <!-- פאנל מנהל (מנהל בלבד) -->
-      <button id="adminPanelBtn" onclick="openAdminPanel()" title="פאנל מנהל" style="display:none;background:linear-gradient(135deg,#1a56db,#1e40af);color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;height:28px;">
-        מנהל
+      <button id="adminPanelBtn" onclick="openAdminPanel()" title="פאנל מנהל" style="display:none">
+        <i class="fas fa-cog" style="font-size:13px"></i>
       </button>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar"></div>
@@ -605,6 +605,24 @@ function fixServerTime(t) {
 }
 
 function isAdmin() { return me?.email === ADMIN_EMAIL; }
+let _isAllowedAdmin = false;
+function isAllowedAdmin() { return _isAllowedAdmin; }
+
+async function checkAllowedAdmin() {
+  if (!me) return;
+  try {
+    const r = await fetch(BACKEND + '/allowed_list');
+    const d = await r.json();
+    const emails = (d.emails || []).map(e => typeof e === 'string' ? e : e.email).map(e => e.toLowerCase());
+    _isAllowedAdmin = emails.includes(me.email.toLowerCase()) || isAdmin();
+  } catch(e) {
+    _isAllowedAdmin = isAdmin();
+  }
+  if (_isAllowedAdmin) {
+    const btn = document.getElementById('adminPanelBtn');
+    if (btn) btn.style.display = 'flex';
+  }
+}
 
 /* ── AUTH ── */
 function saveUser(u) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)); } catch(e) {} }
@@ -740,9 +758,9 @@ function applyLogin() {
     setInterval(loadAdminUsers, 30000);
     const adBtn = document.getElementById('adBtn');
     if (adBtn) { adBtn.style.display = 'flex'; }
-    const adminPanelBtn = document.getElementById('adminPanelBtn');
-    if (adminPanelBtn) { adminPanelBtn.style.display = 'inline-flex'; }
   }
+  // כפתור מנהל — לכל מי שב-allowed_list
+  checkAllowedAdmin();
 
   loadFeed();
 
