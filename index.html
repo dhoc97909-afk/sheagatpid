@@ -169,6 +169,10 @@ header{
 .cmt-btn:hover{color:#1a56db;}
 .cmt-btn.has-cmt{color:#1a56db;}
 
+.link-btn{display:inline-flex;align-items:center;gap:3px;background:none;border:none;font-size:11px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:700;padding:0;transition:color .12s;text-decoration:none;letter-spacing:.01em;}
+.link-btn:hover{color:#1a56db;text-decoration:underline;}
+.link-btn.copied{color:#16a34a;}
+
 /* EMOJI PICKER */
 #emojiPicker{
   position:fixed;
@@ -522,30 +526,43 @@ body.dark #searchInput{color:#e5e7eb;}
 
 <!-- AD MANAGEMENT MODAL -->
 <div id="adModal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative">
+  <div style="background:#fff;border-radius:20px;padding:28px;max-width:500px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative">
     <button onclick="closeAdPanel()" style="position:absolute;top:14px;left:14px;background:#f3f4f6;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;color:#666;font-size:14px">✕</button>
-    <div style="font-size:16px;font-weight:800;color:#111;margin-bottom:16px;text-align:right">📢 ניהול פרסומת</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <label style="font-size:12px;font-weight:700;color:#666;text-align:right">סוג תצוגה</label>
-      <div style="display:flex;gap:8px">
-        <label style="flex:1;display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#374151">
-          <input type="radio" name="adType" value="popup" id="adTypePopup" style="accent-color:#1a56db"> פופאפ
-        </label>
-        <label style="flex:1;display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#374151">
-          <input type="radio" name="adType" value="side" id="adTypeSide" style="accent-color:#1a56db"> עמודה צדדית
-        </label>
+    <div style="font-size:16px;font-weight:800;color:#111;margin-bottom:20px;text-align:right">📢 ניהול פרסומות</div>
+
+    <!-- פרסומת פופאפ -->
+    <div style="border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:#1a56db;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <i class="fas fa-window-restore" style="font-size:12px"></i> פרסומת פופאפ
       </div>
-      <label style="font-size:12px;font-weight:700;color:#666;text-align:right">קישור לתמונה (URL)</label>
-      <input id="adImageUrl" type="text" placeholder="https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif">
-      <label style="font-size:12px;font-weight:700;color:#666;text-align:right">קישור ללחיצה (URL)</label>
-      <input id="adLinkUrl" type="text" placeholder="https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif">
-      <div id="adPreview" style="display:none;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb">
-        <img id="adPreviewImg" style="width:100%;display:block;max-height:200px;object-fit:contain">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input id="adPopupImageUrl" type="text" placeholder="קישור לתמונה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <input id="adPopupLinkUrl" type="text" placeholder="קישור ללחיצה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <div id="adPopupPreview" style="display:none;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb"><img id="adPopupPreviewImg" style="width:100%;display:block;max-height:120px;object-fit:contain"></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="saveAd('popup')" style="flex:1;background:#1a56db;color:#fff;border:none;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">שמור</button>
+          <button onclick="deleteAd('popup')" style="flex:1;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">הסר</button>
+        </div>
       </div>
-      <button onclick="saveAd()" style="background:#1a56db;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">שמור פרסומת</button>
-      <button onclick="deleteAd()" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">הסר פרסומת</button>
     </div>
-    <div id="adMsg" style="display:none;margin-top:10px;font-size:12px;font-weight:600;text-align:center"></div>
+
+    <!-- פרסומת צד -->
+    <div style="border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#059669;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <i class="fas fa-columns" style="font-size:12px"></i> פרסומת עמודה צדדית
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input id="adSideImageUrl" type="text" placeholder="קישור לתמונה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <input id="adSideLinkUrl" type="text" placeholder="קישור ללחיצה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <div id="adSidePreview" style="display:none;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb"><img id="adSidePreviewImg" style="width:100%;display:block;max-height:120px;object-fit:contain"></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="saveAd('side')" style="flex:1;background:#059669;color:#fff;border:none;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">שמור</button>
+          <button onclick="deleteAd('side')" style="flex:1;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">הסר</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="adMsg" style="display:none;margin-top:12px;font-size:12px;font-weight:600;text-align:center"></div>
   </div>
 </div>
 
@@ -675,6 +692,30 @@ function doLogout() {
   try { google.accounts.id.revoke(me?.email || '', () => {}); } catch(e) {}
 }
 
+function copyMsgLink(id, num, btn) {
+  const url = location.href.split('#')[0] + '#msg-' + num;
+  // מוסיפים anchor ל-element
+  const el = document.querySelector(`.msg-row[data-id="${id}"]`);
+  if (el) el.id = 'msg-' + num;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="fas fa-check" style="font-size:9px"></i>הועתק';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<i class="fas fa-link" style="font-size:9px"></i>#${num}`;
+    }, 1500);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="fas fa-check" style="font-size:9px"></i>הועתק';
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = `<i class="fas fa-link" style="font-size:9px"></i>#${num}`; }, 1500);
+  });
+}
+
 /* ── AD SYSTEM ── */
 const AD_KEY = 'shaagat_ad';
 const AD_INTERVAL = 60 * 60 * 1000; // שעה
@@ -683,14 +724,15 @@ async function loadAd() {
   try {
     const r = await fetch(BACKEND + '/ad_get');
     const d = await r.json();
-    if (d.status === 'ok' && d.ad && d.ad.imageUrl) {
-      if (d.ad.displayType === 'side') {
-        showAdSide(d.ad);
-      } else {
-        if (shouldShowAd()) showAdPopup(d.ad);
-      }
+    // פרסומת צד — תמיד מוצגת אם קיימת
+    if (d.side && d.side.imageUrl) {
+      showAdSide(d.side);
     } else {
       hideSideAd();
+    }
+    // פרסומת פופאפ — נפרדת, לא תלויה בצד
+    if (d.popup && d.popup.imageUrl && shouldShowAd()) {
+      showAdPopup(d.popup);
     }
   } catch(e) {}
 }
@@ -857,6 +899,9 @@ function buildMsg(e) {
   const n = cmtCount[id] || 0;
   const cmtLabel = n === 0 ? 'תגובות' : n === 1 ? '1 תגובה' : n + ' תגובות';
 
+  const msgIndex = items.indexOf(e) + 1; // מספר ההודעה (1 = ישנה ביותר)
+  const msgNum = items.length - items.indexOf(e); // מספר מהחדש
+
   return `<div class="msg-row" data-id="${escAttr(id)}">
     <img class="msg-av" src="${LOGO}" onerror="this.style.display='none'">
     <div class="msg-col">
@@ -871,6 +916,9 @@ function buildMsg(e) {
         <div class="rxn-row" id="rxn-${escAttr(id)}">
           <button class="rxn-add-btn" onclick="openPicker(event,'${escAttr(id)}')" title="הוסף תגובה">${REACT_SVG}</button>
         </div>
+        <button class="link-btn" id="lnk-${escAttr(id)}" onclick="copyMsgLink('${escAttr(id)}',${msgNum},this)" title="העתק קישור להודעה">
+          <i class="fas fa-link" style="font-size:9px"></i>#${msgNum}
+        </button>
         <button class="cmt-btn${n > 0 ? ' has-cmt' : ''}" id="cbtn-${escAttr(id)}" onclick="openComments('${escAttr(id)}')">
           <i class="fas fa-comment" style="font-size:10px"></i> ${cmtLabel}
         </button>
@@ -1336,61 +1384,63 @@ async function openAdPanel() {
   try {
     const r = await fetch(BACKEND + '/ad_get');
     const d = await r.json();
-    if (d.ad && d.ad.imageUrl) {
-      document.getElementById('adImageUrl').value = d.ad.imageUrl || '';
-      document.getElementById('adLinkUrl').value = d.ad.linkUrl || '';
-      const type = d.ad.displayType || 'popup';
-      document.getElementById(type === 'side' ? 'adTypeSide' : 'adTypePopup').checked = true;
-      showAdPreview(d.ad.imageUrl);
-    } else {
-      document.getElementById('adTypePopup').checked = true;
+    if (d.popup && d.popup.imageUrl) {
+      document.getElementById('adPopupImageUrl').value = d.popup.imageUrl || '';
+      document.getElementById('adPopupLinkUrl').value = d.popup.linkUrl || '';
+      const pp = document.getElementById('adPopupPreview');
+      document.getElementById('adPopupPreviewImg').src = d.popup.imageUrl;
+      pp.style.display = 'block';
     }
-  } catch(e) {
-    document.getElementById('adTypePopup').checked = true;
-  }
+    if (d.side && d.side.imageUrl) {
+      document.getElementById('adSideImageUrl').value = d.side.imageUrl || '';
+      document.getElementById('adSideLinkUrl').value = d.side.linkUrl || '';
+      const sp = document.getElementById('adSidePreview');
+      document.getElementById('adSidePreviewImg').src = d.side.imageUrl;
+      sp.style.display = 'block';
+    }
+  } catch(e) {}
 }
 
 function closeAdPanel() {
   document.getElementById('adModal').style.display = 'none';
 }
 
-function showAdPreview(url) {
-  const prev = document.getElementById('adPreview');
-  const img = document.getElementById('adPreviewImg');
-  if (url) { img.src = url; prev.style.display = 'block'; }
-  else prev.style.display = 'none';
-}
-
-async function saveAd() {
-  const imageUrl = document.getElementById('adImageUrl').value.trim();
-  const linkUrl = document.getElementById('adLinkUrl').value.trim();
-  const displayType = document.querySelector('input[name="adType"]:checked')?.value || 'popup';
+async function saveAd(type) {
+  const imgEl  = type === 'popup' ? 'adPopupImageUrl' : 'adSideImageUrl';
+  const lnkEl  = type === 'popup' ? 'adPopupLinkUrl'  : 'adSideLinkUrl';
+  const prevEl = type === 'popup' ? 'adPopupPreview'   : 'adSidePreview';
+  const prevImgEl = type === 'popup' ? 'adPopupPreviewImg' : 'adSidePreviewImg';
+  const imageUrl = document.getElementById(imgEl).value.trim();
+  const linkUrl  = document.getElementById(lnkEl).value.trim();
   if (!imageUrl) { showAdMsg('יש להזין קישור לתמונה', 'red'); return; }
   try {
     const r = await fetch(BACKEND + '/ad_set', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: me.email, imageUrl, linkUrl, displayType })
+      body: JSON.stringify({ email: me.email, imageUrl, linkUrl, displayType: type })
     });
     const d = await r.json();
     if (d.status === 'ok') {
       showAdMsg('נשמר ✓', 'green');
-      showAdPreview(imageUrl);
-      // מיד מפעיל את הפרסומת
+      document.getElementById(prevImgEl).src = imageUrl;
+      document.getElementById(prevEl).style.display = 'block';
       loadAd();
     } else showAdMsg(d.msg || 'שגיאה', 'red');
   } catch(e) { showAdMsg('שגיאת שרת', 'red'); }
 }
 
-async function deleteAd() {
+async function deleteAd(type) {
+  const imgEl  = type === 'popup' ? 'adPopupImageUrl' : 'adSideImageUrl';
+  const lnkEl  = type === 'popup' ? 'adPopupLinkUrl'  : 'adSideLinkUrl';
+  const prevEl = type === 'popup' ? 'adPopupPreview'   : 'adSidePreview';
   try {
     await fetch(BACKEND + '/ad_set', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: me.email, imageUrl: '', linkUrl: '', displayType: 'popup' })
+      body: JSON.stringify({ email: me.email, imageUrl: '', linkUrl: '', displayType: type })
     });
-    document.getElementById('adImageUrl').value = '';
-    document.getElementById('adLinkUrl').value = '';
-    document.getElementById('adPreview').style.display = 'none';
-    hideSideAd();
+    document.getElementById(imgEl).value = '';
+    document.getElementById(lnkEl).value = '';
+    document.getElementById(prevEl).style.display = 'none';
+    if (type === 'side') hideSideAd();
     showAdMsg('הוסרה ✓', 'green');
   } catch(e) {}
 }
