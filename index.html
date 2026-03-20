@@ -146,29 +146,27 @@ header{
 #emojiPicker{
   position:fixed;
   background:#fff;border:1px solid #e5e7eb;
-  border-radius:99px;
-  padding:5px 8px;
-  box-shadow:0 6px 22px rgba(0,0,0,.14);
+  border-radius:14px;
+  padding:8px;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);
   z-index:600;display:none;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  max-width:calc(100vw - 20px);
-  gap:3px;
-  scrollbar-width:none;
-  animation:pickerPop .18s cubic-bezier(.34,1.4,.64,1);
+  flex-wrap:wrap;
+  width:232px;
+  gap:2px;
+  animation:pickerPop .14s ease-out;
 }
-#emojiPicker::-webkit-scrollbar{display:none;}
-@keyframes pickerPop{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+@keyframes pickerPop{from{opacity:0;transform:scale(.95) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
 #emojiPicker.show{display:flex;}
 .ep-btn{
-  background:#f3f4f6;border:1px solid #e5e7eb;
-  font-size:15px;cursor:pointer;
-  padding:4px 7px;border-radius:8px;line-height:1;flex-shrink:0;
+  background:none;border:none;
+  font-size:22px;cursor:pointer;
+  padding:4px;border-radius:8px;line-height:1;flex-shrink:0;
   font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
-  transition:background .1s,transform .1s,border-color .1s;
+  transition:background .1s,transform .1s;
   display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;
 }
-.ep-btn:hover{background:#e5e7eb;border-color:#d1d5db;transform:scale(1.15);}
+.ep-btn:hover{background:#f3f4f6;transform:scale(1.15);}
 .ep-btn:active{transform:scale(.9);}
 
 /* COMMENTS PANEL */
@@ -359,6 +357,9 @@ header{
       <button id="searchBtn" onclick="toggleSearch()" title="חיפוש">
         <i class="fas fa-search" style="font-size:14px"></i>
       </button>
+      <button id="adBtn" onclick="openAdPanel()" title="פרסומת" style="display:none;background:none;border:none;cursor:pointer;width:34px;height:34px;border-radius:50%;display:none;align-items:center;justify-content:center;color:#888;transition:background .15s">
+        <i class="fas fa-ad" style="font-size:14px"></i>
+      </button>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar"></div>
     </div>
@@ -407,6 +408,26 @@ header{
   <button class="ep-btn" onclick="pickEmoji('😍')">😍</button>
   <button class="ep-btn" onclick="pickEmoji('🤯')">🤯</button>
   <button class="ep-btn" onclick="pickEmoji('😱')">😱</button>
+</div>
+
+<!-- AD MANAGEMENT MODAL -->
+<div id="adModal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative">
+    <button onclick="closeAdPanel()" style="position:absolute;top:14px;left:14px;background:#f3f4f6;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;color:#666;font-size:14px">✕</button>
+    <div style="font-size:16px;font-weight:800;color:#111;margin-bottom:16px;text-align:right">📢 ניהול פרסומת</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="font-size:12px;font-weight:700;color:#666;text-align:right">קישור לתמונה (URL)</label>
+      <input id="adImageUrl" type="text" placeholder="https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif">
+      <label style="font-size:12px;font-weight:700;color:#666;text-align:right">קישור ללחיצה (URL)</label>
+      <input id="adLinkUrl" type="text" placeholder="https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif">
+      <div id="adPreview" style="display:none;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb">
+        <img id="adPreviewImg" style="width:100%;display:block;max-height:200px;object-fit:contain">
+      </div>
+      <button onclick="saveAd()" style="background:#1a56db;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">שמור פרסומת</button>
+      <button onclick="deleteAd()" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">הסר פרסומת</button>
+    </div>
+    <div id="adMsg" style="display:none;margin-top:10px;font-size:12px;font-weight:600;text-align:center"></div>
+  </div>
 </div>
 
 <!-- COMMENTS PANEL -->
@@ -494,15 +515,89 @@ function saveUser(u) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)
 function loadSavedUser() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch(e) {} return null; }
 function clearSavedUser() { try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} }
 
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('userMenu');
+  if (!menu) return;
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    setTimeout(() => document.addEventListener('click', () => {
+      menu.style.display = 'none';
+    }, { once: true }), 0);
+  }
+}
+
+function doLogout() {
+  clearSavedUser();
+  me = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  // מאפס את Google One Tap כדי שיציג מחדש
+  try { google.accounts.id.disableAutoSelect(); } catch(e) {}
+  try { google.accounts.id.revoke(me?.email || '', () => {}); } catch(e) {}
+}
+
+/* ── AD SYSTEM ── */
+const AD_KEY = 'shaagat_ad';
+const AD_INTERVAL = 60 * 60 * 1000; // שעה
+
+async function loadAd() {
+  try {
+    const r = await fetch(BACKEND + '/ad_get');
+    const d = await r.json();
+    if (d.status === 'ok' && d.ad && d.ad.imageUrl) showAdPopup(d.ad);
+  } catch(e) {}
+}
+
+function shouldShowAd() {
+  const last = parseInt(localStorage.getItem(AD_KEY) || '0');
+  return Date.now() - last > AD_INTERVAL;
+}
+
+function markAdShown() {
+  localStorage.setItem(AD_KEY, String(Date.now()));
+}
+
+function showAdPopup(ad) {
+  if (!shouldShowAd()) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'adOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease';
+  overlay.innerHTML = `
+    <div style="position:relative;max-width:420px;width:90%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+      <button onclick="closeAd()" style="position:absolute;top:10px;right:10px;z-index:2;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Heebo',sans-serif">✕</button>
+      <a href="${escAttr(ad.linkUrl || '#')}" target="_blank" rel="noopener noreferrer" onclick="closeAd()">
+        <img src="${escAttr(ad.imageUrl)}" style="width:100%;display:block;max-height:70vh;object-fit:contain;background:#000">
+      </a>
+    </div>`;
+  document.body.appendChild(overlay);
+  markAdShown();
+}
+
+function closeAd() {
+  document.getElementById('adOverlay')?.remove();
+}
+
 async function verifyAndLogin(user) {
   me = user; saveUser(user); applyLogin(); return true;
 }
 
 function applyLogin() {
   const av = document.getElementById('userAvatar');
-  av.innerHTML = me.picture
+  const avatarHtml = me.picture
     ? `<img src="${escAttr(me.picture)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #eee">`
     : `<div style="width:30px;height:30px;border-radius:50%;background:#1a56db;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${esc(me.name[0].toUpperCase())}</div>`;
+  av.innerHTML = `<div style="position:relative;cursor:pointer" onclick="toggleUserMenu(event)">
+    ${avatarHtml}
+  </div>
+  <div id="userMenu" style="display:none;position:absolute;top:48px;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:200;min-width:160px;overflow:hidden;font-family:'Heebo',sans-serif;">
+    <div style="padding:10px 14px;font-size:12px;font-weight:700;color:#374151;border-bottom:1px solid #f3f4f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(me.name)}</div>
+    <button onclick="doLogout()" style="width:100%;padding:10px 14px;text-align:right;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#dc2626;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:8px;">
+      <i class="fas fa-sign-out-alt"></i> התנתק
+    </button>
+  </div>`;
+  av.style.position = 'relative';
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 
@@ -524,9 +619,16 @@ function applyLogin() {
     document.getElementById('adminBadge').classList.add('show');
     loadAdminUsers();
     setInterval(loadAdminUsers, 30000);
+    // כפתור פרסומת — רק למנהל
+    const adBtn = document.getElementById('adBtn');
+    if (adBtn) { adBtn.style.display = 'flex'; }
   }
 
   loadFeed();
+
+  // פרסומת — קופצת 3 שניות אחרי כניסה ואז כל שעה
+  setTimeout(loadAd, 3000);
+  setInterval(loadAd, AD_INTERVAL);
 }
 
 async function loadAdminUsers() {
@@ -1058,6 +1160,68 @@ function clearSearch() {
   document.getElementById('feedWrap').style.display = '';
   document.getElementById('searchBar').classList.remove('open');
   document.getElementById('searchBtn').classList.remove('active');
+}
+
+/* ── AD PANEL (מנהל) ── */
+async function openAdPanel() {
+  const modal = document.getElementById('adModal');
+  modal.style.display = 'flex';
+  try {
+    const r = await fetch(BACKEND + '/ad_get');
+    const d = await r.json();
+    if (d.ad && d.ad.imageUrl) {
+      document.getElementById('adImageUrl').value = d.ad.imageUrl || '';
+      document.getElementById('adLinkUrl').value = d.ad.linkUrl || '';
+      showAdPreview(d.ad.imageUrl);
+    }
+  } catch(e) {}
+}
+
+function closeAdPanel() {
+  document.getElementById('adModal').style.display = 'none';
+}
+
+function showAdPreview(url) {
+  const prev = document.getElementById('adPreview');
+  const img = document.getElementById('adPreviewImg');
+  if (url) { img.src = url; prev.style.display = 'block'; }
+  else prev.style.display = 'none';
+}
+
+async function saveAd() {
+  const imageUrl = document.getElementById('adImageUrl').value.trim();
+  const linkUrl = document.getElementById('adLinkUrl').value.trim();
+  if (!imageUrl) { showAdMsg('יש להזין קישור לתמונה', 'red'); return; }
+  try {
+    const r = await fetch(BACKEND + '/ad_set', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: me.email, imageUrl, linkUrl })
+    });
+    const d = await r.json();
+    if (d.status === 'ok') { showAdMsg('נשמר ✓', 'green'); showAdPreview(imageUrl); }
+    else showAdMsg(d.msg || 'שגיאה', 'red');
+  } catch(e) { showAdMsg('שגיאת שרת', 'red'); }
+}
+
+async function deleteAd() {
+  try {
+    await fetch(BACKEND + '/ad_set', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: me.email, imageUrl: '', linkUrl: '' })
+    });
+    document.getElementById('adImageUrl').value = '';
+    document.getElementById('adLinkUrl').value = '';
+    document.getElementById('adPreview').style.display = 'none';
+    showAdMsg('הוסרה ✓', 'green');
+  } catch(e) {}
+}
+
+function showAdMsg(txt, color) {
+  const el = document.getElementById('adMsg');
+  el.textContent = txt;
+  el.style.color = color === 'green' ? '#16a34a' : '#dc2626';
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2000);
 }
 
 /* ══ INTERVALS ══ */
