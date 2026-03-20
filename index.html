@@ -22,7 +22,7 @@ body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialias
 .login-err{font-size:12px;color:#e02020;margin-top:10px;display:none;font-weight:600;}
 
 /* APP */
-#app{flex:1;min-width:0;height:100%;display:none;flex-direction:column;overflow:hidden;}
+#app{flex:1;min-width:0;height:100%;display:none;flex-direction:column;}
 
 /* AD SIDEBAR */
 #adSidebar{
@@ -50,8 +50,10 @@ header{
   background:#fff;border-bottom:1px solid rgba(0,0,0,.08);
   height:56px;padding:0 14px;
   display:flex;align-items:center;gap:12px;
-  flex-shrink:0;position:sticky;top:0;z-index:100;
+  flex-shrink:0;position:fixed;top:0;left:0;right:0;z-index:100;
 }
+/* פידפ מתחיל מתחת לסרגל הקבוע */
+#app{padding-top:56px;}
 .hdr-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;}
 .hdr-info{flex:1;min-width:0;}
 .hdr-name{font-size:15px;font-weight:800;color:#111;line-height:1.2;}
@@ -72,7 +74,7 @@ header{
 #adminBadge i{font-size:10px;opacity:.7;}
 
 /* FEED */
-#feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;}
+#feedWrap{flex:1;overflow-y:scroll;padding:10px 0 24px;}
 #feedInner{max-width:780px;margin:0 60px 0 auto;padding:0 10px 0 20px;display:flex;flex-direction:column;gap:6px;}
 
 @media(max-width:600px){
@@ -1012,7 +1014,7 @@ async function loadMore() {
       if (!older.length) { allLoaded = true; return; }
       older.forEach(e => { knownIds.add(e.id); items.unshift(e); });
       oldestTs = Math.min(...older.map(e => e.ts || Infinity));
-      allLoaded = d.feed.length < 20;
+       allLoaded = older.length < 20; // הגענו לסוף כשקיבלנו פחות מ-20 חדשות
       const inner = document.getElementById('feedInner');
       const wrap = document.getElementById('feedWrap');
       const prevHeight = wrap.scrollHeight;
