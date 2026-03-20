@@ -51,6 +51,7 @@ header{
   height:56px;padding:0 14px;
   display:flex;align-items:center;gap:12px;
   flex-shrink:0;position:fixed;top:0;left:0;right:0;z-index:100;
+  overflow:visible; /* מאפשר ל-popup לצאת */
 }
 /* פידפ מתחיל מתחת לסרגל הקבוע */
 #app{padding-top:56px;}
@@ -256,14 +257,14 @@ header{
 
 /* HEADER ICON BUTTONS */
 .hdr-user{display:flex;align-items:center;gap:4px;}
-.hdr-icon-btn, #searchBtn, #darkBtn, #notifBtn, #adBtn {
+.hdr-icon-btn, #searchBtn, #darkBtn, #notifBtn, #adBtn, #adminPanelBtn {
   background:none;border:none;cursor:pointer;
   width:32px;height:32px;border-radius:8px;
   display:inline-flex;align-items:center;justify-content:center;
   color:#888;transition:background .15s,color .15s;flex-shrink:0;
   text-decoration:none;
 }
-.hdr-icon-btn:hover, #searchBtn:hover, #darkBtn:hover, #notifBtn:hover, #adBtn:hover{background:#f3f4f6;color:#333;}
+.hdr-icon-btn:hover, #searchBtn:hover, #darkBtn:hover, #notifBtn:hover, #adBtn:hover, #adminPanelBtn:hover{background:#f3f4f6;color:#333;}
 #searchBtn.active{background:#eff6ff;color:#1a56db;}
 #darkBtn.active{background:#1e1e2e;color:#f0c040;}
 #notifBtn.active{background:#f0fdf4;color:#16a34a;}
@@ -296,25 +297,31 @@ body.dark .hdr-icon-btn:hover, body.dark #searchBtn:hover, body.dark #darkBtn:ho
 
 #searchBar{
   position:absolute;
-  top:56px;right:0;left:0;
+  top:50%;right:36px; /* ליד כפתור החיפוש */
+  transform:translateY(-50%);
   background:#fff;
-  border-bottom:1px solid rgba(0,0,0,.07);
-  box-shadow:0 4px 12px rgba(0,0,0,.08);
-  display:none;align-items:center;gap:8px;
-  padding:8px 14px;z-index:99;
+  border:1.5px solid #e5e7eb;
+  border-radius:99px;
+  box-shadow:0 2px 12px rgba(0,0,0,.12);
+  display:none;align-items:center;gap:6px;
+  padding:4px 10px 4px 6px;
+  z-index:200;
+  width:220px;
+  animation:searchPop .15s ease-out;
 }
+@keyframes searchPop{from{opacity:0;transform:translateY(-50%) scaleX(.85)}to{opacity:1;transform:translateY(-50%) scaleX(1)}}
 #searchBar.open{display:flex;}
+body.dark #searchBar{background:#1a1a2e;border-color:#3a3a50;}
 #searchInput{
-  flex:1;border:1.5px solid #e5e7eb;border-radius:99px;
-  padding:7px 14px;font-size:14px;font-family:'Heebo',sans-serif;
-  outline:none;direction:rtl;background:#f8f9fa;
-  transition:border-color .2s,background .2s;
+  flex:1;border:none;border-radius:99px;
+  padding:4px 8px;font-size:14px;font-family:'Heebo',sans-serif;
+  outline:none;direction:rtl;background:transparent;
 }
-#searchInput:focus{border-color:#1a56db;background:#fff;}
+body.dark #searchInput{color:#e5e7eb;}
 #searchInput::placeholder{color:#bbb;}
 #searchClear{
   background:none;border:none;cursor:pointer;color:#bbb;
-  font-size:16px;padding:2px 4px;display:none;line-height:1;flex-shrink:0;
+  font-size:14px;padding:2px;display:none;line-height:1;flex-shrink:0;
 }
 #searchClear.show{display:block;}
 #searchResults{
@@ -441,14 +448,13 @@ body.dark .hdr-icon-btn:hover, body.dark #searchBtn:hover, body.dark #darkBtn:ho
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar"></div>
     </div>
-  </header>
 
-  <!-- חיפוש — dropdown מהסרגל -->
-  <div id="searchBar">
-    <i class="fas fa-search" style="color:#bbb;font-size:13px;flex-shrink:0"></i>
-    <input id="searchInput" type="text" placeholder="חיפוש במבזקים..." oninput="onSearch(this.value)" />
-    <button id="searchClear" onclick="clearSearch()"><i class="fas fa-times"></i></button>
-  </div>
+    <!-- חיפוש — popup בתוך הסרגל -->
+    <div id="searchBar">
+      <input id="searchInput" type="text" placeholder="חיפוש..." oninput="onSearch(this.value)" />
+      <button id="searchClear" onclick="clearSearch()"><i class="fas fa-times"></i></button>
+    </div>
+  </header>
 
   <div id="feedWrap">
     <div id="loadMoreSpinner"><div class="lm-ring"></div>טוען עוד...</div>
