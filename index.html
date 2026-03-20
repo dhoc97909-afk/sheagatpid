@@ -74,7 +74,8 @@ header{
 #adminBadge i{font-size:10px;opacity:.7;}
 
 /* FEED */
-#feedWrap{flex:1;overflow-y:scroll;padding:10px 0 24px;}
+#feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;scrollbar-width:none;}
+#feedWrap::-webkit-scrollbar{display:none;}
 #feedInner{max-width:780px;margin:0 60px 0 auto;padding:0 10px 0 20px;display:flex;flex-direction:column;gap:6px;}
 
 @media(max-width:600px){
@@ -175,7 +176,7 @@ header{
   box-shadow:0 4px 16px rgba(0,0,0,.12);
   z-index:600;display:none;
   flex-wrap:wrap;
-  width:232px;
+  width:254px;
   gap:2px;
   animation:pickerPop .14s ease-out;
 }
@@ -183,12 +184,12 @@ header{
 #emojiPicker.show{display:flex;}
 .ep-btn{
   background:none;border:none;
-  font-size:22px;cursor:pointer;
-  padding:4px;border-radius:8px;line-height:1;flex-shrink:0;
+  font-size:17px;cursor:pointer;
+  padding:2px;border-radius:6px;line-height:1;flex-shrink:0;
   font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
   transition:background .1s,transform .1s;
   display:inline-flex;align-items:center;justify-content:center;
-  width:36px;height:36px;
+  width:28px;height:28px;
 }
 .ep-btn:hover{background:#f3f4f6;transform:scale(1.15);}
 .ep-btn:active{transform:scale(.9);}
@@ -252,10 +253,40 @@ header{
 .cp-inp:focus{border-color:#93c5fd;}
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
+/* HEADER ICON BUTTONS */
+.hdr-user{display:flex;align-items:center;gap:4px;}
+.hdr-icon-btn, #searchBtn, #darkBtn, #notifBtn, #adBtn {
+  background:none;border:none;cursor:pointer;
+  width:32px;height:32px;border-radius:8px;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:#888;transition:background .15s,color .15s;flex-shrink:0;
+  text-decoration:none;
+}
+.hdr-icon-btn:hover, #searchBtn:hover, #darkBtn:hover, #notifBtn:hover, #adBtn:hover{background:#f3f4f6;color:#333;}
+#searchBtn.active{background:#eff6ff;color:#1a56db;}
+#darkBtn.active{background:#1e1e2e;color:#f0c040;}
+#notifBtn.active{background:#f0fdf4;color:#16a34a;}
+
+/* DARK MODE */
+body.dark{background:#0f0f15;color:#e5e7eb;}
+body.dark header{background:#1a1a2e;border-color:#2a2a40;}
+body.dark .bubble{background:#1e1e30;color:#e5e7eb;}
+body.dark .bubble.is-red{background:#2a1010;border-color:#e02020;}
+body.dark .bubble-text{color:#e5e7eb;}
+body.dark .bubble-headline{color:#fff;}
+body.dark .msg-meta-name{color:#aaa;}
+body.dark .msg-meta-time{color:#666;}
+body.dark #feedWrap{background:#0f0f15;}
+body.dark #searchBar{background:#1a1a2e;border-color:#2a2a40;}
+body.dark #searchInput{background:#252535;border-color:#3a3a50;color:#e5e7eb;}
+body.dark .hdr-name{color:#fff;}
+body.dark .hdr-icon-btn, body.dark #searchBtn, body.dark #darkBtn, body.dark #notifBtn{color:#aaa;}
+body.dark .hdr-icon-btn:hover, body.dark #searchBtn:hover, body.dark #darkBtn:hover, body.dark #notifBtn:hover{background:#2a2a3e;color:#fff;}
+
 /* SEARCH */
 #searchBtn{
   background:none;border:none;cursor:pointer;
-  width:34px;height:34px;border-radius:50%;
+  width:32px;height:32px;border-radius:8px;
   display:flex;align-items:center;justify-content:center;
   color:#888;transition:background .15s,color .15s;flex-shrink:0;
 }
@@ -263,18 +294,15 @@ header{
 #searchBtn.active{background:#eff6ff;color:#1a56db;}
 
 #searchBar{
-  overflow:hidden;max-height:0;
-  transition:max-height .28s cubic-bezier(.16,1,.3,1),
-             padding .28s cubic-bezier(.16,1,.3,1),
-             border-color .28s;
-  padding:0 12px;background:#fff;
-  border-bottom:1px solid transparent;
-  display:flex;align-items:center;gap:8px;flex-shrink:0;
-}
-#searchBar.open{
-  max-height:54px;padding:8px 12px;
+  position:absolute;
+  top:56px;right:0;left:0;
+  background:#fff;
   border-bottom:1px solid rgba(0,0,0,.07);
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+  display:none;align-items:center;gap:8px;
+  padding:8px 14px;z-index:99;
 }
+#searchBar.open{display:flex;}
 #searchInput{
   flex:1;border:1.5px solid #e5e7eb;border-radius:99px;
   padding:7px 14px;font-size:14px;font-family:'Heebo',sans-serif;
@@ -385,17 +413,32 @@ header{
       <div class="hdr-status"><div class="hdr-dot"></div>מחובר · עדכונים חיים</div>
     </div>
     <div class="hdr-user">
+      <!-- חיפוש -->
       <button id="searchBtn" onclick="toggleSearch()" title="חיפוש">
-        <i class="fas fa-search" style="font-size:14px"></i>
+        <i class="fas fa-search" style="font-size:13px"></i>
       </button>
-      <button id="adBtn" onclick="openAdPanel()" title="פרסומת" style="display:none;background:none;border:none;cursor:pointer;width:34px;height:34px;border-radius:50%;display:none;align-items:center;justify-content:center;color:#888;transition:background .15s">
-        <i class="fas fa-ad" style="font-size:14px"></i>
+      <!-- אימייל למנהל -->
+      <a class="hdr-icon-btn" href="https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&source=mailto&su=%D7%A4%D7%A0%D7%99%D7%94+%D7%9C%D7%9E%D7%A0%D7%94%D7%9C%D7%99+%D7%A7%D7%91%D7%95%D7%A6%D7%AA+%22%D7%A9%D7%90%D7%92%D7%AA+%D7%94%D7%90%D7%A8%D7%99+-+%D7%A2%D7%93%D7%9B%D7%95%D7%A0%D7%99%D7%9D%22&to=david%40hamakom.ovh&body=%D7%9B%D7%AA%D7%91%D7%95+%D7%9B%D7%90%D7%9F+%D7%90%D7%AA+%D7%AA%D7%95%D7%9B%D7%9F+%D7%94%D7%A4%D7%A0%D7%99%D7%94%3A%0A" target="_blank" rel="noopener" title="פנייה למנהל">
+        <i class="fas fa-envelope" style="font-size:13px"></i>
+      </a>
+      <!-- מצב כהה -->
+      <button id="darkBtn" onclick="toggleDark()" title="מצב כהה">
+        <i class="fas fa-moon" style="font-size:13px"></i>
+      </button>
+      <!-- התראות -->
+      <button id="notifBtn" onclick="toggleNotifications()" title="התראות">
+        <i class="fas fa-bell" style="font-size:13px"></i>
+      </button>
+      <!-- פרסומת (מנהל בלבד) -->
+      <button id="adBtn" onclick="openAdPanel()" title="פרסומת" style="display:none">
+        <i class="fas fa-ad" style="font-size:13px"></i>
       </button>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar"></div>
     </div>
   </header>
 
+  <!-- חיפוש — dropdown מהסרגל -->
   <div id="searchBar">
     <i class="fas fa-search" style="color:#bbb;font-size:13px;flex-shrink:0"></i>
     <input id="searchInput" type="text" placeholder="חיפוש במבזקים..." oninput="onSearch(this.value)" />
@@ -692,6 +735,9 @@ function applyLogin() {
   // פרסומת — קופצת 3 שניות אחרי כניסה ואז כל שעה
   setTimeout(loadAd, 3000);
   setInterval(loadAd, AD_INTERVAL);
+
+  initDark();
+  initNotifications();
 }
 
 async function loadAdminUsers() {
@@ -1074,6 +1120,8 @@ async function pollAll() {
       });
       if (atBottom) document.getElementById('feedWrap').scrollTop = 999999;
       else { newCount += ni.length; updateScrollBtn(); }
+      // התראת Windows כשיש הודעה חדשה
+      if (ni.length) sendNotification('שאגת הארי — הודעה חדשה', ni[ni.length-1].text?.substring(0,60) || '');
     } else if (newRaw.length) {
       lastTs = Math.max(...newRaw.map(e => e.ts || 0), lastTs);
     }
@@ -1298,6 +1346,59 @@ function showAdMsg(txt, color) {
   el.style.color = color === 'green' ? '#16a34a' : '#dc2626';
   el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 2000);
+}
+
+/* ── DARK MODE ── */
+function toggleDark() {
+  const on = document.body.classList.toggle('dark');
+  document.getElementById('darkBtn').classList.toggle('active', on);
+  localStorage.setItem('shaagat_dark', on ? '1' : '0');
+}
+
+function initDark() {
+  if (localStorage.getItem('shaagat_dark') === '1') {
+    document.body.classList.add('dark');
+    document.getElementById('darkBtn')?.classList.add('active');
+  }
+}
+
+/* ── NOTIFICATIONS ── */
+let notificationsOn = false;
+
+async function toggleNotifications() {
+  if (!('Notification' in window)) {
+    alert('הדפדפן שלך לא תומך בהתראות');
+    return;
+  }
+  if (notificationsOn) {
+    notificationsOn = false;
+    document.getElementById('notifBtn').classList.remove('active');
+    localStorage.setItem('shaagat_notif', '0');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    notificationsOn = true;
+    document.getElementById('notifBtn').classList.add('active');
+    localStorage.setItem('shaagat_notif', '1');
+    new Notification('שאגת הארי', { body: 'התראות מופעלות ✓', icon: 'https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png' });
+  }
+}
+
+function initNotifications() {
+  if (localStorage.getItem('shaagat_notif') === '1' && Notification.permission === 'granted') {
+    notificationsOn = true;
+    document.getElementById('notifBtn')?.classList.add('active');
+  }
+}
+
+function sendNotification(title, body) {
+  if (!notificationsOn || Notification.permission !== 'granted') return;
+  if (document.visibilityState === 'visible') return; // רק כשהמשתמש מחוץ לטאב
+  new Notification(title || 'שאגת הארי', {
+    body: body || 'הודעה חדשה',
+    icon: 'https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png'
+  });
 }
 
 /* ══ INTERVALS ══ */
