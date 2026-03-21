@@ -40,16 +40,21 @@ body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialias
 /* ── Admin Chat Panel (inside sidebar, ON TOP) ── */
 #adminChatPanel{
   flex:1;min-height:0;
-  display:none; /* shown only for admins */
+  display:none;
   flex-direction:column;
   border-bottom:1px solid #e5e7eb;
+  overflow:hidden;
 }
 #adminChatPanel.show{display:flex;}
 
-/* Ad block inside sidebar — pushed below chat */
-#adSidebarBlock{flex-shrink:0;}
+/* Ad block inside sidebar — fixed height at bottom, never grows to cover chat */
+#adSidebarBlock{
+  flex-shrink:0;
+  max-height:40%; /* לא יתפוס יותר מ-40% מהסיידבר */
+  overflow:hidden;
+}
 #adSidebarBlock a{display:block;width:100%;}
-#adSidebarBlock img{width:100%;height:auto;display:block;}
+#adSidebarBlock img{width:100%;height:auto;display:block;max-height:100%;object-fit:contain;}
 
 /* Chat panel minimized state */
 #adminChatPanel.minimized #chatBody,
@@ -317,12 +322,11 @@ body.dark #searchInput{color:#e5e7eb;}
 
 /* ══ ADMIN COMPOSE BAR (sticky bottom, only for admins) ══ */
 #adminComposeBar{
-  display:none; /* shown only for admins */
+  display:none;
   position:fixed;
   bottom:0;
-  /* הסיידבר נמצא בצד ימין (RTL) — הבועה מתחילה אחריו */
-  right:320px;
-  left:0;
+  right:0;          /* מתחיל מהקצה הימני */
+  left:320px;       /* נגמר לפני הסיידבר (320px מהשמאל) */
   z-index:200;
   background:#fff;
   border-top:2px solid #e5e7eb;
@@ -330,7 +334,6 @@ body.dark #searchInput{color:#e5e7eb;}
   direction:rtl;
   flex-direction:column;
 }
-/* כשאין סיידבר (מסכים קטנים) — מלא את כל הרוחב */
 @media(max-width:900px){
   #adminComposeBar{right:0;left:0;}
 }
@@ -1399,19 +1402,30 @@ async function sendFeedPost(){
     groupCount:0,
     buttons:composeBtns.map(b=>({text:b.text,url:b.url})),
   };
+  const btn=document.getElementById('composeSendBtn');
+  btn.innerHTML='<i class="fas fa-spinner fa-spin" style="font-size:12px"></i>';btn.disabled=true;
   try{
-    const btn=document.getElementById('composeSendBtn');
-    btn.innerHTML='<i class="fas fa-spinner fa-spin" style="font-size:12px"></i>';btn.disabled=true;
     const r=await fetch(BACKEND+'/feed_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
     const d=await r.json();
     if(d.status==='ok'){
+      // הוסף מיד לרשימה המקומית — המנהל רואה את ההודעה שלו מיד
+      const newEntry=d.entry||entry;
+      if(!newEntry.id)newEntry.id=entry.id||String(entry.ts);
+      if(!knownIds.has(newEntry.id)){
+        knownIds.add(newEntry.id);
+        items.push(newEntry);
+        lastTs=Math.max(lastTs,newEntry.ts||0);
+        const inner=document.getElementById('feedInner');
+        document.getElementById('empty').style.display='none';
+        const div=document.createElement('div');
+        div.innerHTML=buildMsg(newEntry);
+        inner.appendChild(div.firstChild);
+      }
       clearCompose();
-      // Force poll immediately
-      lastTs=0;await pollAll();
       document.getElementById('feedWrap').scrollTop=999999;
     }else{alert('שגיאה בשליחה');}
-    btn.innerHTML='<i class="fas fa-paper-plane" style="font-size:14px"></i>';btn.disabled=false;
-  }catch(e){alert('שגיאת שרת');document.getElementById('composeSendBtn').innerHTML='<i class="fas fa-paper-plane" style="font-size:14px"></i>';document.getElementById('composeSendBtn').disabled=false;}
+  }catch(e){alert('שגיאת שרת');}
+  btn.innerHTML='<i class="fas fa-paper-plane" style="font-size:14px"></i>';btn.disabled=false;
 }
 
 /* ══ ADMIN CHAT (in sidebar) ══ */
@@ -1542,9 +1556,15 @@ async function sendChatMsg(){
 
 /* ══ ADMIN MESSAGES MODAL ══ */
 function openAdminMsgs(){
-  if(!isAdmin())return; // רק מנהלים
+  if(!isAdmin())return;
   document.getElementById('adminMsgsModal').classList.add('open');
-  markAdminMsgsRead();
+  // סמן את כל ההודעות כנקראו ברגע פתיחת המודל
+  if(adminMsgsLastId){
+    localStorage.setItem('admin_msgs_seen', adminMsgsLastId);
+    adminMsgsUnread=0;
+    updateAdminMsgsBadge();
+  }
+  loadAdminMsgs();
 }
 function closeAdminMsgs(){document.getElementById('adminMsgsModal').classList.remove('open');}
 
@@ -1559,36 +1579,46 @@ async function loadAdminMsgs(){
 }
 
 function checkAdminMsgsNew(msgs){
-  if(!msgs.length){if(adminMsgsLastId===null)adminMsgsLastId='';updateAdminMsgsBadge();return;}
-  const topId=msgs[0].id;
-  const lastSeen=localStorage.getItem('admin_msgs_seen')||'0';
-  if(adminMsgsLastId!==null&&adminMsgsLastId!==''&&topId!==adminMsgsLastId){
+  const lastSeen=localStorage.getItem('admin_msgs_seen')||'';
+
+  if(!msgs.length){
+    adminMsgsLastId='';
+    adminMsgsUnread=0;
+    updateAdminMsgsBadge();
+    return;
+  }
+
+  const topId=String(msgs[0].id);
+
+  // זיהוי הודעה חדשה — רק אחרי שהתחלנו לעקוב (לא בטעינה הראשונה)
+  if(adminMsgsLastId!==null && adminMsgsLastId!=='' && topId!==adminMsgsLastId){
     const newest=msgs[0];
-    if(newest.email!==me?.email&&newest.id>lastSeen){
-      // show popup notification
-      showAdminMsgPopup(newest);
-      sendNotification('הודעת מנהל',newest.sender+': '+newest.text?.substring(0,50));
+    if(String(newest.email)!==String(me?.email)){
+      sendNotification('📢 הודעת מנהל חדשה', newest.sender+': '+(newest.text||'').substring(0,50));
     }
   }
-  const unread=msgs.filter(m=>String(m.id)>String(lastSeen)&&m.email!==me?.email).length;
-  adminMsgsUnread=unread;updateAdminMsgsBadge();
-  adminMsgsLastId=topId;
-}
 
-function showAdminMsgPopup(msg){
-  const el=document.getElementById('adminMsgsBadge');if(el)el.classList.add('show');
+  // ספירת הודעות שלא נקראו — כל מה שה-ID שלו גדול מ-lastSeen ולא שלחתי אני
+  const unread=msgs.filter(m=>String(m.id)>String(lastSeen) && String(m.email)!==String(me?.email)).length;
+  adminMsgsUnread=unread;
+  updateAdminMsgsBadge();
+
+  // אתחול בטעינה ראשונה
+  if(adminMsgsLastId===null) adminMsgsLastId=topId;
+  else adminMsgsLastId=topId;
 }
 
 function updateAdminMsgsBadge(){
   const badge=document.getElementById('adminMsgsBadge');
   if(!badge)return;
-  badge.classList.toggle('show',adminMsgsUnread>0);
+  badge.classList.toggle('show', adminMsgsUnread>0);
 }
 
 function markAdminMsgsRead(){
   if(!adminMsgsLastId)return;
-  localStorage.setItem('admin_msgs_seen',adminMsgsLastId);
-  adminMsgsUnread=0;updateAdminMsgsBadge();
+  localStorage.setItem('admin_msgs_seen', adminMsgsLastId);
+  adminMsgsUnread=0;
+  updateAdminMsgsBadge();
   loadAdminMsgs();
 }
 
