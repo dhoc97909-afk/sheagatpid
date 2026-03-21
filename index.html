@@ -25,7 +25,6 @@ body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialias
 
 /* ══ AD / CHAT SIDEBAR ══ */
 #rightSidebar{
-  display:none;
   width:320px;min-width:320px;
   background:#fff;
   border-left:1px solid rgba(0,0,0,.08);
@@ -33,7 +32,9 @@ body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialias
   position:sticky;top:56px;height:calc(100vh - 56px);
   flex-direction:column; /* chat on top, ad below */
   overflow:hidden;
+  display:none; /* shown via JS for admins or when ad exists */
 }
+#rightSidebar.show{display:flex;}
 @media(max-width:900px){#rightSidebar{display:none!important;}}
 
 /* ── Admin Chat Panel (inside sidebar, ON TOP) ── */
@@ -319,8 +320,9 @@ body.dark #searchInput{color:#e5e7eb;}
   display:none; /* shown only for admins */
   position:fixed;
   bottom:0;
-  /* ימין — מתחיל אחרי הסיידבר (320px), שמאל — 0 */
-  left:0;right:320px;
+  /* הסיידבר נמצא בצד ימין (RTL) — הבועה מתחילה אחריו */
+  right:320px;
+  left:0;
   z-index:200;
   background:#fff;
   border-top:2px solid #e5e7eb;
@@ -330,7 +332,7 @@ body.dark #searchInput{color:#e5e7eb;}
 }
 /* כשאין סיידבר (מסכים קטנים) — מלא את כל הרוחב */
 @media(max-width:900px){
-  #adminComposeBar{right:0;}
+  #adminComposeBar{right:0;left:0;}
 }
 #adminComposeBar.show{display:flex;}
 
@@ -865,8 +867,8 @@ async function checkAllowedAdmin(){
     document.getElementById('adminMsgsBtn').style.display='flex';
     // Show admin chat panel in sidebar
     document.getElementById('adminChatPanel').classList.add('show');
-    // Show sidebar (it has the chat panel)
-    document.getElementById('rightSidebar').style.display='flex';
+    // Show sidebar
+    document.getElementById('rightSidebar').classList.add('show');
     // Load chat
     loadAdminChat();
     setInterval(loadAdminChat, 2500);
@@ -877,7 +879,7 @@ async function checkAllowedAdmin(){
     // Ping presence
     pingChatPresence();
     setInterval(pingChatPresence, 15000);
-    // Adjust feed bottom padding
+    // Adjust feed bottom padding for compose bar
     document.getElementById('feedWrap').style.paddingBottom = '120px';
   }
 
@@ -1650,15 +1652,14 @@ function showAdSide(ad){
   document.getElementById('adSidebarImg').src=ad.imageUrl;
   document.getElementById('adSidebarLink').href=ad.linkUrl||'#';
   block.style.display='block';
-  // Show sidebar if not already visible (and screen is wide enough)
-  const sidebar=document.getElementById('rightSidebar');
-  if(window.innerWidth>900)sidebar.style.display='flex';
+  // Show sidebar if wide screen (even without admin chat)
+  if(window.innerWidth>900)document.getElementById('rightSidebar').classList.add('show');
 }
 
 function hideAdSide(){
   document.getElementById('adSidebarBlock').style.display='none';
-  // If no ad AND no admin — hide sidebar
-  if(!isAdmin())document.getElementById('rightSidebar').style.display='none';
+  // Hide sidebar only if not an admin (admin always keeps it open for chat)
+  if(!isAdmin())document.getElementById('rightSidebar').classList.remove('show');
 }
 
 function showAdPopup(ad){
