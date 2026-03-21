@@ -272,8 +272,9 @@ header{
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
 /* HEADER ICON BUTTONS */
-.hdr-icon-btn,#searchBtn,#darkBtn,#notifBtn,#adBtn,#adminMsgsBtn,#manageAdminsBtn{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#888;transition:background .15s,color .15s;flex-shrink:0;text-decoration:none;position:relative;}
-.hdr-icon-btn:hover,#searchBtn:hover,#darkBtn:hover,#notifBtn:hover,#adBtn:hover,#adminMsgsBtn:hover,#manageAdminsBtn:hover{background:#f3f4f6;color:#333;}
+.hdr-icon-btn,#searchBtn,#darkBtn,#notifBtn,#adBtn,#adminMsgsBtn,#manageAdminsBtn,#writePermBtn{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#888;transition:background .15s,color .15s;flex-shrink:0;text-decoration:none;position:relative;}
+.hdr-icon-btn:hover,#searchBtn:hover,#darkBtn:hover,#notifBtn:hover,#adBtn:hover,#adminMsgsBtn:hover,#manageAdminsBtn:hover,#writePermBtn:hover{background:#f3f4f6;color:#333;}
+#writePermBtn.has-granted{background:#eff6ff;color:#1a56db;}
 #adminMsgsBtn .unread-badge{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:#e02020;border:2px solid #fff;display:none;}
 #adminMsgsBtn .unread-badge.show{display:block;}
 
@@ -612,8 +613,25 @@ body.dark #searchInput{color:#e5e7eb;}
       <button id="adBtn" onclick="openAdPanel()" title="פרסומת" style="display:none">
         <i class="fas fa-ad" style="font-size:13px"></i>
       </button>
-      <!-- רצועת אוואטרים של מנהלים עם toggle הרשאת כתיבה — david בלבד -->
-      <div id="writePermStrip" style="display:none;align-items:center;gap:4px;padding:0 4px;border-right:1px solid #e5e7eb;margin-right:2px;"></div>
+      <!-- הרשאת כתיבה — super admin בלבד -->
+      <div style="position:relative;">
+        <button id="writePermBtn" onclick="toggleWritePermDropdown()" title="הרשאות כתיבה" style="display:none">
+          <i class="fas fa-pen" style="font-size:12px"></i>
+        </button>
+        <div id="writePermDropdown" style="
+          display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+          background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;
+          box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:300;
+          min-width:220px;overflow:hidden;
+          animation:pickerPop .14s ease-out;
+          direction:rtl;
+        ">
+          <div style="padding:10px 14px 6px;font-size:11px;font-weight:800;color:#9ca3af;border-bottom:1px solid #f3f4f6;">
+            הרשאות כתיבה לפיד
+          </div>
+          <div id="writePermList" style="padding:6px 8px;display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;"></div>
+        </div>
+      </div>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar" style="position:relative;"></div>
     </div>
@@ -931,7 +949,7 @@ async function checkAllowedAdmin(){
     document.getElementById('adBtn').style.display='flex';
     document.getElementById('adminMsgsSendRow').classList.add('show');
     document.getElementById('manageAdminsBtn').style.display='flex';
-    document.getElementById('writePermStrip').style.display='flex';
+    document.getElementById('writePermBtn').style.display='flex';
     loadAdminUsers();
     setInterval(loadAdminUsers, 30000);
   }
@@ -1405,17 +1423,20 @@ function applyWritePerm(perm){
   const grantedEmails=perm?.emails||[];
   const bar=document.getElementById('adminComposeBar');
   const notice=document.getElementById('blockNotice');
+  const btn=document.getElementById('writePermBtn');
   if(!bar)return;
 
-  // david תמיד יכול לכתוב
+  if(btn)btn.classList.toggle('has-granted',grantedEmails.length>0);
+
   if(isSuperAdmin()){
     bar.classList.remove('blocked');
     notice.classList.remove('show');
-    renderWritePermStrip(grantedEmails);
+    if(document.getElementById('writePermDropdown').style.display==='block'){
+      renderWritePermDropdown(grantedEmails);
+    }
     return;
   }
 
-  // מנהל משני — בדוק אם יש לו הרשאה
   const hasPermission=grantedEmails.includes(me?.email||'');
   bar.classList.toggle('blocked',!hasPermission);
   notice.classList.toggle('show',!hasPermission);
@@ -1436,30 +1457,84 @@ async function toggleWritePerm(targetEmail){
   }catch(e){}
 }
 
-function renderWritePermStrip(grantedEmails){
-  if(!isSuperAdmin())return;
-  const strip=document.getElementById('writePermStrip');
-  if(!strip)return;
+function toggleWritePermDropdown(){
+  const dd=document.getElementById('writePermDropdown');
+  const isOpen=dd.style.display==='block';
+  if(!isOpen){
+    renderWritePermDropdown(_writePerm?.emails||[]);
+    dd.style.display='block';
+    setTimeout(()=>document.addEventListener('click',closeWritePermDropdown,{once:true}),0);
+  } else {
+    dd.style.display='none';
+  }
+}
+
+function closeWritePermDropdown(){
+  document.getElementById('writePermDropdown').style.display='none';
+}
+
+function renderWritePermDropdown(grantedEmails){
+  const list=document.getElementById('writePermList');
+  if(!list)return;
   const admins=Object.entries(_allowedMap).filter(([email])=>email!==ADMIN_EMAIL.toLowerCase());
-  if(!admins.length){strip.style.display='none';return;}
-  strip.style.display='flex';
-  strip.innerHTML=admins.map(([email,info])=>{
+  if(!admins.length){
+    list.innerHTML='<div style="padding:12px 6px;text-align:center;color:#aaa;font-size:12px;">אין מנהלים משניים</div>';
+    return;
+  }
+  list.innerHTML=admins.map(([email,info])=>{
     const isGranted=grantedEmails.includes(email);
     const pic=info.picture||'';
-    const initials=(info.name||'?')[0].toUpperCase();
+    const initials=(info.name||email)[0].toUpperCase();
     const bg=chatCol(info.name||email);
-    const borderColor=isGranted?'#1a56db':'#e5e7eb';
-    const inner=pic
-      ?`<img src="${escAttr(pic)}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
-      :`<div style="width:26px;height:26px;border-radius:50%;background:${bg};color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;">${initials}</div>`;
-    const tooltip=`${info.name||email}${isGranted?' (לחץ לביטול הרשאה)':' (לחץ להעניק כתיבה)'}`;
-    return `<div class="wperm-chip${isGranted?' granted':''}"
-      onclick="toggleWritePerm('${escAttr(email)}')"
-      title="${escAttr(tooltip)}"
-      style="outline:2px solid ${borderColor};outline-offset:1px;border-radius:50%;">
-      ${inner}
+    const av=pic
+      ?`<img src="${escAttr(pic)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">`
+      :`<div style="width:30px;height:30px;border-radius:50%;background:${bg};color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials}</div>`;
+    return `<div onclick="toggleWritePerm('${escAttr(email)}')" style="
+      display:flex;align-items:center;gap:9px;padding:7px 8px;
+      border-radius:10px;cursor:pointer;
+      background:${isGranted?'#eff6ff':'transparent'};
+      border:1.5px solid ${isGranted?'#bfdbfe':'transparent'};
+      transition:background .12s,border-color .12s;
+    " onmouseover="this.style.background='${isGranted?'#dbeafe':'#f3f4f6'}'" onmouseout="this.style.background='${isGranted?'#eff6ff':'transparent'}'">
+      ${av}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:800;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(info.name||email)}</div>
+        <div style="font-size:10px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(email)}</div>
+      </div>
+      <div style="width:18px;height:18px;border-radius:50%;border:2px solid ${isGranted?'#1a56db':'#d1d5db'};background:${isGranted?'#1a56db':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;">
+        ${isGranted?'<i class="fas fa-check" style="font-size:8px;color:#fff;"></i>':''}
+      </div>
     </div>`;
   }).join('');
+}
+
+function applyWritePerm(perm){
+  _writePerm=perm;
+  const grantedEmails=perm?.emails||[];
+  const bar=document.getElementById('adminComposeBar');
+  const notice=document.getElementById('blockNotice');
+  const btn=document.getElementById('writePermBtn');
+  if(!bar)return;
+
+  // עדכן מצב הכפתור
+  if(btn)btn.classList.toggle('has-granted',grantedEmails.length>0);
+
+  if(isSuperAdmin()){
+    bar.classList.remove('blocked');
+    notice.classList.remove('show');
+    // רנדר dropdown אם פתוח
+    if(document.getElementById('writePermDropdown').style.display==='block'){
+      renderWritePermDropdown(grantedEmails);
+    }
+    return;
+  }
+
+  const hasPermission=grantedEmails.includes(me?.email||'');
+  bar.classList.toggle('blocked',!hasPermission);
+  notice.classList.toggle('show',!hasPermission);
+  if(!hasPermission){
+    notice.textContent='✋ אין לך הרשאת כתיבה כרגע — המתן ל-david להעניק הרשאה';
+  }
 }
 
 window.addEventListener('load',()=>{
