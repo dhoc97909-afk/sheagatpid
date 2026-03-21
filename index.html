@@ -1016,18 +1016,52 @@ function buildMsg(e){
   let media='';
   if(e.imgUrl){const su=escAttr(e.imgUrl);media+=`<div class="bubble-img"><img src="${su}" loading="lazy" style="cursor:pointer" onclick="openLightbox('${su}')" onerror="this.closest('.bubble-img').remove()"></div>`;}
 
-  // וידאו — embed אם YouTube/Vimeo/Drive, אחרת כפתור
+  // וידאו — embed לפי סוג ה-URL
   if(e.videoUrl){
     const vu=e.videoUrl;
     const ytMatch=vu.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     const driveMatch=vu.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+    const isDirectVideo=/\.(mp4|webm|ogg|m3u8)([?#,]|$)/i.test(vu)||vu.includes('.m3u8');
     if(ytMatch){
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
-        <iframe width="100%" height="200" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;border-radius:12px;"></iframe>
+        <iframe width="100%" height="200" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;"></iframe>
       </div>`;
     } else if(driveMatch){
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
-        <iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" width="100%" height="200" frameborder="0" allow="autoplay" allowfullscreen style="display:block;border-radius:12px;"></iframe>
+        <iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" width="100%" height="200" frameborder="0" allow="autoplay" allowfullscreen style="display:block;"></iframe>
+      </div>`;
+    } else if(isDirectVideo){
+      const vidId='vid-'+escAttr(id);
+      const isHls=vu.includes('.m3u8')||vu.includes('master.m3u8');
+      media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
+        <video id="${vidId}" controls playsinline preload="metadata"
+          style="width:100%;max-height:280px;display:block;background:#000;border-radius:12px;"
+          ${!isHls?`src="${escAttr(vu)}"`:''}
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        </video>
+        <a class="vid-btn" href="${escAttr(vu)}" target="_blank" rel="noopener noreferrer" style="display:none;margin-top:6px;">
+          <i class="fas fa-play" style="font-size:10px"></i> פתח סרטון
+        </a>
+        ${isHls?`<script>
+(function(){
+  var v=document.getElementById('${vidId}');
+  if(!v)return;
+  if(v.canPlayType('application/vnd.apple.mpegurl')){
+    v.src='${vu.replace(/'/g,"\\'")}';
+  } else if(window.Hls&&Hls.isSupported()){
+    var h=new Hls();h.loadSource('${vu.replace(/'/g,"\\'")}');h.attachMedia(v);
+  } else {
+    // טען hls.js דינמית
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.12/hls.min.js';
+    s.onload=function(){
+      if(Hls.isSupported()){var h=new Hls();h.loadSource('${vu.replace(/'/g,"\\'")}');h.attachMedia(v);}
+      else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src='${vu.replace(/'/g,"\\'")}';} 
+    };
+    document.head.appendChild(s);
+  }
+})();
+<\/script>`:''}
       </div>`;
     } else {
       media+=`<div class="bubble-vid" style="margin-top:9px;"><a class="vid-btn" href="${escAttr(vu)}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
