@@ -396,6 +396,7 @@ body.dark #searchInput{color:#e5e7eb;}
 }
 #composeEditor:focus{border-color:#1a56db;background:#fff;box-shadow:0 0 0 3px rgba(26,86,219,.08);}
 #composeEditor:empty:before{content:attr(placeholder);color:#b0b8c4;}
+#composeEditor.drag-over{border-color:#1a56db!important;background:#f0f6ff!important;}
 .compose-send-btn{
   width:42px;height:42px;border-radius:50%;border:none;
   background:linear-gradient(135deg,#1a56db,#1d4ed8);
@@ -666,9 +667,9 @@ body.dark #searchInput{color:#e5e7eb;}
     </button>
     <div style="width:1px;height:16px;background:#e5e7eb;margin:0 2px;"></div>
     <!-- Bold -->
-    <button class="ctb-btn" onclick="composeFormat('bold')" title="מודגש"><i class="fas fa-bold"></i></button>
+    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="composeFormat('bold')" title="מודגש"><i class="fas fa-bold"></i></button>
     <!-- Italic -->
-    <button class="ctb-btn" onclick="composeFormat('italic')" title="נטוי"><i class="fas fa-italic"></i></button>
+    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="composeFormat('italic')" title="נטוי"><i class="fas fa-italic"></i></button>
     <div style="width:1px;height:16px;background:#e5e7eb;margin:0 2px;"></div>
     <!-- Image dropdown -->
     <div class="ctb-dropdown-wrap" id="imgDropWrap">
@@ -724,7 +725,13 @@ body.dark #searchInput{color:#e5e7eb;}
 
   <!-- Main editor -->
   <div class="compose-main">
-    <div id="composeEditor" contenteditable="true" placeholder="כתוב עדכון לפיד..." oninput="onComposeChange()"></div>
+    <div id="composeEditor" contenteditable="true" placeholder="כתוב עדכון לפיד..."
+      oninput="onComposeChange()"
+      ondragover="composeDragOver(event)"
+      ondragleave="composeDragLeave(event)"
+      ondrop="composeDrop(event)"
+      onpaste="composePaste(event)"
+    ></div>
     <button class="compose-send-btn" id="composeSendBtn" onclick="sendFeedPost()" title="שלח">
       <i class="fas fa-paper-plane" style="font-size:14px"></i>
     </button>
@@ -1559,9 +1566,35 @@ function toggleComposeProfile(){
   }
 }
 
-function composeFormat(cmd){
-  const ed=document.getElementById('composeEditor');ed.focus();
-  document.execCommand(cmd,false,null);
+function composeDragOver(e){
+  const hasImg=[...(e.dataTransfer?.items||[])].some(i=>i.kind==='file'&&i.type.startsWith('image/'));
+  if(hasImg){e.preventDefault();e.dataTransfer.dropEffect='copy';e.currentTarget.style.borderColor='#1a56db';e.currentTarget.style.background='#f0f6ff';}
+}
+function composeDragLeave(e){
+  if(!e.currentTarget.contains(e.relatedTarget)){e.currentTarget.style.borderColor='';e.currentTarget.style.background='';}
+}
+async function composeDrop(e){
+  e.preventDefault();
+  e.currentTarget.style.borderColor='';e.currentTarget.style.background='';
+  const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));
+  if(file)await uploadComposeImg(file);
+}
+async function composePaste(e){
+  const items=[...(e.clipboardData?.items||[])];
+  const imgItem=items.find(i=>i.type.startsWith('image/'));
+  if(!imgItem)return; // טקסט רגיל — תן לדפדפן לטפל
+  e.preventDefault();
+  const file=imgItem.getAsFile();
+  if(file)await uploadComposeImg(file);
+}
+  const ed=document.getElementById('composeEditor');
+  // שמור selection לפני focus (לחיצה על הכפתור מאבדת אותה)
+  ed.focus();
+  // requestAnimationFrame מבטיח שה-focus יחול לפני execCommand
+  requestAnimationFrame(()=>{
+    document.execCommand(cmd,false,null);
+    onComposeChange();
+  });
 }
 
 function onComposeChange(){
