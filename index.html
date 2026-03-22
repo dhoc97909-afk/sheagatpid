@@ -1427,8 +1427,7 @@ async function deleteFeedMsg(id){
   }catch(e){}
 }
 
-function renderRxn(msgId,rxns){
-  rxnCache[msgId]=rxns;
+function renderRxn(msgId,rxns){rxnCache[msgId]=rxns;
   const bar=document.getElementById('rxn-'+msgId);
   if(!bar)return;
   const addBtn=bar.querySelector('.rxn-add-btn');
@@ -1635,10 +1634,18 @@ async function pollAll(){
     const edited=d.edited_items||[];
     edited.forEach(entry=>{
       const idx=items.findIndex(i=>i.id===entry.id);
-      if(idx>=0){
-        items[idx]=entry;
-        const row=document.querySelector(`.msg-row[data-id="${entry.id}"]`);
-        if(row){const nd=document.createElement('div');nd.innerHTML=buildMsg(entry);row.replaceWith(nd.firstChild);}
+      if(idx<0)return;
+      const existing=items[idx];
+      // דלג אם כבר עדכנו את הגרסה הזו
+      if(existing.edit_ts&&existing.edit_ts>=entry.edit_ts)return;
+      items[idx]=entry;
+      const row=document.querySelector(`.msg-row[data-id="${entry.id}"]`);
+      if(row){
+        const nd=document.createElement('div');
+        nd.innerHTML=buildMsg(entry);
+        row.replaceWith(nd.firstChild);
+        // שחזר תגובות
+        if(rxnCache[entry.id])renderRxn(entry.id,rxnCache[entry.id]);
       }
     });
   }catch(e){}finally{pollPending=false;}
