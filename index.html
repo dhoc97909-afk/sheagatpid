@@ -188,7 +188,7 @@ header{
 .bubble-text a{color:#1a56db;text-decoration:underline;}
 .bubble-headline{font-size:18px;font-weight:800;color:#111;line-height:1.5;margin-bottom:4px;}
 .bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;}
-.bubble-img img{width:100%;display:block;max-height:480px;height:auto;object-fit:contain;object-position:top;}
+.bubble-img img{width:100%;display:block;max-height:280px;height:auto;object-fit:contain;object-position:top;}
 .bubble-vid{margin-top:9px;}
 .vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
@@ -1112,18 +1112,18 @@ function buildMsg(e){
     const isDirectVideo=/\.(mp4|webm|ogg|m3u8)([?#,]|$)/i.test(vu)||isHlsUrl;
     if(ytMatch){
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
-        <iframe width="100%" height="200" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;"></iframe>
+        <iframe width="100%" height="160" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;"></iframe>
       </div>`;
     } else if(driveMatch){
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
-        <iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" width="100%" height="200" frameborder="0" allow="autoplay" allowfullscreen style="display:block;"></iframe>
+        <iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" width="100%" height="160" frameborder="0" allow="autoplay" allowfullscreen style="display:block;"></iframe>
       </div>`;
     } else if(isDirectVideo){
       const vidId='vid-'+escAttr(id);
       const isHls=isHlsUrl;
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
         <video id="${vidId}" controls playsinline preload="metadata"
-          style="width:100%;max-height:420px;display:block;background:#000;border-radius:12px;"
+          style="width:100%;max-height:240px;display:block;background:#000;border-radius:12px;"
           ${!isHls?`src="${escAttr(vu)}"`:''}
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         </video>
