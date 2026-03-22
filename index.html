@@ -359,8 +359,8 @@ header{
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
 /* HEADER ICON BUTTONS */
-.hdr-icon-btn,#searchBtn,#darkBtn,#notifBtn,#adBtn,#adminMsgsBtn,#manageAdminsBtn,#writePermBtn{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#888;transition:background .15s,color .15s;flex-shrink:0;text-decoration:none;position:relative;}
-.hdr-icon-btn:hover,#searchBtn:hover,#darkBtn:hover,#notifBtn:hover,#adBtn:hover,#adminMsgsBtn:hover,#manageAdminsBtn:hover,#writePermBtn:hover{background:#f3f4f6;color:#333;}
+.hdr-icon-btn,#searchBtn,#darkBtn,#notifBtn,#adBtn,#adminMsgsBtn,#manageAdminsBtn,#writePermBtn,#emojiMgrBtn{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#888;transition:background .15s,color .15s;flex-shrink:0;text-decoration:none;position:relative;}
+.hdr-icon-btn:hover,#searchBtn:hover,#darkBtn:hover,#notifBtn:hover,#adBtn:hover,#adminMsgsBtn:hover,#manageAdminsBtn:hover,#writePermBtn:hover,#emojiMgrBtn:hover{background:#f3f4f6;color:#333;}
 #writePermBtn.has-granted{background:#eff6ff;color:#1a56db;}
 #adminMsgsBtn .unread-badge{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:#e02020;border:2px solid #fff;display:none;}
 #adminMsgsBtn .unread-badge.show{display:block;}
@@ -716,6 +716,9 @@ body.dark #searchInput{color:#e5e7eb;}
           <div id="writePermList" style="padding:6px 8px;display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;"></div>
         </div>
       </div>
+      <button id="emojiMgrBtn" onclick="toggleEmojiManager(event)" title="ניהול אימוג'ים" style="display:none">
+        <svg width="15" height="15" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="9" r="1.2" fill="currentColor"/><circle cx="14" cy="9" r="1.2" fill="currentColor"/><path d="M7.5 13.5c.8 1.8 2.3 2.8 3.5 2.8s2.7-.98 3.5-2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar" style="position:relative;"></div>
     </div>
@@ -804,11 +807,6 @@ body.dark #searchInput{color:#e5e7eb;}
     <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="insertHeading()" title="כותרת — מודגש + נקודה מפרידה">
       <i class="fas fa-heading" style="font-size:11px"></i> כותרת
     </button>
-    <div class="ctb-dropdown-wrap" id="emojiMgrWrap" style="display:none;">
-      <button class="ctb-btn" id="emojiMgrBtn" onclick="toggleEmojiManager(event)" title="ניהול אימוג'ים">
-        <svg width="14" height="14" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="9" r="1.2" fill="currentColor"/><circle cx="14" cy="9" r="1.2" fill="currentColor"/><path d="M7.5 13.5c.8 1.8 2.3 2.8 3.5 2.8s2.7-.98 3.5-2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </button>
-    </div>
     <div style="margin-right:auto;display:flex;align-items:center;gap:4px;">
       <span id="composeCharCount" style="font-size:10px;color:#aaa;font-weight:600;">0</span>
       <button class="ctb-btn" onclick="clearCompose()" title="נקה"><i class="fas fa-trash-alt" style="color:#e02020;"></i></button>
@@ -1067,14 +1065,12 @@ async function checkAllowedAdmin(){
     // הצג כפתור העלאה לDrive בדרופדאון הסרטון
     const driveWrap=document.getElementById('driveUploadWrap');
     if(driveWrap)driveWrap.style.display='block';
-    // הצג כפתור ניהול אימוג'ים
-    const emojiMgrWrap=document.getElementById('emojiMgrWrap');
-    if(emojiMgrWrap)emojiMgrWrap.style.display='block';
     document.getElementById('adminBadge').classList.add('show');
     document.getElementById('adBtn').style.display='flex';
     document.getElementById('adminMsgsSendRow').classList.add('show');
     document.getElementById('manageAdminsBtn').style.display='flex';
     document.getElementById('writePermBtn').style.display='flex';
+    document.getElementById('emojiMgrBtn').style.display='flex';
     loadAdminUsers();
     setInterval(loadAdminUsers, 30000);
   }
@@ -1547,6 +1543,23 @@ async function pollAll(){
     const rxns=d.reactions||{};Object.entries(rxns).forEach(([mid,rxn])=>renderRxn(mid,rxn));
     const counts=d.comment_counts||{};Object.entries(counts).forEach(([mid,n])=>{if(n!==(cmtCount[mid]||0)){cmtCount[mid]=n;updateCmtBtn(mid,n);}});
   }catch(e){}finally{pollPending=false;}
+}
+
+// poll אימוג'ים — כל 30 שניות
+let _lastEmojiSig='';
+async function pollEmojis(){
+  try{
+    const r=await fetch(BACKEND+'/emoji_get');
+    const d=await r.json();
+    if(d.status==='ok'&&Array.isArray(d.emojis)){
+      const sig=d.emojis.join(',');
+      if(sig!==_lastEmojiSig){
+        _lastEmojiSig=sig;
+        _customEmojis=d.emojis;
+        renderEmojiPicker();
+      }
+    }
+  }catch(e){}
 }
 
 async function pollOpenComments(){
@@ -2737,6 +2750,7 @@ document.addEventListener('click',e=>{
 /* ══ INTERVALS ══ */
 setInterval(pollAll,3000);
 setInterval(pollOpenComments,3000);
+setInterval(pollEmojis,30000);
 setTimeout(pollAll,800);
 </script>
 </body>
