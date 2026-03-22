@@ -1076,6 +1076,7 @@ function applyLogin(){
     .then(r=>r.json()).then(d=>{if(isSuperAdmin()&&d.count!=null)document.getElementById('adminUserCount').textContent=d.count;}).catch(()=>{});
 
   checkAllowedAdmin();
+  if(isSuperAdmin())loadAllowedMap();
   loadFeed();
   setTimeout(loadAd,3000);
   setInterval(loadAd, 60*60*1000);
@@ -1333,14 +1334,22 @@ function renderRxn(msgId,rxns){
 function openPicker(ev,msgId){
   ev.stopPropagation();activePicker=msgId;
   const p=document.getElementById('emojiPicker');
-  p.style.visibility='hidden';p.style.display='flex';
+  // מדוד עם grid
+  p.style.visibility='hidden';p.style.display='grid';
   const pH=p.offsetHeight,pW=p.offsetWidth;
-  p.style.display='';p.style.visibility='';
+  p.style.display='none';p.style.visibility='';
   const rect=ev.currentTarget.getBoundingClientRect();
   const M=8;
-  let top=rect.top-pH-M;if(top<56+M)top=rect.bottom+M;top=Math.max(56+M,top);
-  let left=rect.left+rect.width/2-pW/2;if(left<M)left=M;if(left+pW>window.innerWidth-M)left=window.innerWidth-pW-M;
-  p.style.top=top+'px';p.style.left=left+'px';p.classList.toggle('show');
+  // מקם מעל הכפתור, צמוד אליו
+  let top=rect.top-pH-M;
+  if(top<56+M)top=rect.bottom+M;
+  top=Math.max(56+M,top);
+  // יישור ימני — הפיקר מתחיל מימין הכפתור
+  let left=rect.right-pW;
+  if(left<M)left=M;
+  if(left+pW>window.innerWidth-M)left=window.innerWidth-pW-M;
+  p.style.top=top+'px';p.style.left=left+'px';
+  p.classList.add('show');
 }
 
 function pickEmoji(em){document.getElementById('emojiPicker').classList.remove('show');if(activePicker)doReact(activePicker,em);activePicker=null;}
@@ -2038,7 +2047,10 @@ async function loadAllowedMap(){
 
 function getDisplayName(email,fallback){
   const entry=_allowedMap[(email||'').toLowerCase()];
-  return entry?.name||fallback||email||'?';
+  if(entry?.name)return entry.name;
+  if(fallback&&!fallback.includes('@')&&!fallback.includes('×')&&fallback.length<30)return fallback;
+  if(email&&email.includes('@'))return email.split('@')[0];
+  return fallback||email||'?';
 }
 
 function toggleChatMinimize(){
