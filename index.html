@@ -2623,8 +2623,8 @@ const AD_KEY='shaagat_ad';const AD_INTERVAL=60*60*1000;
 async function loadAd(){
   try{
     const r=await fetch(BACKEND+'/ad_get');const d=await r.json();
-    if(d.side&&(d.side.imageUrl||d.side.htmlUrl)){showAdSide(d.side);}else{hideAdSide();}
-    if(d.popup&&(d.popup.imageUrl||d.popup.htmlUrl)&&shouldShowAd()){showAdPopup(d.popup);}
+    if(d.side&&(d.side.imageUrl||d.side.htmlUrl||d.side.htmlCode)){showAdSide(d.side);}else{hideAdSide();}
+    if(d.popup&&(d.popup.imageUrl||d.popup.htmlUrl||d.popup.htmlCode)&&shouldShowAd()){showAdPopup(d.popup);}
   }catch(e){}
 }
 
