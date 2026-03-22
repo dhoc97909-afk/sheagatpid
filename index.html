@@ -224,8 +224,14 @@ header{
 .link-btn:hover{color:#1a56db;text-decoration:underline;}
 .link-btn.copied{color:#16a34a;}
 
-/* Admin delete button on message */
-.msg-del-btn{
+/* Quote button — same base as delete but blue */
+.msg-quote-btn{
+  display:none;align-items:center;gap:3px;background:none;border:none;
+  font-size:11px;color:#6b7280;cursor:pointer;font-family:'Heebo',sans-serif;
+  font-weight:700;padding:0;transition:color .12s;
+}
+.msg-quote-btn:hover{color:#1a56db;}
+.msg-row:hover .msg-quote-btn{display:inline-flex;}
   display:none;align-items:center;gap:3px;background:none;border:none;
   font-size:11px;color:#f87171;cursor:pointer;font-family:'Heebo',sans-serif;
   font-weight:700;padding:0;transition:color .12s;
@@ -900,7 +906,10 @@ function escAttr(t){return esc(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
 function rich(t){
   if(!t)return'';
-  let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // שורות ציטוט (מתחילות ב-> )
+  s=s.replace(/^&gt; (.*)$/gm,'<span style="display:block;border-right:3px solid #9ca3af;padding-right:8px;color:#6b7280;font-style:italic;font-size:15px;margin-bottom:2px;">$1</span>');
+  s=s.replace(/\n/g,'<br>');
   s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
   s=s.replace(/__([^_\n]+)__/g,'<u>$1</u>');
@@ -1157,13 +1166,60 @@ function buildMsg(e){
         <button class="cmt-btn${n>0?' has-cmt':''}" id="cbtn-${escAttr(id)}" onclick="openComments('${escAttr(id)}')">
           <i class="fas fa-comment" style="font-size:10px"></i> ${cmtLabel}
         </button>
-        ${canDel?`<button class="msg-del-btn" onclick="deleteFeedMsg('${escAttr(id)}')"><i class="fas fa-trash" style="font-size:9px"></i>מחק</button>`:''}
+        ${canDel?`
+        <button class="msg-quote-btn" onclick="quoteFeedMsg('${escAttr(id)}',this)" title="ציטוט">
+          <i class="fas fa-quote-right" style="font-size:9px"></i>ציטוט
+        </button>
+        <button class="msg-del-btn" onclick="deleteFeedMsg('${escAttr(id)}')"><i class="fas fa-trash" style="font-size:9px"></i>מחק</button>`:''}
       </div>
     </div>
   </div>`;
 }
 
-/* ── DELETE FEED MSG (admin only) ── */
+/* ── QUOTE FEED MSG (admin only) ── */
+function quoteFeedMsg(id){
+  if(!isAdmin())return;
+  const entry=items.find(e=>e.id===id);
+  if(!entry)return;
+
+  // בנה טקסט ציטוט — שורות עם > בהתחלה (WhatsApp style)
+  const lines=(entry.text||'').trim().split('\n');
+  const quoted=lines.map(l=>'> '+l).join('\n');
+  const quoteBlock=quoted+'\n\n';
+
+  // מלא את עורך ההודעה
+  const ed=document.getElementById('composeEditor');
+  if(!ed)return;
+
+  // הכנס כ-HTML כדי לשמור פסקאות
+  ed.innerHTML='';
+  // טקסט ציטוט — אפור וממוסגר
+  const quoteDiv=document.createElement('div');
+  quoteDiv.style.cssText='border-right:3px solid #9ca3af;padding-right:8px;color:#6b7280;font-style:italic;margin-bottom:6px;';
+  quoteDiv.textContent=lines.slice(0,3).join(' ').substring(0,120)+(entry.text.length>120?'…':'');
+  ed.appendChild(quoteDiv);
+
+  // שורה ריקה לאחר הציטוט — שם יכתוב המנהל
+  const br=document.createElement('div');
+  br.innerHTML='<br>';
+  ed.appendChild(br);
+
+  // שמור את טקסט הציטוט כ-prefix לשליחה
+  ed._quotePrefix=quoteBlock;
+
+  // הצב cursor בסוף
+  ed.focus();
+  const range=document.createRange();
+  range.selectNodeContents(ed);
+  range.collapse(false);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  // גלול לבועת השליחה
+  document.getElementById('adminComposeBar')?.scrollIntoView({behavior:'smooth',block:'end'});
+  onComposeChange();
+}
 async function deleteFeedMsg(id){
   if(!me||!isAdmin())return;
   if(!confirm('למחוק הודעה זו מהפיד?'))return;
@@ -1607,7 +1663,9 @@ function onComposeChange(){
 }
 
 function clearCompose(){
-  document.getElementById('composeEditor').innerHTML='';
+  const ed=document.getElementById('composeEditor');
+  ed.innerHTML='';
+  ed._quotePrefix='';
   composeImgUrl='';composeVidUrl='';composeBtns=[];
   document.getElementById('composeImgUrl').value='';
   document.getElementById('composeImgThumb').style.display='none';
@@ -1726,7 +1784,10 @@ async function sendFeedPost(){
     if(!granted.includes(me.email)){alert('אין לך הרשאת כתיבה כרגע');return;}
   }
   const ed=document.getElementById('composeEditor');
-  const text=editorToMarkdown(ed).trim();
+  // שלב את הציטוט עם תוכן העורך
+  const editorText=editorToMarkdown(ed).trim();
+  const quotePrefix=ed._quotePrefix||'';
+  const text=(quotePrefix+editorText).trim();
   if(!text&&!composeImgUrl){alert('הודעה ריקה');return;}
   const now=new Date();
   const entry={
