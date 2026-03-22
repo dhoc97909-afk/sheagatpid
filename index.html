@@ -863,9 +863,8 @@ body.dark #searchInput{color:#e5e7eb;}
 </div>
 
 <!-- ADMIN MESSAGES MODAL -->
-<div id="adminMsgsModal">
-  <div style="position:absolute;inset:0;" onclick="closeAdminMsgs()"></div>
-  <div class="admin-msgs-box">
+<div id="adminMsgsModal" onclick="closeAdminMsgs()">
+  <div class="admin-msgs-box" onclick="event.stopPropagation()">
     <div class="admin-msgs-hdr">
       <span class="admin-msgs-title">📢 הודעות מנהל</span>
       <button class="admin-msgs-close" onclick="closeAdminMsgs()"><i class="fas fa-times"></i></button>
