@@ -120,7 +120,14 @@ body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialias
 .ctx-item i{font-size:10px;width:14px;}
 
 /* Chat input row */
-#chatInputRow{padding:8px 10px;border-top:1px solid #e5e7eb;display:flex;gap:7px;align-items:flex-end;flex-shrink:0;background:#fff;}
+#chatInputRow{padding:8px 10px;border-top:1px solid #e5e7eb;display:flex;gap:7px;align-items:flex-end;flex-shrink:0;background:#fff;position:relative;}
+#mentionDropdown{position:absolute;bottom:calc(100% + 4px);right:10px;left:10px;background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;box-shadow:0 -4px 16px rgba(0,0,0,.12);z-index:300;overflow:hidden;display:none;direction:rtl;}
+#mentionDropdown.show{display:block;}
+.mention-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;font-family:'Heebo',sans-serif;transition:background .1s;border-bottom:1px solid #f3f4f6;}
+.mention-item:last-child{border-bottom:none;}
+.mention-item:hover,.mention-item.active{background:#eff6ff;color:#1a56db;}
+.mention-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
+.mention-av img{width:100%;height:100%;object-fit:cover;}
 .chat-inp{flex:1;border:1.5px solid #e5e7eb;border-radius:18px;padding:7px 12px;font-size:13px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:70px;line-height:1.4;direction:rtl;background:#f9fafb;transition:border-color .15s,background .15s;}
 .chat-inp:focus{border-color:#93c5fd;background:#fff;}
 .chat-send-btn{width:34px;height:34px;background:#1a56db;color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s,transform .1s;}
@@ -612,14 +619,21 @@ body.dark #searchInput{color:#e5e7eb;}
       <div class="chat-empty-msg" id="chatEmptyMsg">אין הודעות עדיין</div>
     </div>
     <div id="chatTypingBar" style="display:none;"></div>
-    <div id="chatInputRow">
+    <div id="mentionDropdown"></div>
+<div id="chatInputRow">
       <textarea class="chat-inp" id="chatInput" rows="1" placeholder="הקלד הודעה..."
-        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,60)+'px';onChatType()"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></textarea>
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,60)+'px';onChatType();checkChatMention(this)"
+        onkeydown="handleChatInputKey(event)"></textarea>
       <button class="chat-send-btn" onclick="sendChatMsg()">
         <i class="fas fa-paper-plane" style="font-size:10px"></i>
       </button>
     </div>
+  </div>
+  <!-- פרסומת כשהצ'אט ממוזער -->
+  <div id="adOnlySidebarInChat" style="display:none;flex:1;overflow:hidden;">
+    <a id="adSidebarLinkChat" href="#" target="_blank" rel="noopener noreferrer">
+      <img id="adSidebarImgChat" src="" alt="פרסומת" style="width:100%;height:auto;display:block;">
+    </a>
   </div>
 </div>
 
@@ -1358,6 +1372,7 @@ function openPicker(ev,msgId){
 function pickEmoji(em){document.getElementById('emojiPicker').classList.remove('show');if(activePicker)doReact(activePicker,em);activePicker=null;}
 
 document.addEventListener('click',e=>{
+  if(!e.target.closest('#mentionDropdown')&&!e.target.closest('#chatInput'))hideMentionDrop();
   if(!e.target.closest('#emojiPicker')&&!e.target.closest('.rxn-add-btn'))document.getElementById('emojiPicker').classList.remove('show');
   if(!e.target.closest('.ctb-dropdown')&&!e.target.closest('.ctb-dropdown-wrap'))closeAllCtbDropdowns();
 });
@@ -2058,10 +2073,14 @@ function getDisplayName(email,fallback){
 function toggleChatMinimize(){
   const panel=document.getElementById('adminChatPanel');
   panel.classList.toggle('minimized');
+  const isMin=panel.classList.contains('minimized');
   const btn=document.getElementById('chatMinimizeBtn');
-  btn.innerHTML=panel.classList.contains('minimized')
+  btn.innerHTML=isMin
     ?'<i class="fas fa-expand-alt"></i>'
     :'<i class="fas fa-minus"></i>';
+  // הצג/הסתר פרסומת במקום הצ'אט כשממוזער
+  const adWrap=document.getElementById('adOnlySidebarInChat');
+  if(adWrap)adWrap.style.display=isMin?'block':'none';
 }
 
 async function pingChatPresence(){
@@ -2120,7 +2139,7 @@ function renderAdminChat(msgs){
   msgs.forEach((msg,idx)=>{
     const isMe=msg.email===me?.email;
     const displayName=getDisplayName(msg.email,msg.sender);
-    const picture=_allowedMap[(msg.email||'').toLowerCase()]?.picture||msg.picture||'';
+    const picture=msg.picture||_allowedMap[(msg.email||'').toLowerCase()]?.picture||'';
     const msgMin=(msg.clientTime||msg.time||'').substring(0,5);
     const sameGroup=lastEmail===msg.email&&msgMin===lastMin;
 
@@ -2240,6 +2259,86 @@ async function pollChatTyping(){
     if(others.length){bar.style.display='block';bar.textContent=others.map(n=>getDisplayName('',n)).join(', ')+' מקלידים...';}
     else{bar.style.display='none';}
   }catch(e){}
+}
+
+/* ── CHAT MENTION AUTOCOMPLETE ── */
+let _mentionQuery=null,_mentionIdx=0;
+
+function checkChatMention(ta){
+  const val=ta.value;
+  const pos=ta.selectionStart;
+  const before=val.substring(0,pos);
+  const atIdx=before.lastIndexOf('@');
+  if(atIdx===-1||(atIdx>0&&/\S/.test(before[atIdx-1]))){hideMentionDrop();return;}
+  const query=before.substring(atIdx+1).toLowerCase();
+  if(query.includes(' ')){hideMentionDrop();return;}
+  _mentionQuery={start:atIdx,query};
+  const candidates=getChatMentionCandidates(query);
+  if(!candidates.length){hideMentionDrop();return;}
+  showMentionDrop(candidates);
+}
+
+function getChatMentionCandidates(query){
+  // מהמנהלים הפעילים ב-_allowedMap
+  return Object.entries(_allowedMap)
+    .filter(([email,info])=>{
+      const name=(info.name||'').toLowerCase();
+      return name.includes(query)||email.includes(query);
+    })
+    .map(([email,info])=>({email,name:info.name||email.split('@')[0],picture:info.picture||''}))
+    .slice(0,6);
+}
+
+function showMentionDrop(candidates){
+  const box=document.getElementById('mentionDropdown');
+  if(!box)return;
+  _mentionIdx=0;
+  const COLORS=['#3b82f6','#7c3aed','#059669','#d97706','#dc2626','#db2777'];
+  const col=s=>COLORS[(s||'').charCodeAt(0)%COLORS.length];
+  box.innerHTML=candidates.map((u,i)=>{
+    const av=u.picture
+      ?`<div class="mention-av"><img src="${u.picture}" onerror="this.style.display='none'"></div>`
+      :`<div class="mention-av" style="background:${col(u.name)}">${(u.name[0]||'?').toUpperCase()}</div>`;
+    return `<div class="mention-item${i===0?' active':''}" onclick="insertChatMention('${u.name.replace(/'/,"\'")}')">
+      ${av}<span>${u.name}</span>
+    </div>`;
+  }).join('');
+  box.classList.add('show');
+}
+
+function hideMentionDrop(){
+  const box=document.getElementById('mentionDropdown');
+  if(box){box.classList.remove('show');box.innerHTML='';}
+  _mentionQuery=null;_mentionIdx=0;
+}
+
+function insertChatMention(name){
+  const ta=document.getElementById('chatInput');
+  if(!ta||!_mentionQuery)return;
+  const val=ta.value;
+  const before=val.substring(0,_mentionQuery.start);
+  const after=val.substring(_mentionQuery.start+1+_mentionQuery.query.length);
+  ta.value=before+'@'+name+' '+after;
+  ta.selectionStart=ta.selectionEnd=before.length+name.length+2;
+  hideMentionDrop();
+  ta.focus();
+}
+
+function handleChatInputKey(e){
+  const box=document.getElementById('mentionDropdown');
+  const items=box?box.querySelectorAll('.mention-item'):[];
+  if(box&&box.classList.contains('show')&&items.length){
+    if(e.key==='ArrowDown'){e.preventDefault();_mentionIdx=Math.min(_mentionIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('active',i===_mentionIdx));return;}
+    if(e.key==='ArrowUp'){e.preventDefault();_mentionIdx=Math.max(_mentionIdx-1,0);items.forEach((el,i)=>el.classList.toggle('active',i===_mentionIdx));return;}
+    if(e.key==='Enter'||e.key==='Tab'){
+      e.preventDefault();
+      const active=items[_mentionIdx];
+      if(active)active.click();
+      return;
+    }
+    if(e.key==='Escape'){hideMentionDrop();return;}
+  }
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMsg();}
 }
 
 async function sendChatMsg(){
@@ -2444,6 +2543,11 @@ function markAdShown(){localStorage.setItem(AD_KEY,String(Date.now()));}
 function showAdSide(ad){
   document.getElementById('adSidebarImg').src=ad.imageUrl;
   document.getElementById('adSidebarLink').href=ad.linkUrl||'#';
+  // עדכן גם את הפרסומת בצ'אט ממוזער
+  const chatAdImg=document.getElementById('adSidebarImgChat');
+  const chatAdLink=document.getElementById('adSidebarLinkChat');
+  if(chatAdImg)chatAdImg.src=ad.imageUrl;
+  if(chatAdLink)chatAdLink.href=ad.linkUrl||'#';
   if(!isAdmin()){
     if(window.innerWidth>900){
       document.getElementById('adOnlySidebar').style.display='block';
