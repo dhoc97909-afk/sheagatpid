@@ -1001,6 +1001,7 @@ const BACKEND = 'https://dhoc97909.pythonanywhere.com';
 const GOOGLE_CLIENT_ID = '856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
 const LOGO = 'https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
 const ADMIN_EMAIL = 'david@hamakom.ovh';
+const SUPER_ADMINS = ['david@hamakom.ovh','0533192512a@gmail.com'];
 const STORAGE_KEY = 'shaagat_hari_user';
 const IMGBB_KEY = '74b5db34f7d743e270990275f1afd0ee';
 
@@ -1066,7 +1067,7 @@ function fixServerTime(t){
   return ((h+2)%24).toString().padStart(2,'0')+':'+m.toString().padStart(2,'0');
 }
 
-function isSuperAdmin(){return me?.email===ADMIN_EMAIL;}
+function isSuperAdmin(){return SUPER_ADMINS.includes(me?.email?.toLowerCase());}
 function isAdmin(){return _isAllowedAdmin;}
 
 async function checkAllowedAdmin(){
@@ -1169,7 +1170,7 @@ function applyLogin(){
 
 async function loadAdminUsers(){
   try{
-    const r=await fetch(BACKEND+'/feed_logins?email='+encodeURIComponent(ADMIN_EMAIL));
+    const r=await fetch(BACKEND+'/feed_logins?email='+encodeURIComponent(me.email));
     const d=await r.json();
     document.getElementById('adminUserCount').textContent=(d.logins||[]).length;
   }catch(e){}
