@@ -198,16 +198,16 @@ header{
 /* REACTIONS */
 .rxn-row{display:contents;}
 .rxn-chip{
-  display:inline-flex;align-items:center;justify-content:center;gap:2px;
+  display:inline-flex;align-items:center;justify-content:center;gap:3px;
   background:#f3f4f6;border:1px solid #e5e7eb;
-  border-radius:6px;padding:2px 5px;height:22px;
+  border-radius:8px;padding:3px 7px;height:26px;
   cursor:pointer;transition:background .12s,border-color .12s,transform .1s;
   user-select:none;line-height:1;
 }
 .rxn-chip:hover{background:#e5e7eb;border-color:#d1d5db;transform:scale(1.08);}
 .rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
-.rxn-emoji{font-size:12px;line-height:1;font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;}
-.rxn-count{font-size:10px;font-weight:700;color:#6b7280;font-family:'Heebo',sans-serif;}
+.rxn-emoji{font-size:15px;line-height:1;font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;}
+.rxn-count{font-size:11px;font-weight:700;color:#6b7280;font-family:'Heebo',sans-serif;}
 .rxn-chip.mine .rxn-count{color:#1a56db;}
 .rxn-add-btn{
   background:none;border:none;cursor:pointer;padding:1px;border-radius:6px;line-height:0;
@@ -1095,7 +1095,8 @@ function buildMsg(e){
     const vu=e.videoUrl;
     const ytMatch=vu.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     const driveMatch=vu.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-    const isDirectVideo=/\.(mp4|webm|ogg|m3u8)([?#,]|$)/i.test(vu)||vu.includes('.m3u8');
+    const isHlsUrl=vu.includes('.m3u8')||vu.includes('master.m3u8');
+    const isDirectVideo=/\.(mp4|webm|ogg|m3u8)([?#,]|$)/i.test(vu)||isHlsUrl;
     if(ytMatch){
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
         <iframe width="100%" height="200" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;"></iframe>
@@ -1106,7 +1107,7 @@ function buildMsg(e){
       </div>`;
     } else if(isDirectVideo){
       const vidId='vid-'+escAttr(id);
-      const isHls=vu.includes('.m3u8')||vu.includes('master.m3u8');
+      const isHls=isHlsUrl;
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
         <video id="${vidId}" controls playsinline preload="metadata"
           style="width:100%;max-height:420px;display:block;background:#000;border-radius:12px;"
@@ -2187,6 +2188,14 @@ function updateAdminMsgsBadge(){
   const badge=document.getElementById('adminMsgsBadge');
   if(!badge)return;
   badge.classList.toggle('show', adminMsgsUnread>0);
+}
+
+function markAdminMsgsRead(){
+  if(!adminMsgsLastId)return;
+  localStorage.setItem('admin_msgs_seen', adminMsgsLastId);
+  adminMsgsUnread=0;
+  updateAdminMsgsBadge();
+  loadAdminMsgs();
 }
 
 const ADMIN_MSG_COLORS=['#3b82f6','#7c3aed','#059669','#d97706','#dc2626','#db2777'];
