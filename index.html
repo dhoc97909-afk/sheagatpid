@@ -288,6 +288,46 @@ header{
 }
 @keyframes pickerPop{from{opacity:0;transform:scale(.95) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
 #emojiPicker.show{display:flex;}
+
+/* ── EMOJI MANAGER PANEL ── */
+#emojiManagerPanel{
+  position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;
+  padding:14px;width:300px;
+  box-shadow:0 8px 28px rgba(0,0,0,.14);z-index:700;display:none;
+  flex-direction:column;gap:10px;
+  animation:pickerPop .14s ease-out;
+  direction:rtl;
+}
+#emojiManagerPanel.show{display:flex;}
+.emp-title{font-size:12px;font-weight:800;color:#374151;border-bottom:1px solid #f0f0f0;padding-bottom:8px;}
+.emp-current{display:flex;flex-wrap:wrap;gap:4px;}
+.emp-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;
+  padding:3px 6px;font-size:15px;cursor:default;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+}
+.emp-chip-del{
+  background:none;border:none;cursor:pointer;color:#ccc;
+  font-size:11px;padding:0 0 0 2px;line-height:1;font-family:'Heebo',sans-serif;
+  transition:color .1s;
+}
+.emp-chip-del:hover{color:#e02020;}
+.emp-add-row{display:flex;gap:6px;align-items:center;}
+.emp-inp{
+  flex:1;border:1.5px solid #e5e7eb;border-radius:8px;
+  padding:5px 9px;font-size:16px;outline:none;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+  text-align:center;
+}
+.emp-inp:focus{border-color:#1a56db;}
+.emp-add-btn{
+  background:#1a56db;color:#fff;border:none;border-radius:8px;
+  padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'Heebo',sans-serif;white-space:nowrap;
+}
+.emp-add-btn:hover{background:#1d4ed8;}
+.emp-note{font-size:10px;color:#aaa;font-weight:600;}
 .ep-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:2px;border-radius:6px;line-height:1;flex-shrink:0;font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;transition:background .1s,transform .1s;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;}
 .ep-btn:hover{background:#f3f4f6;transform:scale(1.15);}
 
@@ -764,6 +804,11 @@ body.dark #searchInput{color:#e5e7eb;}
     <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="insertHeading()" title="כותרת — מודגש + נקודה מפרידה">
       <i class="fas fa-heading" style="font-size:11px"></i> כותרת
     </button>
+    <div class="ctb-dropdown-wrap" id="emojiMgrWrap" style="display:none;">
+      <button class="ctb-btn" id="emojiMgrBtn" onclick="toggleEmojiManager(event)" title="ניהול אימוג'ים">
+        <svg width="14" height="14" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="9" r="1.2" fill="currentColor"/><circle cx="14" cy="9" r="1.2" fill="currentColor"/><path d="M7.5 13.5c.8 1.8 2.3 2.8 3.5 2.8s2.7-.98 3.5-2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
     <div style="margin-right:auto;display:flex;align-items:center;gap:4px;">
       <span id="composeCharCount" style="font-size:10px;color:#aaa;font-weight:600;">0</span>
       <button class="ctb-btn" onclick="clearCompose()" title="נקה"><i class="fas fa-trash-alt" style="color:#e02020;"></i></button>
@@ -784,6 +829,21 @@ body.dark #searchInput{color:#e5e7eb;}
       <i class="fas fa-paper-plane" style="font-size:14px"></i>
     </button>
   </div>
+</div>
+
+<!-- EMOJI MANAGER PANEL -->
+<div id="emojiManagerPanel">
+  <div class="emp-title">✏️ ניהול אימוג'ים לפיד</div>
+  <div>
+    <div style="font-size:10px;font-weight:700;color:#9ca3af;margin-bottom:6px;">אימוג'ים פעילים (לחץ ✕ להסיר)</div>
+    <div class="emp-current" id="empCurrentList"></div>
+  </div>
+  <div class="emp-add-row">
+    <input class="emp-inp" id="empInput" placeholder="הוסף אימוג'י..." maxlength="8"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();addEmojiToList();}">
+    <button class="emp-add-btn" onclick="addEmojiToList()">+ הוסף</button>
+  </div>
+  <div class="emp-note">* שינויים נשמרים מיד ומתעדכנים לכולם</div>
 </div>
 
 <!-- CHAT CONTEXT MENU -->
@@ -1007,6 +1067,9 @@ async function checkAllowedAdmin(){
     // הצג כפתור העלאה לDrive בדרופדאון הסרטון
     const driveWrap=document.getElementById('driveUploadWrap');
     if(driveWrap)driveWrap.style.display='block';
+    // הצג כפתור ניהול אימוג'ים
+    const emojiMgrWrap=document.getElementById('emojiMgrWrap');
+    if(emojiMgrWrap)emojiMgrWrap.style.display='block';
     document.getElementById('adminBadge').classList.add('show');
     document.getElementById('adBtn').style.display='flex';
     document.getElementById('adminMsgsSendRow').classList.add('show');
@@ -1057,6 +1120,7 @@ function applyLogin(){
     .then(r=>r.json()).then(d=>{if(isSuperAdmin()&&d.count!=null)document.getElementById('adminUserCount').textContent=d.count;}).catch(()=>{});
 
   checkAllowedAdmin();
+  loadEmojiListFromServer();
   loadFeed();
   setTimeout(loadAd,3000);
   setInterval(loadAd, 60*60*1000);
@@ -2549,6 +2613,126 @@ function clearSearch(){
 function openLightbox(src){if(!src||!src.match(/^https?:\/\//))return;document.getElementById('lbImg').src=src;document.getElementById('lightbox').classList.add('show');document.body.style.overflow='hidden';}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('show');document.getElementById('lbImg').src='';document.body.style.overflow='';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();closeAdminMsgs();}});
+
+/* ══ EMOJI MANAGER ══ */
+// רשימת ברירת מחדל
+const DEFAULT_EMOJIS=['👍','❤️','😮','😂','😢','🔥','🚨','✅','🕊️','💪','😡','🙏','👏','😍','🤯','😱'];
+let _customEmojis=null;
+let _emojiSaveTimer=null;
+
+async function loadEmojiListFromServer(){
+  try{
+    const r=await fetch(BACKEND+'/emoji_get');
+    const d=await r.json();
+    if(d.status==='ok'&&Array.isArray(d.emojis)&&d.emojis.length){
+      _customEmojis=d.emojis;
+    } else {
+      _customEmojis=[...DEFAULT_EMOJIS];
+    }
+  }catch(e){
+    _customEmojis=[...DEFAULT_EMOJIS];
+  }
+  renderEmojiPicker();
+}
+
+function getEmojiList(){
+  return _customEmojis!==null?_customEmojis:[...DEFAULT_EMOJIS];
+}
+
+async function saveEmojiList(list){
+  _customEmojis=list;
+  renderEmojiPicker();
+  clearTimeout(_emojiSaveTimer);
+  _emojiSaveTimer=setTimeout(async()=>{
+    try{
+      await fetch(BACKEND+'/emoji_set',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:me?.email,emojis:list})
+      });
+    }catch(e){}
+  },400);
+}
+
+function renderEmojiPicker(){
+  const picker=document.getElementById('emojiPicker');
+  if(!picker)return;
+  const list=getEmojiList();
+  picker.innerHTML=list.map(em=>`<button class="ep-btn" onclick="pickEmoji('${em}')">${em}</button>`).join('');
+}
+
+function toggleEmojiManager(ev){
+  ev.stopPropagation();
+  const panel=document.getElementById('emojiManagerPanel');
+  const btn=document.getElementById('emojiMgrBtn');
+  const isOpen=panel.classList.contains('show');
+  closeAllCtbDropdowns();
+  document.getElementById('emojiPicker').classList.remove('show');
+  if(isOpen){panel.classList.remove('show');return;}
+  const rect=btn.getBoundingClientRect();
+  const M=8;
+  panel.style.visibility='hidden';panel.style.display='flex';
+  const pH=panel.offsetHeight,pW=panel.offsetWidth;
+  panel.style.display='';panel.style.visibility='';
+  let top=rect.top-pH-M;
+  if(top<56+M)top=rect.bottom+M;
+  let left=rect.right-pW;
+  if(left<M)left=M;
+  if(left+pW>window.innerWidth-M)left=window.innerWidth-pW-M;
+  panel.style.top=top+'px';panel.style.left=left+'px';
+  panel.classList.add('show');
+  renderEmojiManager();
+}
+
+function renderEmojiManager(){
+  const list=getEmojiList();
+  const container=document.getElementById('empCurrentList');
+  if(!container)return;
+  if(!list.length){
+    container.innerHTML='<span style="font-size:12px;color:#aaa;">אין אימוג&#x27;ים</span>';
+    return;
+  }
+  container.innerHTML=list.map((em,i)=>
+    '<div class="emp-chip">'
+    +'<span>'+em+'</span>'
+    +'<button class="emp-chip-del" onclick="removeEmojiFromList('+i+')" title="הסר">✕</button>'
+    +'</div>'
+  ).join('');
+}
+
+function removeEmojiFromList(idx){
+  const list=[...getEmojiList()];
+  list.splice(idx,1);
+  saveEmojiList(list);
+  renderEmojiManager();
+}
+
+function addEmojiToList(){
+  const inp=document.getElementById('empInput');
+  if(!inp)return;
+  const val=inp.value.trim();
+  if(!val){inp.focus();return;}
+  const list=[...getEmojiList()];
+  if(list.includes(val)){inp.value='';inp.focus();return;}
+  if(list.length>=24){
+    inp.style.borderColor='#e02020';
+    setTimeout(()=>{inp.style.borderColor='';},1500);
+    return;
+  }
+  list.push(val);
+  saveEmojiList(list);
+  inp.value='';
+  inp.focus();
+  renderEmojiManager();
+}
+
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('emojiManagerPanel');
+  const btn=document.getElementById('emojiMgrBtn');
+  if(panel&&panel.classList.contains('show')&&!panel.contains(e.target)&&!btn?.contains(e.target)){
+    panel.classList.remove('show');
+  }
+});
 
 /* ══ INTERVALS ══ */
 setInterval(pollAll,3000);
