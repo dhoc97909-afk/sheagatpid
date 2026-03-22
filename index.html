@@ -198,7 +198,8 @@ header{
 .bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;display:block;}
 .bubble-img img{width:100%;display:block;max-height:310px;height:auto;object-fit:contain;object-position:top;}
 .bubble-vid{margin-top:9px;}
-.bubble-vid video{width:100%;border-radius:12px;}
+.bubble-vid video{width:100%;border-radius:12px;background:#000;}
+.bubble-vid video.portrait{width:auto;max-width:100%;max-height:480px;display:block;margin:0 auto;}
 .bubble-vid iframe{max-width:100%;border-radius:12px;}
 .vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
@@ -1211,7 +1212,7 @@ function buildMsg(e){
       const isHls=isHlsUrl;
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;width:100%;">
         <video id="${vidId}" controls playsinline preload="metadata"
-          style="width:100%;max-height:480px;display:block;background:#000;border-radius:12px;object-fit:contain;"
+          style="max-height:480px;display:block;border-radius:12px;object-fit:contain;" onloadedmetadata="if(this.videoHeight>this.videoWidth)this.classList.add('portrait')"
           ${!isHls?`src="${escAttr(vu)}"`:''}
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         </video>
@@ -2701,6 +2702,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();clo
 
 
 /* ══ INTERVALS ══ */
+async function pollOpenComments(){
+  if(!activeCmtMsgId)return;
+  try{
+    const r=await fetch(BACKEND+'/feed_comments?msgId='+encodeURIComponent(activeCmtMsgId));
+    const d=await r.json();const list=d.comments||[];
+    if(list.length===(cmtCount[activeCmtMsgId]||0))return;
+    cmtCount[activeCmtMsgId]=list.length;updateCmtBtn(activeCmtMsgId,list.length);
+    const b=document.getElementById('cpBody');const wasAtBottom=(b.scrollHeight-b.scrollTop-b.clientHeight)<60;
+    b.innerHTML=list.length?list.map(c=>buildCmt(activeCmtMsgId,c)).join(''):'<div class="no-cmt">עדיין אין תגובות</div>';
+    if(wasAtBottom)b.scrollTop=b.scrollHeight;
+  }catch(e){}
+}
+
 setInterval(pollAll,3000);
 setInterval(pollOpenComments,3000);
 setTimeout(pollAll,800);
