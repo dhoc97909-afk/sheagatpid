@@ -925,8 +925,10 @@ function rich(t){
 
   // ציטוט — פורמט: \u200Bquote:ID\n> שורות\n\u200B
   s=s.replace(/\u200Bquote:([a-f0-9\-]+)\n((?:&gt; [^\n]*\n?)*)\u200B\n*/g,(m,qid,body)=>{
-    const lines=body.replace(/^&gt; /gm,'').trim();
-    const preview=lines.substring(0,120)+(lines.length>120?'…':'');
+    const lines=body.replace(/^&gt; /gm,'').trim().split('\n');
+    const firstLine=lines[0]||'';
+    const rest=lines.slice(1).join(' ').trim();
+    const preview=`<strong>${firstLine}</strong>`+(rest?' — <span style="font-weight:400">'+rest.substring(0,80)+(rest.length>80?'…':'')+'</span>':'');
     return `<div class="quote-block" onclick="jumpToQuotedMsg('${qid}')" title="לחץ לקפוץ להודעה המצוטטת"><i class="fas fa-quote-right" style="font-size:9px;color:#9ca3af;"></i><span class="quote-block-text">${preview}</span></div>`;
   });
 
