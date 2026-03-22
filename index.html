@@ -1334,17 +1334,15 @@ function renderRxn(msgId,rxns){
 function openPicker(ev,msgId){
   ev.stopPropagation();activePicker=msgId;
   const p=document.getElementById('emojiPicker');
-  // מדוד עם grid
+  // מדוד — מציג זמנית כדי לקבל גודל
   p.style.visibility='hidden';p.style.display='grid';
   const pH=p.offsetHeight,pW=p.offsetWidth;
-  p.style.display='none';p.style.visibility='';
+  p.style.display='';p.style.visibility=''; // אפס inline style — תן ל-CSS לשלוט
   const rect=ev.currentTarget.getBoundingClientRect();
   const M=8;
-  // מקם מעל הכפתור, צמוד אליו
   let top=rect.top-pH-M;
   if(top<56+M)top=rect.bottom+M;
   top=Math.max(56+M,top);
-  // יישור ימני — הפיקר מתחיל מימין הכפתור
   let left=rect.right-pW;
   if(left<M)left=M;
   if(left+pW>window.innerWidth-M)left=window.innerWidth-pW-M;
