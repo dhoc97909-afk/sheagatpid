@@ -918,8 +918,9 @@ function escAttr(t){return esc(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function rich(t){
   if(!t)return'';
   let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  // ציטוט עם ID — [quote id="..."]...[/quote]
-  s=s.replace(/\[quote id=&quot;([^&]+)&quot;\]\n?((?:&gt; [^\n]*\n?)*)\[\/quote\]/g,(m,qid,body)=>{
+
+  // ציטוט — פורמט: \u200Bquote:ID\n> שורות\n\u200B
+  s=s.replace(/\u200Bquote:([a-f0-9\-]+)\n((?:&gt; [^\n]*\n?)*)\u200B/g,(m,qid,body)=>{
     const lines=body.replace(/&gt; /g,'').trim();
     const preview=lines.substring(0,120)+(lines.length>120?'…':'');
     return `<div class="quote-block" onclick="jumpToQuotedMsg('${qid}')" title="לחץ לקפוץ להודעה המצוטטת">
@@ -927,8 +928,7 @@ function rich(t){
       <span class="quote-block-text">${preview}</span>
     </div>`;
   });
-  // שורות ציטוט פשוטות (> טקסט) — fallback
-  s=s.replace(/^&gt; (.*)$/gm,'<span style="display:block;border-right:3px solid #9ca3af;padding-right:8px;color:#6b7280;font-style:italic;font-size:15px;margin-bottom:2px;">$1</span>');
+
   s=s.replace(/\n/g,'<br>');
   s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
@@ -1824,9 +1824,9 @@ async function sendFeedPost(){
   const ed=document.getElementById('composeEditor');
   const editorText=editorToMarkdown(ed).trim();
   const quoteData=ed._quoteData||null;
-  // שמור ID של ההודעה המצוטטת בתוך הטקסט עם תג מיוחד
+  // פורמט פשוט שלא מכיל תווים מיוחדים — ID בשורה ראשונה נפרדת
   const quotePrefix=quoteData
-    ? `[quote id="${quoteData.id}"]\n${quoteData.text.split('\n').map(l=>'> '+l).join('\n')}\n[/quote]\n\n`
+    ? `\u200Bquote:${quoteData.id}\n${quoteData.text.split('\n').map(l=>'> '+l).join('\n')}\n\u200B\n\n`
     : '';
   const text=(quotePrefix+editorText).trim();
   if(!text&&!composeImgUrl){alert('הודעה ריקה');return;}
