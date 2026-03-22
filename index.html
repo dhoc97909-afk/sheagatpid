@@ -155,7 +155,7 @@ header{
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;scrollbar-width:none;}
 #feedWrap::-webkit-scrollbar{display:none;}
-#feedInner{max-width:780px;margin:0 60px 0 auto;padding:0 10px 0 20px;display:flex;flex-direction:column;gap:14px;}
+#feedInner{max-width:780px;margin:0 60px 0 auto;padding:0 10px 0 20px;display:flex;flex-direction:column;gap:6px;}
 @media(max-width:600px){
   #feedInner{margin:0;padding:0 8px;}
   .bubble{min-width:0;}
@@ -193,15 +193,7 @@ header{
 .vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
-.bubble-foot{
-  display:flex;align-items:center;gap:4px;
-  position:absolute;top:-13px;left:0;
-  flex-direction:row;
-  opacity:0;pointer-events:none;
-  transition:opacity .15s;
-}
-.msg-col:hover .bubble-foot{opacity:1;pointer-events:all;}
-.msg-row:hover .bubble-foot{opacity:1;pointer-events:all;}
+.bubble-foot{display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap;padding-right:10px;}
 
 /* REACTIONS */
 .rxn-row{display:contents;}
@@ -231,6 +223,39 @@ header{
 .link-btn{display:inline-flex;align-items:center;gap:3px;background:none;border:none;font-size:11px;color:#aaa;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:700;padding:0;transition:color .12s;text-decoration:none;letter-spacing:.01em;}
 .link-btn:hover{color:#1a56db;text-decoration:underline;}
 .link-btn.copied{color:#16a34a;}
+
+/* Bubble wrapper for top actions */
+.bubble-wrap-outer{position:relative;display:inline-block;max-width:100%;}
+.bubble-top-actions{
+  position:absolute;top:-22px;left:2px;
+  display:flex;align-items:center;gap:3px;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s;
+  z-index:10;
+  direction:ltr;
+}
+.msg-row:hover .bubble-top-actions{opacity:1;pointer-events:all;}
+.bubble-top-actions .link-btn{
+  background:rgba(255,255,255,.92);
+  border:1px solid #e5e7eb;
+  border-radius:6px;
+  padding:3px 6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.10);
+  font-size:10px;
+  color:#888;
+}
+.bubble-top-actions .link-btn:hover{color:#1a56db;border-color:#93c5fd;}
+.bubble-top-actions .cmt-btn{
+  background:rgba(255,255,255,.92);
+  border:1px solid #e5e7eb;
+  border-radius:6px;
+  padding:3px 6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.10);
+  font-size:11px;
+  color:#888;
+  gap:3px;
+}
+.bubble-top-actions .cmt-btn:hover,.bubble-top-actions .cmt-btn.has-cmt{color:#1a56db;border-color:#93c5fd;}
 
 /* Admin action buttons on message (quote + delete) */
 .msg-action-btn{
@@ -770,20 +795,20 @@ body.dark #searchInput{color:#e5e7eb;}
 
 <!-- EMOJI PICKER -->
 <div id="emojiPicker">
-  <button class="ep-btn" onclick="pickEmoji('🚨')">🚨</button>
-  <button class="ep-btn" onclick="pickEmoji('🔥')">🔥</button>
-  <button class="ep-btn" onclick="pickEmoji('😢')">😢</button>
-  <button class="ep-btn" onclick="pickEmoji('😂')">😂</button>
-  <button class="ep-btn" onclick="pickEmoji('😮')">😮</button>
-  <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
   <button class="ep-btn" onclick="pickEmoji('👍')">👍</button>
-  <button class="ep-btn" onclick="pickEmoji('😍')">😍</button>
-  <button class="ep-btn" onclick="pickEmoji('👏')">👏</button>
-  <button class="ep-btn" onclick="pickEmoji('🙏')">🙏</button>
-  <button class="ep-btn" onclick="pickEmoji('😡')">😡</button>
-  <button class="ep-btn" onclick="pickEmoji('💪')">💪</button>
-  <button class="ep-btn" onclick="pickEmoji('🕊️')">🕊️</button>
+  <button class="ep-btn" onclick="pickEmoji('❤️')">❤️</button>
+  <button class="ep-btn" onclick="pickEmoji('😮')">😮</button>
+  <button class="ep-btn" onclick="pickEmoji('😂')">😂</button>
+  <button class="ep-btn" onclick="pickEmoji('😢')">😢</button>
+  <button class="ep-btn" onclick="pickEmoji('🔥')">🔥</button>
+  <button class="ep-btn" onclick="pickEmoji('🚨')">🚨</button>
   <button class="ep-btn" onclick="pickEmoji('✅')">✅</button>
+  <button class="ep-btn" onclick="pickEmoji('🕊️')">🕊️</button>
+  <button class="ep-btn" onclick="pickEmoji('💪')">💪</button>
+  <button class="ep-btn" onclick="pickEmoji('😡')">😡</button>
+  <button class="ep-btn" onclick="pickEmoji('🙏')">🙏</button>
+  <button class="ep-btn" onclick="pickEmoji('👏')">👏</button>
+  <button class="ep-btn" onclick="pickEmoji('😍')">😍</button>
   <button class="ep-btn" onclick="pickEmoji('🤯')">🤯</button>
   <button class="ep-btn" onclick="pickEmoji('😱')">😱</button>
 </div>
@@ -1175,19 +1200,23 @@ function buildMsg(e){
         <span class="msg-meta-name">שאגת הארי</span>
         <span class="msg-meta-time">${esc(timeLabel(e))}</span>
       </div>
-      <div class="bubble${red?' is-red':''}">
-        ${content}${media}${btns}
+      <div class="bubble-wrap-outer">
+        <div class="bubble-top-actions" id="bta-${escAttr(id)}">
+          <button class="link-btn" id="lnk-${escAttr(id)}" onclick="copyMsgLink('${escAttr(id)}',this)" title="העתק קישור">
+            <i class="fas fa-link" style="font-size:9px"></i>
+          </button>
+          <button class="cmt-btn${n>0?' has-cmt':''}" id="cbtn-${escAttr(id)}" onclick="openComments('${escAttr(id)}')">
+            <i class="fas fa-comment" style="font-size:11px"></i>${n>0?'<span style="font-size:9px;font-weight:800;margin-right:2px">'+(n)+'</span>':''}
+          </button>
+        </div>
+        <div class="bubble${red?' is-red':''}">
+          ${content}${media}${btns}
+        </div>
       </div>
       <div class="bubble-foot">
         <div class="rxn-row" id="rxn-${escAttr(id)}">
           <button class="rxn-add-btn" onclick="openPicker(event,'${escAttr(id)}')" title="הוסף תגובה">${REACT_SVG}</button>
         </div>
-        <button class="link-btn" id="lnk-${escAttr(id)}" onclick="copyMsgLink('${escAttr(id)}',this)" title="העתק קישור">
-          <i class="fas fa-link" style="font-size:9px"></i>
-        </button>
-        <button class="cmt-btn${n>0?' has-cmt':''}" id="cbtn-${escAttr(id)}" onclick="openComments('${escAttr(id)}')">
-          <i class="fas fa-comment" style="font-size:11px"></i>${n>0?'<span style="font-size:9px;font-weight:800;margin-right:2px">'+(n)+'</span>':''}
-        </button>
         ${canDel?`
         <button class="msg-action-btn quote" onclick="quoteFeedMsg('${escAttr(id)}')" title="ציטוט">
           <i class="fas fa-quote-right" style="font-size:9px"></i>ציטוט
@@ -1354,7 +1383,7 @@ function buildCmt(msgId,c){
 function updateCmtBtn(msgId,n){
   const btn=document.getElementById('cbtn-'+msgId);if(!btn)return;
   btn.className='cmt-btn'+(n>0?' has-cmt':'');
-  btn.innerHTML=`<i class="fas fa-comment" style="font-size:11px"></i>${n>0?'<span style="font-size:9px;font-weight:800;margin-right:2px">'+n+'</span>':''}`;
+  btn.innerHTML=`<i class="fas fa-comment" style="font-size:11px"></i>${n>0?`<span style="font-size:9px;font-weight:800;margin-right:2px">${n}</span>`:''}`;
 }
 
 async function sendComment(){
