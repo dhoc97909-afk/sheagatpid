@@ -189,7 +189,7 @@ header{
 .bubble-text a{color:#1a56db;text-decoration:underline;}
 .bubble-headline{font-size:18px;font-weight:800;color:#111;line-height:1.5;margin-bottom:4px;font-family:'Heebo','Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;}
 .bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;display:block;}
-.bubble-img img{width:100%;display:block;max-height:360px;height:auto;object-fit:contain;object-position:top;}
+.bubble-img img{width:100%;display:block;max-height:260px;height:auto;object-fit:contain;object-position:top;}
 .bubble-vid{margin-top:9px;}
 .bubble-vid video{width:100%;border-radius:12px;}
 .bubble-vid iframe{max-width:100%;border-radius:12px;}
@@ -385,6 +385,9 @@ body.dark #searchInput{color:#e5e7eb;}
   background:#d1d5db;cursor:not-allowed;box-shadow:none;pointer-events:none;
 }
 #adminComposeBar.blocked .compose-toolbar button:not(#profileToggle){
+  opacity:.35;pointer-events:none;
+}
+#adminComposeBar.blocked .ctb-dropdown-wrap{
   opacity:.35;pointer-events:none;
 }
 #blockNotice{
@@ -1023,6 +1026,9 @@ async function checkAllowedAdmin(){
   }
 
   if(isSuperAdmin()){
+    // david לא blocked לעולם — הסר blocked מיד
+    document.getElementById('adminComposeBar')?.classList.remove('blocked');
+    document.getElementById('blockNotice')?.classList.remove('show');
     // הצג כפתור העלאה לDrive בדרופדאון הסרטון
     const driveWrap=document.getElementById('driveUploadWrap');
     if(driveWrap)driveWrap.style.display='block';
@@ -1548,15 +1554,16 @@ function applyWritePerm(perm){
   const notice=document.getElementById('blockNotice');
   const btn=document.getElementById('writePermBtn');
   if(!bar)return;
-  if(btn)btn.classList.toggle('has-granted',grantedEmails.length>0);
+  // david — לעולם לא blocked
   if(isSuperAdmin()){
     bar.classList.remove('blocked');
     notice.classList.remove('show');
-    if(document.getElementById('writePermDropdown').style.display==='block'){
-      renderWritePermDropdown(grantedEmails);
-    }
+    if(btn)btn.classList.toggle('has-granted',grantedEmails.length>0);
+    const dd=document.getElementById('writePermDropdown');
+    if(dd&&dd.style.display==='block') renderWritePermDropdown(grantedEmails);
     return;
   }
+  if(btn)btn.classList.toggle('has-granted',grantedEmails.length>0);
   const hasPermission=grantedEmails.includes(me?.email||'');
   bar.classList.toggle('blocked',!hasPermission);
   notice.classList.toggle('show',!hasPermission);
