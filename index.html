@@ -275,9 +275,7 @@ header{
 .msg-action-btn.del:hover{color:#e02020;border-color:#fca5a5;}
 .msg-meta-edited{font-size:10px;color:#9ca3af;font-style:italic;font-weight:500;}
 /* edit modal */
-#editMsgModal{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.45);align-items:center;justify-content:center;}
-#editMsgModal.show{display:flex;}
-#editMsgBox{background:#fff;border-radius:18px;padding:24px;max-width:500px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+
 
 /* Quote block displayed inside feed bubble */
 .quote-block{
@@ -383,6 +381,12 @@ body.dark #searchInput{color:#e5e7eb;}
 #searchEmpty{text-align:center;padding:40px 20px;color:#aaa;font-size:14px;display:none;}
 
 /* ══ ADMIN COMPOSE BAR (sticky bottom, only for admins) ══ */
+#composeEditBanner{
+  display:none;background:#fef3c7;border-bottom:1px solid #fde68a;
+  padding:5px 14px;font-size:11px;font-weight:700;color:#92400e;
+  direction:rtl;align-items:center;gap:6px;
+}
+#composeEditBanner.show{display:flex;}
 #adminComposeBar{
   display:none;
   position:fixed;
@@ -744,6 +748,10 @@ body.dark #searchInput{color:#e5e7eb;}
 
 <!-- ══ ADMIN COMPOSE BAR ══ -->
 <div id="adminComposeBar">
+  <div id="composeEditBanner">
+    <i class="fas fa-pen" style="font-size:10px"></i>
+    <span>מצב עריכה — ערוך את ההודעה ולחץ ✓ לשמור</span>
+  </div>
   <div id="blockNotice">✋ אין לך הרשאת כתיבה כרגע — המתן ל-david להעניק הרשאה</div>
   <div class="compose-toolbar">
     <button id="profileToggle" onclick="toggleComposeProfile()">
@@ -843,18 +851,12 @@ body.dark #searchInput{color:#e5e7eb;}
     <button class="compose-send-btn" id="composeSendBtn" onclick="sendFeedPost()" title="שלח">
       <i class="fas fa-paper-plane" style="font-size:14px"></i>
     </button>
-  </div>
-</div>
-
-<!-- EDIT MSG MODAL -->
-<div id="editMsgModal">
-  <div id="editMsgBox">
-    <div style="font-size:15px;font-weight:800;color:#111;margin-bottom:16px;text-align:right;">✏️ עריכת הודעה</div>
-    <div id="editMsgEditor" contenteditable="true" style="min-height:80px;max-height:300px;overflow-y:auto;border:1.5px solid #e5e7eb;border-radius:12px;padding:10px 14px;font-size:15px;font-family:'Heebo',sans-serif;direction:rtl;outline:none;line-height:1.6;white-space:pre-wrap;" placeholder="תוכן ההודעה..."></div>
-    <div style="display:flex;gap:8px;margin-top:14px;">
-      <button onclick="saveEditMsg()" style="flex:1;background:#1a56db;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;">שמור</button>
-      <button onclick="closeEditMsg()" style="flex:1;background:#f3f4f6;color:#666;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;">ביטול</button>
-    </div>
+    <button class="compose-send-btn" id="composeEditConfirmBtn" onclick="saveEditMsg()" title="שמור עריכה" style="display:none;background:#059669;">
+      <i class="fas fa-check" style="font-size:14px"></i>
+    </button>
+    <button class="compose-send-btn" id="composeEditCancelBtn" onclick="cancelEditMode()" title="בטל עריכה" style="display:none;background:#6b7280;">
+      <i class="fas fa-times" style="font-size:14px"></i>
+    </button>
   </div>
 </div>
 
@@ -1629,6 +1631,16 @@ async function pollAll(){
     }
     const rxns=d.reactions||{};Object.entries(rxns).forEach(([mid,rxn])=>renderRxn(mid,rxn));
     const counts=d.comment_counts||{};Object.entries(counts).forEach(([mid,n])=>{if(n!==(cmtCount[mid]||0)){cmtCount[mid]=n;updateCmtBtn(mid,n);}});
+    // עדכון עריכות
+    const edited=d.edited_items||[];
+    edited.forEach(entry=>{
+      const idx=items.findIndex(i=>i.id===entry.id);
+      if(idx>=0){
+        items[idx]=entry;
+        const row=document.querySelector(`.msg-row[data-id="${entry.id}"]`);
+        if(row){const nd=document.createElement('div');nd.innerHTML=buildMsg(entry);row.replaceWith(nd.firstChild);}
+      }
+    });
   }catch(e){}finally{pollPending=false;}
 }
 
@@ -2863,58 +2875,84 @@ let _editMsgId=null;
 
 function openEditMsg(id){
   if(!isAdmin())return;
-  const row=document.querySelector(`.msg-row[data-id="${id}"]`);
-  if(!row)return;
-  const bubble=row.querySelector('.bubble');
-  if(!bubble)return;
+  const e=items.find(i=>i.id===id);
+  if(!e)return;
   _editMsgId=id;
-  const editor=document.getElementById('editMsgEditor');
-  // קח את הטקסט הנוכחי מה-bubble-text
-  const textEl=bubble.querySelector('.bubble-text,.bubble-headline');
-  editor.innerText=textEl?textEl.innerText:'';
-  document.getElementById('editMsgModal').classList.add('show');
-  setTimeout(()=>{editor.focus();const r=document.createRange();r.selectNodeContents(editor);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);},50);
+  // מלא את תיבת הכתיבה בתוכן הנוכחי
+  const ed=document.getElementById('composeEditor');
+  ed.innerText=e.text||'';
+  composeImgUrl=e.imgUrl||'';
+  composeVidUrl=e.videoUrl||'';
+  composeHtmlCode=e.htmlCode||'';
+  composeBtns=(e.buttons||[]).map(b=>({text:b.text,url:b.url}));
+  // עדכן thumbs
+  if(composeImgUrl){
+    document.getElementById('composeImgUrl').value=composeImgUrl;
+    const th=document.getElementById('composeImgThumb');
+    if(th){document.getElementById('composeImgThumbImg').src=composeImgUrl;th.style.display='flex';}
+  }
+  if(composeVidUrl)document.getElementById('composeVidUrl').value=composeVidUrl;
+  updateAttachPreview();
+  // הצג כפתורי עריכה, הסתר שלח
+  document.getElementById('composeSendBtn').style.display='none';
+  document.getElementById('composeEditConfirmBtn').style.display='flex';
+  document.getElementById('composeEditCancelBtn').style.display='flex';
+  document.getElementById('composeEditBanner').classList.add('show');
+  // גלול לתיבת הכתיבה
+  document.getElementById('adminComposeBar').scrollIntoView({behavior:'smooth',block:'end'});
+  setTimeout(()=>{ed.focus();const r=document.createRange();r.selectNodeContents(ed);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);},200);
 }
 
-function closeEditMsg(){
-  document.getElementById('editMsgModal').classList.remove('show');
+function cancelEditMode(){
   _editMsgId=null;
+  clearCompose();
+  document.getElementById('composeSendBtn').style.display='flex';
+  document.getElementById('composeEditConfirmBtn').style.display='none';
+  document.getElementById('composeEditCancelBtn').style.display='none';
+  document.getElementById('composeEditBanner').classList.remove('show');
 }
+
+function closeEditMsg(){cancelEditMode();}
 
 async function saveEditMsg(){
   if(!_editMsgId||!me)return;
-  const newText=document.getElementById('editMsgEditor').innerText.trim();
-  if(!newText){alert('ההודעה לא יכולה להיות ריקה');return;}
+  const ed=document.getElementById('composeEditor');
+  const editorText=editorToMarkdown(ed).trim();
+  if(!editorText&&!composeImgUrl&&!composeHtmlCode){alert('ההודעה לא יכולה להיות ריקה');return;}
+  const btn=document.getElementById('composeEditConfirmBtn');
+  btn.innerHTML='<i class="fas fa-spinner fa-spin" style="font-size:12px"></i>';btn.disabled=true;
   try{
     const r=await fetch(BACKEND+'/feed_edit',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:me.email,id:_editMsgId,text:newText})});
+      body:JSON.stringify({
+        email:me.email,id:_editMsgId,
+        text:editorText,
+        imgUrl:composeImgUrl,
+        videoUrl:composeVidUrl,
+        htmlCode:composeHtmlCode,
+        buttons:composeBtns.map(b=>({text:b.text,url:b.url}))
+      })});
     const d=await r.json();
     if(d.status==='ok'){
-      closeEditMsg();
+      cancelEditMode();
       // עדכן מיידי בממשק
-      const row=document.querySelector(`.msg-row[data-id="${_editMsgId}"]`);
-      if(row){
-        const textEl=row.querySelector('.bubble-text');
-        if(textEl)textEl.innerHTML=rich(newText);
-        // הוסף "נערכה" אם לא קיים
-        const meta=row.querySelector('.msg-meta');
-        if(meta&&!meta.querySelector('.msg-meta-edited')){
-          const editedSpan=document.createElement('span');
-          editedSpan.className='msg-meta-edited';
-          editedSpan.textContent='נערכה';
-          const timeEl=meta.querySelector('.msg-meta-time');
-          if(timeEl)timeEl.insertAdjacentElement('afterend',editedSpan);
+      const entry=d.entry;
+      if(entry){
+        const idx=items.findIndex(i=>i.id===entry.id);
+        if(idx>=0)items[idx]=entry;
+        const row=document.querySelector(`.msg-row[data-id="${entry.id}"]`);
+        if(row){
+          const newDiv=document.createElement('div');
+          newDiv.innerHTML=buildMsg(entry);
+          row.replaceWith(newDiv.firstChild);
         }
       }
     }else{alert(d.msg||'שגיאה בשמירה');}
   }catch(e){alert('שגיאת רשת');}
+  finally{btn.innerHTML='<i class="fas fa-check" style="font-size:14px"></i>';btn.disabled=false;}
 }
 
-// סגור modal בלחיצה מחוץ
-document.getElementById('editMsgModal').addEventListener('click',function(e){
-  if(e.target===this)closeEditMsg();
-});
+
 
 /* ══ INTERVALS ══ */
 async function pollOpenComments(){
