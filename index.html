@@ -1297,9 +1297,8 @@ function buildMsg(e){
           try{
             var body=f.contentDocument.body;
             var html=f.contentDocument.documentElement;
-            body.style.overflow='hidden';
             var h=Math.max(body.scrollHeight,body.offsetHeight,html.scrollHeight,html.offsetHeight);
-            f.style.height=Math.min(h,500)+'px';
+            f.style.height=Math.min(h+24,500)+'px';
           }catch(e){f.style.height='300px';}
         })(this)"
       ></iframe>
