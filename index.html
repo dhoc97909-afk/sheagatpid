@@ -238,16 +238,17 @@ header{
 
 /* Quote block displayed inside feed bubble */
 .quote-block{
-  display:flex;gap:8px;
-  background:#f3f4f6;border-radius:10px;
-  padding:8px 10px;margin-bottom:8px;
+  display:flex;align-items:flex-start;gap:6px;
+  background:#f3f4f6;border-radius:8px;
+  padding:7px 10px;margin-bottom:8px;
   cursor:pointer;transition:background .12s;
   border-right:3px solid #9ca3af;
 }
-.quote-block:hover{background:#e9eaec;}
+.quote-block:hover{background:#e5e7eb;}
+.quote-block i{margin-top:1px;flex-shrink:0;}
 .quote-block-text{
-  font-size:14px;color:#6b7280;font-style:italic;
-  line-height:1.5;
+  font-size:13px;color:#6b7280;font-style:italic;
+  line-height:1.5;flex:1;
 }
 
 /* EMOJI PICKER */
@@ -919,14 +920,14 @@ function rich(t){
   let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
   // ציטוט — פורמט: \u200Bquote:ID\n> שורות\n\u200B
-  s=s.replace(/\u200Bquote:([a-f0-9\-]+)\n((?:&gt; [^\n]*\n?)*)\u200B\n?/g,(m,qid,body)=>{
+  s=s.replace(/\u200Bquote:([a-f0-9\-]+)\n((?:&gt; [^\n]*\n?)*)\u200B\n*/g,(m,qid,body)=>{
     const lines=body.replace(/^&gt; /gm,'').trim();
-    return `<div class="quote-block" onclick="jumpToQuotedMsg('${qid}')" title="לחץ לקפוץ להודעה המצוטטת">
-      <i class="fas fa-quote-right" style="font-size:10px;color:#9ca3af;flex-shrink:0;margin-top:2px;"></i>
-      <span class="quote-block-text">${lines}</span>
-    </div>`;
+    const preview=lines.substring(0,120)+(lines.length>120?'…':'');
+    return `<div class="quote-block" onclick="jumpToQuotedMsg('${qid}')" title="לחץ לקפוץ להודעה המצוטטת"><i class="fas fa-quote-right" style="font-size:9px;color:#9ca3af;"></i><span class="quote-block-text">${preview}</span></div>`;
   });
 
+  // נקה כל ZWS שנשאר
+  s=s.replace(/\u200B/g,'');
   s=s.replace(/\n/g,'<br>');
   s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
@@ -2402,17 +2403,30 @@ function onSearch(val){
   if(!val.trim()){document.getElementById('searchResults').style.display='none';document.getElementById('feedWrap').style.display='';return;}
   searchTimer=setTimeout(()=>doSearch(val.trim()),250);
 }
-function doSearch(q){
+async function doSearch(q){
   const qLow=q.toLowerCase();
-  const results=items.filter(e=>(e.text||'').toLowerCase().includes(qLow));
   document.getElementById('feedWrap').style.display='none';
   document.getElementById('searchResults').style.display='block';
   const inner=document.getElementById('searchResultsInner');
   const empty=document.getElementById('searchEmpty');
-  if(!results.length){inner.innerHTML='';empty.style.display='block';return;}
+  inner.innerHTML='<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;"><i class="fas fa-spinner fa-spin"></i> מחפש...</div>';
   empty.style.display='none';
+
+  // טען את כל הפיד מהשרת לחיפוש מלא
+  let allItems=items; // התחל מה-cached
+  try{
+    const r=await fetch(BACKEND+'/feed?limit=500');
+    const d=await r.json();
+    if(d.status==='ok') allItems=[...d.feed].reverse();
+  }catch(e){}
+
+  const results=allItems.filter(e=>(e.text||'').toLowerCase().includes(qLow));
+  if(!results.length){inner.innerHTML='';empty.style.display='block';return;}
+
   const escaped=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  inner.innerHTML=results.map(e=>buildMsg(e).replace(new RegExp(`(${escaped})`,'gi'),'<mark style="background:#fff176;border-radius:3px;padding:0 1px">$1</mark>')).join('');
+  inner.innerHTML=results.map(e=>
+    buildMsg(e).replace(new RegExp(`(${escaped})`,'gi'),'<mark style="background:#fff176;border-radius:3px;padding:0 1px">$1</mark>')
+  ).join('');
   results.forEach(e=>{if(rxnCache[e.id])renderRxn(e.id,rxnCache[e.id]);});
 }
 function clearSearch(){
