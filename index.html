@@ -1600,7 +1600,8 @@ function composeFormat(cmd){
 }
 
 function onComposeChange(){
-  const text=document.getElementById('composeEditor').innerText||'';
+  const ed=document.getElementById('composeEditor');
+  const text=editorToMarkdown(ed);
   document.getElementById('composeCharCount').textContent=text.length;
 }
 
@@ -1697,15 +1698,34 @@ function updateAttachPreview(){
 
 function clearComposeVid(){composeVidUrl='';document.getElementById('composeVidUrl').value='';updateAttachPreview();}
 
+/* ממיר contenteditable HTML לטקסט עם סימוני bold/italic */
+function editorToMarkdown(el){
+  function nodeToText(node){
+    if(node.nodeType===Node.TEXT_NODE)return node.textContent;
+    if(node.nodeType!==Node.ELEMENT_NODE)return'';
+    const tag=node.tagName.toLowerCase();
+    const inner=Array.from(node.childNodes).map(nodeToText).join('');
+    if(tag==='b'||tag==='strong')return'**'+inner+'**';
+    if(tag==='i'||tag==='em')return'_'+inner+'_';
+    if(tag==='u')return inner; // underline — אין סימון, שמור טקסט
+    if(tag==='br')return'\n';
+    if(tag==='div'||tag==='p'){
+      // div/p מייצגים שורה חדשה — הוסף newline לפני (אם לא ראשון)
+      return (node.previousElementSibling?'\n':'')+inner;
+    }
+    return inner;
+  }
+  return nodeToText(el);
+}
+
 async function sendFeedPost(){
   if(!me||!isAdmin())return;
-  // בדיקת הרשאת כתיבה בצד הלקוח
   if(!isSuperAdmin()){
     const granted=_writePerm?.emails||[];
     if(!granted.includes(me.email)){alert('אין לך הרשאת כתיבה כרגע');return;}
   }
   const ed=document.getElementById('composeEditor');
-  const text=ed.innerText.trim();
+  const text=editorToMarkdown(ed).trim();
   if(!text&&!composeImgUrl){alert('הודעה ריקה');return;}
   const now=new Date();
   const entry={
