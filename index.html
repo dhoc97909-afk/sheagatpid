@@ -155,7 +155,7 @@ header{
 /* FEED */
 #feedWrap{flex:1;overflow-y:auto;padding:10px 0 24px;scrollbar-width:none;}
 #feedWrap::-webkit-scrollbar{display:none;}
-#feedInner{max-width:780px;margin:0 60px 0 auto;padding:0 10px 0 20px;display:flex;flex-direction:column;gap:6px;}
+#feedInner{max-width:780px;margin:0 60px 0 auto;padding:0 10px 0 20px;display:flex;flex-direction:column;gap:18px;}
 @media(max-width:600px){
   #feedInner{margin:0;padding:0 8px;}
   .bubble{min-width:0;}
@@ -188,8 +188,10 @@ header{
 .bubble-text a{color:#1a56db;text-decoration:underline;}
 .bubble-headline{font-size:18px;font-weight:800;color:#111;line-height:1.5;margin-bottom:4px;}
 .bubble-img{margin-top:9px;border-radius:12px;overflow:hidden;display:block;}
-.bubble-img img{width:100%;display:block;max-height:280px;height:auto;object-fit:contain;object-position:top;}
+.bubble-img img{width:100%;display:block;max-height:360px;height:auto;object-fit:contain;object-position:top;}
 .bubble-vid{margin-top:9px;}
+.bubble-vid video{max-width:320px;border-radius:12px;}
+.bubble-vid iframe{max-width:100%;border-radius:12px;}
 .vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
@@ -204,8 +206,8 @@ header{
   cursor:pointer;transition:background .12s,border-color .12s,transform .1s;
   user-select:none;line-height:1;
 }
-.rxn-chip:hover{background:#e5e7eb;border-color:#d1d5db;transform:scale(1.08);}
-.rxn-chip.mine{background:#eff6ff;border-color:#bfdbfe;}
+.rxn-chip:hover{background:#e5e7eb;border-color:#9ca3af;}
+.rxn-chip.mine{background:#eff6ff;border-color:#3b82f6;box-shadow:0 0 0 1.5px #bfdbfe;}
 .rxn-emoji{font-size:15px;line-height:1;font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;}
 .rxn-count{font-size:11px;font-weight:700;color:#6b7280;font-family:'Heebo',sans-serif;}
 .rxn-chip.mine .rxn-count{color:#1a56db;}
@@ -227,35 +229,29 @@ header{
 /* Bubble wrapper for top actions */
 .bubble-wrap-outer{position:relative;display:inline-block;max-width:100%;}
 .bubble-top-actions{
-  position:absolute;top:-22px;left:2px;
+  position:absolute;top:-24px;left:2px;
   display:flex;align-items:center;gap:3px;
-  opacity:0;pointer-events:none;
-  transition:opacity .15s;
+  opacity:1;pointer-events:all;
   z-index:10;
   direction:ltr;
 }
-.msg-row:hover .bubble-top-actions{opacity:1;pointer-events:all;}
-.bubble-top-actions .link-btn{
-  background:rgba(255,255,255,.92);
-  border:1px solid #e5e7eb;
-  border-radius:6px;
-  padding:3px 6px;
-  box-shadow:0 1px 4px rgba(0,0,0,.10);
-  font-size:10px;
-  color:#888;
-}
-.bubble-top-actions .link-btn:hover{color:#1a56db;border-color:#93c5fd;}
+.bubble-top-actions .link-btn,
 .bubble-top-actions .cmt-btn{
-  background:rgba(255,255,255,.92);
+  background:rgba(255,255,255,.93);
   border:1px solid #e5e7eb;
   border-radius:6px;
-  padding:3px 6px;
+  padding:0 7px;
+  height:22px;
   box-shadow:0 1px 4px rgba(0,0,0,.10);
   font-size:11px;
   color:#888;
-  gap:3px;
+  display:inline-flex;align-items:center;gap:3px;
+  font-family:'Heebo',sans-serif;font-weight:600;
+  cursor:pointer;text-decoration:none;
 }
-.bubble-top-actions .cmt-btn:hover,.bubble-top-actions .cmt-btn.has-cmt{color:#1a56db;border-color:#93c5fd;}
+.bubble-top-actions .link-btn:hover,
+.bubble-top-actions .cmt-btn:hover{color:#1a56db;border-color:#93c5fd;background:#fff;}
+.bubble-top-actions .cmt-btn.has-cmt{color:#1a56db;border-color:#bfdbfe;}
 
 /* Admin action buttons on message (quote + delete) */
 .msg-action-btn{
@@ -1145,18 +1141,18 @@ function buildMsg(e){
     const isDirectVideo=/\.(mp4|webm|ogg|m3u8)([?#,]|$)/i.test(vu)||isHlsUrl;
     if(ytMatch){
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
-        <iframe width="100%" height="160" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;"></iframe>
+        <iframe width="100%" height="200" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;"></iframe>
       </div>`;
     } else if(driveMatch){
       media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
-        <iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" width="100%" height="160" frameborder="0" allow="autoplay" allowfullscreen style="display:block;"></iframe>
+        <iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" width="100%" height="200" frameborder="0" allow="autoplay" allowfullscreen style="display:block;"></iframe>
       </div>`;
     } else if(isDirectVideo){
       const vidId='vid-'+escAttr(id);
       const isHls=isHlsUrl;
-      media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;">
+      media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;max-width:min(100%,420px);">
         <video id="${vidId}" controls playsinline preload="metadata"
-          style="width:100%;max-height:240px;display:block;background:#000;border-radius:12px;"
+          style="width:100%;max-height:300px;display:block;background:#000;border-radius:12px;object-fit:contain;"
           ${!isHls?`src="${escAttr(vu)}"`:''}
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         </video>
