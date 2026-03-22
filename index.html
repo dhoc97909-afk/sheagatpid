@@ -654,6 +654,7 @@ body.dark #searchInput{color:#e5e7eb;}
   <a id="adSidebarLink" href="#" target="_blank" rel="noopener noreferrer">
     <img id="adSidebarImg" src="" alt="פרסומת" style="width:100%;height:auto;display:block;">
   </a>
+  <iframe id="adSidebarFrame" src="" style="display:none;width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" loading="lazy"></iframe>
 </div>
 
 <!-- APP -->
@@ -865,8 +866,11 @@ body.dark #searchInput{color:#e5e7eb;}
     <div style="border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;margin-bottom:14px;">
       <div style="font-size:13px;font-weight:800;color:#1a56db;margin-bottom:12px;"><i class="fas fa-window-restore" style="font-size:12px"></i> פרסומת פופאפ</div>
       <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:10px;font-weight:700;color:#9ca3af;">תמונה (URL) — או דף HTML:</div>
         <input id="adPopupImageUrl" type="text" placeholder="קישור לתמונה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
-        <input id="adPopupLinkUrl" type="text" placeholder="קישור ללחיצה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:1px;background:#e5e7eb"></div><span style="font-size:10px;color:#aaa;">או</span><div style="flex:1;height:1px;background:#e5e7eb"></div></div>
+        <input id="adPopupHtmlUrl" type="text" placeholder="קישור לדף HTML https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <input id="adPopupLinkUrl" type="text" placeholder="קישור ללחיצה https://... (לתמונה בלבד)" style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
         <div style="display:flex;gap:8px">
           <button onclick="saveAd('popup')" style="flex:1;background:#1a56db;color:#fff;border:none;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">שמור</button>
           <button onclick="deleteAd('popup')" style="flex:1;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">הסר</button>
@@ -876,8 +880,11 @@ body.dark #searchInput{color:#e5e7eb;}
     <div style="border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;">
       <div style="font-size:13px;font-weight:800;color:#059669;margin-bottom:12px;"><i class="fas fa-columns" style="font-size:12px"></i> פרסומת עמודה צדדית</div>
       <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:10px;font-weight:700;color:#9ca3af;">תמונה (URL) — או דף HTML:</div>
         <input id="adSideImageUrl" type="text" placeholder="קישור לתמונה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
-        <input id="adSideLinkUrl" type="text" placeholder="קישור ללחיצה https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:1px;background:#e5e7eb"></div><span style="font-size:10px;color:#aaa;">או</span><div style="flex:1;height:1px;background:#e5e7eb"></div></div>
+        <input id="adSideHtmlUrl" type="text" placeholder="קישור לדף HTML https://..." style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
+        <input id="adSideLinkUrl" type="text" placeholder="קישור ללחיצה https://... (לתמונה בלבד)" style="border:1.5px solid #e5e7eb;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;direction:ltr;font-family:'Heebo',sans-serif;width:100%">
         <div style="display:flex;gap:8px">
           <button onclick="saveAd('side')" style="flex:1;background:#059669;color:#fff;border:none;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">שמור</button>
           <button onclick="deleteAd('side')" style="flex:1;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif">הסר</button>
@@ -2564,8 +2571,8 @@ const AD_KEY='shaagat_ad';const AD_INTERVAL=60*60*1000;
 async function loadAd(){
   try{
     const r=await fetch(BACKEND+'/ad_get');const d=await r.json();
-    if(d.side&&d.side.imageUrl){showAdSide(d.side);}else{hideAdSide();}
-    if(d.popup&&d.popup.imageUrl&&shouldShowAd()){showAdPopup(d.popup);}
+    if(d.side&&(d.side.imageUrl||d.side.htmlUrl)){showAdSide(d.side);}else{hideAdSide();}
+    if(d.popup&&(d.popup.imageUrl||d.popup.htmlUrl)&&shouldShowAd()){showAdPopup(d.popup);}
   }catch(e){}
 }
 
@@ -2573,13 +2580,40 @@ function shouldShowAd(){const last=parseInt(localStorage.getItem(AD_KEY)||'0');r
 function markAdShown(){localStorage.setItem(AD_KEY,String(Date.now()));}
 
 function showAdSide(ad){
-  document.getElementById('adSidebarImg').src=ad.imageUrl;
-  document.getElementById('adSidebarLink').href=ad.linkUrl||'#';
+  const img=document.getElementById('adSidebarImg');
+  const link=document.getElementById('adSidebarLink');
+  const frame=document.getElementById('adSidebarFrame');
+  if(ad.htmlUrl){
+    // דף HTML — הצג iframe, הסתר תמונה
+    if(img)img.style.display='none';
+    if(link)link.style.display='none';
+    if(frame){frame.src=ad.htmlUrl;frame.style.display='block';}
+  } else {
+    // תמונה רגילה
+    if(frame){frame.style.display='none';frame.src='';}
+    if(img){img.src=ad.imageUrl||'';img.style.display='block';}
+    if(link)link.href=ad.linkUrl||'#';
+  }
   // עדכן גם את הפרסומת בצ'אט ממוזער
   const chatAdImg=document.getElementById('adSidebarImgChat');
   const chatAdLink=document.getElementById('adSidebarLinkChat');
-  if(chatAdImg)chatAdImg.src=ad.imageUrl;
-  if(chatAdLink)chatAdLink.href=ad.linkUrl||'#';
+  if(ad.htmlUrl){
+    if(chatAdImg)chatAdImg.style.display='none';
+    if(chatAdLink)chatAdLink.style.display='none';
+    // הוסף iframe לצ'אט ממוזער אם לא קיים
+    const chatWrap=document.getElementById('adOnlySidebarInChat');
+    if(chatWrap&&!chatWrap.querySelector('iframe')){
+      const f=document.createElement('iframe');
+      f.id='adSidebarFrameChat';f.style.cssText='width:100%;height:100%;border:none;display:none;';
+      f.sandbox='allow-scripts allow-same-origin allow-popups allow-forms';
+      chatWrap.appendChild(f);
+    }
+    const cf=document.getElementById('adSidebarFrameChat');
+    if(cf){cf.src=ad.htmlUrl;cf.style.display='block';}
+  } else {
+    if(chatAdImg){chatAdImg.src=ad.imageUrl||'';chatAdImg.style.display='block';}
+    if(chatAdLink)chatAdLink.href=ad.linkUrl||'#';
+  }
   if(!isAdmin()){
     if(window.innerWidth>900){
       document.getElementById('adOnlySidebar').style.display='block';
@@ -2595,12 +2629,20 @@ function showAdPopup(ad){
   const existing=document.getElementById('adOverlay');if(existing)return;
   const overlay=document.createElement('div');overlay.id='adOverlay';
   overlay.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center';
-  overlay.innerHTML=`<div style="position:relative;max-width:420px;width:90%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)">
-    <button onclick="closeAd()" style="position:absolute;top:10px;right:10px;z-index:2;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Heebo',sans-serif">✕</button>
-    <a href="${escAttr(ad.linkUrl||'#')}" target="_blank" rel="noopener noreferrer" onclick="closeAd()">
-      <img src="${escAttr(ad.imageUrl)}" style="width:100%;display:block;max-height:70vh;object-fit:contain;background:#000">
-    </a>
-  </div>`;
+  const inner=document.createElement('div');
+  inner.style.cssText='position:relative;max-width:420px;width:90%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)';
+  const closeBtn=`<button onclick="closeAd()" style="position:absolute;top:10px;right:10px;z-index:2;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:Heebo,sans-serif">✕</button>`;
+  if(ad.htmlUrl){
+    inner.innerHTML=closeBtn;
+    const frame=document.createElement('iframe');
+    frame.src=ad.htmlUrl;
+    frame.style.cssText='width:100%;height:70vh;border:none;display:block;';
+    frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-forms');
+    inner.appendChild(frame);
+  } else {
+    inner.innerHTML=closeBtn+`<a href="${escAttr(ad.linkUrl||'#')}" target="_blank" rel="noopener noreferrer" onclick="closeAd()"><img src="${escAttr(ad.imageUrl)}" style="width:100%;display:block;max-height:70vh;object-fit:contain;background:#000"></a>`;
+  }
+  overlay.appendChild(inner);
   document.body.appendChild(overlay);markAdShown();
 }
 function closeAd(){document.getElementById('adOverlay')?.remove();}
@@ -2609,8 +2651,8 @@ async function openAdPanel(){
   const modal=document.getElementById('adModal');modal.style.display='flex';
   try{
     const r=await fetch(BACKEND+'/ad_get');const d=await r.json();
-    if(d.popup&&d.popup.imageUrl){document.getElementById('adPopupImageUrl').value=d.popup.imageUrl||'';document.getElementById('adPopupLinkUrl').value=d.popup.linkUrl||'';}
-    if(d.side&&d.side.imageUrl){document.getElementById('adSideImageUrl').value=d.side.imageUrl||'';document.getElementById('adSideLinkUrl').value=d.side.linkUrl||'';}
+    if(d.popup){document.getElementById('adPopupImageUrl').value=d.popup.imageUrl||'';document.getElementById('adPopupLinkUrl').value=d.popup.linkUrl||'';if(document.getElementById('adPopupHtmlUrl'))document.getElementById('adPopupHtmlUrl').value=d.popup.htmlUrl||'';}
+    if(d.side){document.getElementById('adSideImageUrl').value=d.side.imageUrl||'';document.getElementById('adSideLinkUrl').value=d.side.linkUrl||'';if(document.getElementById('adSideHtmlUrl'))document.getElementById('adSideHtmlUrl').value=d.side.htmlUrl||'';}
   }catch(e){}
 }
 function closeAdPanel(){document.getElementById('adModal').style.display='none';}
@@ -2618,11 +2660,13 @@ function closeAdPanel(){document.getElementById('adModal').style.display='none';
 async function saveAd(type){
   const imgEl=type==='popup'?'adPopupImageUrl':'adSideImageUrl';
   const lnkEl=type==='popup'?'adPopupLinkUrl':'adSideLinkUrl';
+  const htmlEl=type==='popup'?'adPopupHtmlUrl':'adSideHtmlUrl';
   const imageUrl=document.getElementById(imgEl).value.trim();
   const linkUrl=document.getElementById(lnkEl).value.trim();
-  if(!imageUrl){showAdMsg('יש להזין קישור לתמונה','red');return;}
+  const htmlUrl=document.getElementById(htmlEl)?.value.trim()||'';
+  if(!imageUrl&&!htmlUrl){showAdMsg('יש להזין קישור לתמונה או לדף HTML','red');return;}
   try{
-    const r=await fetch(BACKEND+'/ad_set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,imageUrl,linkUrl,displayType:type})});
+    const r=await fetch(BACKEND+'/ad_set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email,imageUrl,linkUrl,htmlUrl,displayType:type})});
     const d=await r.json();if(d.status==='ok'){showAdMsg('נשמר ✓','green');loadAd();}else showAdMsg(d.msg||'שגיאה','red');
   }catch(e){showAdMsg('שגיאת שרת','red');}
 }
