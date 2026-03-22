@@ -1607,8 +1607,14 @@ function toggleComposeProfile(){
 }
 
 function composeDragOver(e){
-  const hasImg=[...(e.dataTransfer?.items||[])].some(i=>i.kind==='file'&&i.type.startsWith('image/'));
-  if(hasImg){e.preventDefault();e.dataTransfer.dropEffect='copy';e.currentTarget.style.borderColor='#1a56db';e.currentTarget.style.background='#f0f6ff';}
+  const items=[...(e.dataTransfer?.items||[])];
+  const hasImg=items.some(i=>i.kind==='file'&&i.type.startsWith('image/'));
+  const hasVid=items.some(i=>i.kind==='file'&&i.type.startsWith('video/'));
+  if(hasImg||hasVid){
+    e.preventDefault();e.dataTransfer.dropEffect='copy';
+    e.currentTarget.style.borderColor=hasVid?'#7c3aed':'#1a56db';
+    e.currentTarget.style.background=hasVid?'#faf5ff':'#f0f6ff';
+  }
 }
 function composeDragLeave(e){
   if(!e.currentTarget.contains(e.relatedTarget)){e.currentTarget.style.borderColor='';e.currentTarget.style.background='';}
@@ -1616,16 +1622,30 @@ function composeDragLeave(e){
 async function composeDrop(e){
   e.preventDefault();
   e.currentTarget.style.borderColor='';e.currentTarget.style.background='';
-  const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));
-  if(file)await uploadComposeImg(file);
+  const files=[...(e.dataTransfer?.files||[])];
+  const img=files.find(f=>f.type.startsWith('image/'));
+  const vid=files.find(f=>f.type.startsWith('video/'));
+  if(img)await uploadComposeImg(img);
+  else if(vid){
+    if(isSuperAdmin())await uploadVidToDrive(vid);
+    else{const url=URL.createObjectURL(vid);composeVidUrl=url;document.getElementById('composeVidUrl').value=url;updateAttachPreview();}
+  }
 }
 async function composePaste(e){
   const items=[...(e.clipboardData?.items||[])];
   const imgItem=items.find(i=>i.type.startsWith('image/'));
-  if(!imgItem)return;
+  const vidItem=items.find(i=>i.type.startsWith('video/'));
+  if(!imgItem&&!vidItem)return;
   e.preventDefault();
-  const file=imgItem.getAsFile();
-  if(file)await uploadComposeImg(file);
+  if(imgItem){
+    const file=imgItem.getAsFile();
+    if(file)await uploadComposeImg(file);
+  } else if(vidItem){
+    const file=vidItem.getAsFile();
+    if(!file)return;
+    if(isSuperAdmin())await uploadVidToDrive(file);
+    else{const url=URL.createObjectURL(file);composeVidUrl=url;document.getElementById('composeVidUrl').value=url;updateAttachPreview();}
+  }
 }
 
 function insertHeading(){
@@ -1796,18 +1816,33 @@ function getDriveToken(){
     const cached=sessionStorage.getItem('feed_drive_token');
     const cachedExp=parseInt(sessionStorage.getItem('feed_drive_token_exp')||'0');
     if(cached&&Date.now()<cachedExp){_driveToken=cached;resolve(cached);return;}
-    const client=google.accounts.oauth2.initTokenClient({
-      client_id:GOOGLE_OAUTH_CLIENT_ID,
-      scope:'https://www.googleapis.com/auth/drive.file',
-      callback:(resp)=>{
-        if(resp.error){reject(new Error(resp.error));return;}
-        _driveToken=resp.access_token;
-        sessionStorage.setItem('feed_drive_token',resp.access_token);
-        sessionStorage.setItem('feed_drive_token_exp',String(Date.now()+55*60*1000));
-        resolve(_driveToken);
-      }
-    });
-    client.requestAccessToken();
+    // המתן לטעינת ה-GSI אם צריך
+    const doInit=()=>{
+      try{
+        const client=google.accounts.oauth2.initTokenClient({
+          client_id:GOOGLE_OAUTH_CLIENT_ID,
+          scope:'https://www.googleapis.com/auth/drive.file',
+          callback:(resp)=>{
+            if(resp.error){reject(new Error(resp.error));return;}
+            _driveToken=resp.access_token;
+            sessionStorage.setItem('feed_drive_token',resp.access_token);
+            sessionStorage.setItem('feed_drive_token_exp',String(Date.now()+55*60*1000));
+            resolve(_driveToken);
+          }
+        });
+        client.requestAccessToken();
+      }catch(err){reject(new Error('Google OAuth לא נטען: '+err.message));}
+    };
+    if(window.google?.accounts?.oauth2){doInit();}
+    else{
+      // poll עד שנטען (max 5 שניות)
+      let attempts=0;
+      const poll=setInterval(()=>{
+        attempts++;
+        if(window.google?.accounts?.oauth2){clearInterval(poll);doInit();}
+        else if(attempts>50){clearInterval(poll);reject(new Error('Google OAuth לא נטען'));}
+      },100);
+    }
   });
 }
 
