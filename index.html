@@ -1587,6 +1587,8 @@ async function composePaste(e){
   const file=imgItem.getAsFile();
   if(file)await uploadComposeImg(file);
 }
+
+function composeFormat(cmd){
   const ed=document.getElementById('composeEditor');
   // שמור selection לפני focus (לחיצה על הכפתור מאבדת אותה)
   ed.focus();
