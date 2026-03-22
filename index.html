@@ -634,7 +634,7 @@ body.dark #searchInput{color:#e5e7eb;}
       </button>
       <!-- הרשאת כתיבה — super admin בלבד -->
       <div style="position:relative;">
-        <button id="writePermBtn" onclick="toggleWritePermDropdown()" title="הרשאות כתיבה" style="display:none">
+        <button id="writePermBtn" onclick="toggleWritePermDropdown(event)" title="הרשאות כתיבה" style="display:none">
           <i class="fas fa-pen" style="font-size:12px"></i>
         </button>
         <div id="writePermDropdown" style="
@@ -1545,10 +1545,11 @@ function applyWritePerm(perm){
   }
 }
 
-async function toggleWritePerm(targetEmail){
+async function toggleWritePerm(targetEmail,e){
+  if(e)e.stopPropagation();
   if(!isSuperAdmin())return;
   const grantedEmails=_writePerm?.emails||[];
-  const grant=!grantedEmails.includes(targetEmail); // toggle
+  const grant=!grantedEmails.includes(targetEmail);
   try{
     const r=await fetch(BACKEND+'/write_perm_set',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({requester:me.email,target:targetEmail,grant})});
@@ -1557,21 +1558,25 @@ async function toggleWritePerm(targetEmail){
   }catch(e){}
 }
 
-function toggleWritePermDropdown(){
+function toggleWritePermDropdown(e){
+  if(e)e.stopPropagation();
   const dd=document.getElementById('writePermDropdown');
-  const isOpen=dd.style.display==='block';
-  if(!isOpen){
+  if(dd.style.display==='block'){
+    dd.style.display='none';
+  } else {
     renderWritePermDropdown(_writePerm?.emails||[]);
     dd.style.display='block';
-    setTimeout(()=>document.addEventListener('click',closeWritePermDropdown,{once:true}),0);
-  } else {
-    dd.style.display='none';
   }
 }
 
-function closeWritePermDropdown(){
-  document.getElementById('writePermDropdown').style.display='none';
-}
+// סגור כשלוחצים מחוץ ל-dropdown
+document.addEventListener('click',function(e){
+  const dd=document.getElementById('writePermDropdown');
+  const btn=document.getElementById('writePermBtn');
+  if(dd&&dd.style.display==='block'&&!dd.contains(e.target)&&e.target!==btn&&!btn?.contains(e.target)){
+    dd.style.display='none';
+  }
+});
 
 function renderWritePermDropdown(grantedEmails){
   const list=document.getElementById('writePermList');
@@ -1589,7 +1594,7 @@ function renderWritePermDropdown(grantedEmails){
     const av=pic
       ?`<img src="${escAttr(pic)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">`
       :`<div style="width:30px;height:30px;border-radius:50%;background:${bg};color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials}</div>`;
-    return `<div onclick="toggleWritePerm('${escAttr(email)}')" style="
+    return `<div onclick="toggleWritePerm('${escAttr(email)}',event)" style="
       display:flex;align-items:center;gap:9px;padding:7px 8px;
       border-radius:10px;cursor:pointer;
       background:${isGranted?'#eff6ff':'transparent'};
