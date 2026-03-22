@@ -1290,10 +1290,18 @@ function buildMsg(e){
     media+=`<div class="bubble-html" style="margin-top:9px;border-radius:12px;overflow:hidden;width:100%;">
       <iframe
         srcdoc="${safeHtml.replace(/"/g,'&quot;')}"
-        style="width:100%;border:none;border-radius:12px;display:block;min-height:100px;"
+        style="width:100%;border:none;border-radius:12px;display:block;"
         sandbox="allow-scripts allow-popups allow-forms allow-top-navigation-by-user-activation"
         scrolling="no"
-        onload="(function(f){try{var h=f.contentDocument.documentElement.scrollHeight||f.contentDocument.body.scrollHeight;f.style.height=Math.min(h+2,800)+'px';}catch(e){f.style.height='400px';}})(this)"
+        onload="(function(f){
+          try{
+            var body=f.contentDocument.body;
+            var html=f.contentDocument.documentElement;
+            body.style.overflow='hidden';
+            var h=Math.max(body.scrollHeight,body.offsetHeight,html.scrollHeight,html.offsetHeight);
+            f.style.height=Math.min(h,500)+'px';
+          }catch(e){f.style.height='300px';}
+        })(this)"
       ></iframe>
     </div>`;
   }
