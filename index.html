@@ -328,8 +328,8 @@ body.dark #searchInput{color:#e5e7eb;}
   display:none;
   position:fixed;
   bottom:0;
-  right:0;          /* מתחיל מהקצה הימני */
-  left:320px;       /* נגמר לפני הסיידבר (320px מהשמאל) */
+  right:0;
+  left:320px;
   z-index:200;
   background:#fff;
   border-top:2px solid #e5e7eb;
@@ -585,7 +585,7 @@ body.dark #searchInput{color:#e5e7eb;}
   </div>
 </div>
 
-<!-- Ad block for non-admin sidebar — shown separately when admin chat is NOT active -->
+<!-- Ad block for non-admin sidebar -->
 <div id="adOnlySidebar" style="display:none;width:320px;min-width:320px;background:#fff;border-left:1px solid rgba(0,0,0,.08);flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow:hidden;">
   <a id="adSidebarLink" href="#" target="_blank" rel="noopener noreferrer">
     <img id="adSidebarImg" src="" alt="פרסומת" style="width:100%;height:auto;display:block;">
@@ -619,20 +619,16 @@ body.dark #searchInput{color:#e5e7eb;}
       <button id="notifBtn" onclick="toggleNotifications()" title="התראות">
         <i class="fas fa-bell" style="font-size:13px"></i>
       </button>
-      <!-- הודעות מנהל — רק למנהלים -->
       <button id="adminMsgsBtn" onclick="openAdminMsgs()" title="הודעות מנהל" style="display:none">
         <i class="fas fa-bullhorn" style="font-size:12px"></i>
         <div class="unread-badge" id="adminMsgsBadge"></div>
       </button>
-      <!-- ניהול מנהלים — super admin בלבד -->
       <button id="manageAdminsBtn" onclick="openManageAdmins()" title="ניהול מנהלים" style="display:none">
         <i class="fas fa-user-cog" style="font-size:12px"></i>
       </button>
-      <!-- כפתור פרסומת — מנהל ראשי בלבד -->
       <button id="adBtn" onclick="openAdPanel()" title="פרסומת" style="display:none">
         <i class="fas fa-ad" style="font-size:13px"></i>
       </button>
-      <!-- הרשאת כתיבה — super admin בלבד -->
       <div style="position:relative;">
         <button id="writePermBtn" onclick="toggleWritePermDropdown(event)" title="הרשאות כתיבה" style="display:none">
           <i class="fas fa-pen" style="font-size:12px"></i>
@@ -677,19 +673,15 @@ body.dark #searchInput{color:#e5e7eb;}
 <!-- ══ ADMIN COMPOSE BAR ══ -->
 <div id="adminComposeBar">
   <div id="blockNotice">✋ אין לך הרשאת כתיבה כרגע — המתן ל-david להעניק הרשאה</div>
-  <!-- Profile toggle -->
   <div class="compose-toolbar">
     <button id="profileToggle" onclick="toggleComposeProfile()">
       <i class="fas fa-newspaper" id="profileIcon"></i>
       <span id="profileLabel">מבזק חדשות</span>
     </button>
     <div style="width:1px;height:16px;background:#e5e7eb;margin:0 2px;"></div>
-    <!-- Bold -->
     <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="composeFormat('bold')" title="מודגש"><i class="fas fa-bold"></i></button>
-    <!-- Italic -->
     <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="composeFormat('italic')" title="נטוי"><i class="fas fa-italic"></i></button>
     <div style="width:1px;height:16px;background:#e5e7eb;margin:0 2px;"></div>
-    <!-- Image dropdown -->
     <div class="ctb-dropdown-wrap" id="imgDropWrap">
       <button class="ctb-btn" id="imgDropBtn" onclick="toggleCtbDropdown('imgDrop')" title="תמונה">
         <i class="fas fa-image"></i> תמונה
@@ -708,7 +700,6 @@ body.dark #searchInput{color:#e5e7eb;}
         </div>
       </div>
     </div>
-    <!-- Video dropdown -->
     <div class="ctb-dropdown-wrap" id="vidDropWrap">
       <button class="ctb-btn" id="vidDropBtn" onclick="toggleCtbDropdown('vidDrop')" title="סרטון">
         <i class="fas fa-video"></i> סרטון
@@ -718,7 +709,6 @@ body.dark #searchInput{color:#e5e7eb;}
         <input class="ctb-inp" id="composeVidUrl" type="text" placeholder="https://..." oninput="updateComposeVid()">
       </div>
     </div>
-    <!-- Buttons dropdown -->
     <div class="ctb-dropdown-wrap" id="btnDropWrap">
       <button class="ctb-btn" id="btnDropBtn" onclick="toggleCtbDropdown('btnDrop')" title="כפתור">
         <i class="fas fa-mouse-pointer"></i> כפתור
@@ -732,8 +722,7 @@ body.dark #searchInput{color:#e5e7eb;}
         <div id="composeBtnList" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;"></div>
       </div>
     </div>
-    <!-- כותרת -->
-    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="insertHeading()" title="כותרת — מודגש + מפריד">
+    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="insertHeading()" title="כותרת — מודגש + נקודה מפרידה">
       <i class="fas fa-heading" style="font-size:11px"></i> כותרת
     </button>
     <div style="margin-right:auto;display:flex;align-items:center;gap:4px;">
@@ -742,10 +731,8 @@ body.dark #searchInput{color:#e5e7eb;}
     </div>
   </div>
 
-  <!-- Attachments preview -->
   <div id="attachPreview"></div>
 
-  <!-- Main editor -->
   <div class="compose-main">
     <div id="composeEditor" contenteditable="true" placeholder="כתוב עדכון לפיד..."
       oninput="onComposeChange()"
@@ -825,7 +812,6 @@ body.dark #searchInput{color:#e5e7eb;}
     <div class="admin-msgs-body" id="adminMsgsBody">
       <div style="text-align:center;padding:30px;color:#aaa;font-size:13px;">אין הודעות</div>
     </div>
-    <!-- שליחה — רק super admin -->
     <div class="admin-msgs-send" id="adminMsgsSendRow">
       <textarea class="admin-send-inp" id="adminMsgInput" rows="1" placeholder="שלח הודעה לכל המנהלים..."
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"
@@ -900,17 +886,14 @@ let allLoaded = false;
 let loadingMore = false;
 let _isAllowedAdmin = false;
 
-// ── Admin compose state ──
-let composeProfile = 'news'; // 'news' | 'red'
+let composeProfile = 'news';
 let composeImgUrl = '';
 let composeVidUrl = '';
 let composeBtns = [];
 
-// ── Admin chat state ──
 let chatLastIds = '';
 let chatTypingTimer = null;
 
-// ── Admin msgs state ──
 let adminMsgsLastId = null;
 let adminMsgsUnread = 0;
 
@@ -922,8 +905,6 @@ function escAttr(t){return esc(t).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function rich(t){
   if(!t)return'';
   let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
-  // ציטוט — פורמט: \u200Bquote:ID\n> שורות\n\u200B
   s=s.replace(/\u200Bquote:([a-f0-9\-]+)\n((?:&gt; [^\n]*\n?)*)\u200B\n*/g,(m,qid,body)=>{
     const lines=body.replace(/^&gt; /gm,'').trim().split('\n');
     const firstLine=lines[0]||'';
@@ -931,8 +912,6 @@ function rich(t){
     const preview=`<strong>${firstLine}</strong>`+(rest?' — <span style="font-weight:400">'+rest.substring(0,80)+(rest.length>80?'…':'')+'</span>':'');
     return `<div class="quote-block" onclick="jumpToQuotedMsg('${qid}')" title="לחץ לקפוץ להודעה המצוטטת"><i class="fas fa-quote-right" style="font-size:9px;color:#9ca3af;"></i><span class="quote-block-text">${preview}</span></div>`;
   });
-
-  // נקה כל ZWS שנשאר
   s=s.replace(/\u200B/g,'');
   s=s.replace(/\n/g,'<br>');
   s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
@@ -980,7 +959,6 @@ async function checkAllowedAdmin(){
     setInterval(loadAdminMsgs, 5000);
     pingChatPresence();
     setInterval(pingChatPresence, 15000);
-    // הרשאת כתיבה — poll כל 3 שניות
     await pollWritePerm();
     setInterval(pollWritePerm, 3000);
     document.getElementById('feedWrap').style.paddingBottom='120px';
@@ -1086,7 +1064,6 @@ function copyMsgLink(id, btn){
   setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML='<i class="fas fa-link" style="font-size:9px"></i>';},1500);
 }
 
-// הדגשת הודעה שנפתחת דרך anchor
 function highlightMsgFromHash(){
   const hash=location.hash;
   if(!hash||!hash.startsWith('#msg-link-'))return;
@@ -1114,7 +1091,6 @@ function buildMsg(e){
   let media='';
   if(e.imgUrl){const su=escAttr(e.imgUrl);media+=`<div class="bubble-img"><img src="${su}" loading="lazy" style="cursor:pointer" onclick="openLightbox('${su}')" onerror="this.closest('.bubble-img').remove()"></div>`;}
 
-  // וידאו — embed לפי סוג ה-URL
   if(e.videoUrl){
     const vu=e.videoUrl;
     const ytMatch=vu.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -1149,7 +1125,6 @@ function buildMsg(e){
   } else if(window.Hls&&Hls.isSupported()){
     var h=new Hls();h.loadSource('${vu.replace(/'/g,"\\'")}');h.attachMedia(v);
   } else {
-    // טען hls.js דינמית
     var s=document.createElement('script');
     s.src='https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.12/hls.min.js';
     s.onload=function(){
@@ -1213,23 +1188,15 @@ function jumpToQuotedMsg(id){
   setTimeout(()=>{el.style.background='';el.style.borderRadius='';},2000);
 }
 
-/* ── QUOTE FEED MSG (admin only) ── */
 function quoteFeedMsg(id){
   if(!isAdmin())return;
   const entry=items.find(e=>e.id===id);
   if(!entry)return;
-
   const ed=document.getElementById('composeEditor');
-
-  // שמור רק את ה-ID והטקסט הגולמי — לא נכנס ל-editorToMarkdown
   const rawText=(entry.text||'').trim();
   const lines=rawText.split('\n');
   const preview=lines.slice(0,2).join(' ').substring(0,100)+(rawText.length>100?'…':'');
-
-  // ציטוט לשליחה בפורמט > טקסט (נשלח כ-_quoteData נפרד)
   ed._quoteData={id, text:rawText, preview};
-
-  // הצג visual preview בעורך — עם data-quote-preview כדי שנדע לדלג עליו
   ed.innerHTML='';
   const qDiv=document.createElement('div');
   qDiv.setAttribute('data-quote-preview','1');
@@ -1237,21 +1204,15 @@ function quoteFeedMsg(id){
   qDiv.style.cssText='background:#f3f4f6;border-right:3px solid #9ca3af;border-radius:8px;padding:7px 10px;margin-bottom:6px;color:#6b7280;font-size:13px;font-style:italic;cursor:default;user-select:none;display:flex;align-items:center;gap:6px;';
   qDiv.innerHTML=`<i class="fas fa-quote-right" style="font-size:10px;opacity:.5;flex-shrink:0;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(preview)}</span><button onclick="cancelQuote()" style="margin-right:auto;background:none;border:none;cursor:pointer;color:#aaa;font-size:12px;padding:0;line-height:1;flex-shrink:0;">✕</button>`;
   ed.appendChild(qDiv);
-
-  // שורה ריקה לכתיבה
   const cursor=document.createElement('div');
   cursor.innerHTML='<br>';
   ed.appendChild(cursor);
-
-  // מקם cursor בסוף
   ed.focus();
   const range=document.createRange();
   range.setStart(cursor,0);
   range.collapse(true);
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(range);
-
-  // גלול לבועת השליחה
   document.getElementById('adminComposeBar')?.scrollIntoView({behavior:'smooth',block:'end'});
   onComposeChange();
 }
@@ -1262,6 +1223,7 @@ function cancelQuote(){
   ed._quoteData=null;
   onComposeChange();
 }
+
 async function deleteFeedMsg(id){
   if(!me||!isAdmin())return;
   if(!confirm('למחוק הודעה זו מהפיד?'))return;
@@ -1415,7 +1377,6 @@ async function loadFeed(){
       else{inner.innerHTML=items.map(buildMsg).join('');}
       document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
       if(items.length)await pollAll(true);
-      // הדגשת הודעה אם נפתח דרך קישור
       setTimeout(highlightMsgFromHash, 500);
     }
   }catch(e){}
@@ -1451,8 +1412,6 @@ async function pollAll(){
   try{
     const r=await fetch(BACKEND+'/feed_poll',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msgIds:items.map(e=>e.id),since:lastTs})});
     const d=await r.json();if(d.status!=='ok')return;
-
-    // ── הודעות חדשות ──
     const newRaw=d.new_items||[];
     const ni=newRaw.filter(e=>!knownIds.has(e.id));
     if(ni.length){
@@ -1464,8 +1423,6 @@ async function pollAll(){
       else{newCount+=ni.length;updateScrollBtn();}
       if(ni.length)sendNotification('שאגת הארי — הודעה חדשה',ni[ni.length-1].text?.substring(0,60)||'');
     }else if(newRaw.length){lastTs=Math.max(...newRaw.map(e=>e.ts||0),lastTs);}
-
-    // ── זיהוי מחיקות — בדוק IDs שנמחקו ──
     const serverIds=new Set(d.active_ids||[]);
     if(serverIds.size>0){
       const toRemove=items.filter(e=>!serverIds.has(e.id));
@@ -1476,8 +1433,6 @@ async function pollAll(){
       });
       if(!items.length)document.getElementById('empty').style.display='block';
     }
-
-    // ── reactions + תגובות ──
     const rxns=d.reactions||{};Object.entries(rxns).forEach(([mid,rxn])=>renderRxn(mid,rxn));
     const counts=d.comment_counts||{};Object.entries(counts).forEach(([mid,n])=>{if(n!==(cmtCount[mid]||0)){cmtCount[mid]=n;updateCmtBtn(mid,n);}});
   }catch(e){}finally{pollPending=false;}
@@ -1511,7 +1466,7 @@ document.getElementById('feedWrap').addEventListener('scroll',function(){
 function setLoading(v){document.getElementById('prog').classList.toggle('on',v);}
 
 /* ══ WRITE PERMISSION SYSTEM ══ */
-let _writePerm=null;       // {emails: string[]} — מי מורשה כרגע
+let _writePerm=null;
 let _writePermPending=false;
 
 async function pollWritePerm(){
@@ -1531,9 +1486,7 @@ function applyWritePerm(perm){
   const notice=document.getElementById('blockNotice');
   const btn=document.getElementById('writePermBtn');
   if(!bar)return;
-
   if(btn)btn.classList.toggle('has-granted',grantedEmails.length>0);
-
   if(isSuperAdmin()){
     bar.classList.remove('blocked');
     notice.classList.remove('show');
@@ -1542,7 +1495,6 @@ function applyWritePerm(perm){
     }
     return;
   }
-
   const hasPermission=grantedEmails.includes(me?.email||'');
   bar.classList.toggle('blocked',!hasPermission);
   notice.classList.toggle('show',!hasPermission);
@@ -1575,7 +1527,6 @@ function toggleWritePermDropdown(e){
   }
 }
 
-// סגור כשלוחצים מחוץ ל-dropdown
 document.addEventListener('click',function(e){
   const dd=document.getElementById('writePermDropdown');
   const btn=document.getElementById('writePermBtn');
@@ -1619,35 +1570,6 @@ function renderWritePermDropdown(grantedEmails){
   }).join('');
 }
 
-function applyWritePerm(perm){
-  _writePerm=perm;
-  const grantedEmails=perm?.emails||[];
-  const bar=document.getElementById('adminComposeBar');
-  const notice=document.getElementById('blockNotice');
-  const btn=document.getElementById('writePermBtn');
-  if(!bar)return;
-
-  // עדכן מצב הכפתור
-  if(btn)btn.classList.toggle('has-granted',grantedEmails.length>0);
-
-  if(isSuperAdmin()){
-    bar.classList.remove('blocked');
-    notice.classList.remove('show');
-    // רנדר dropdown אם פתוח
-    if(document.getElementById('writePermDropdown').style.display==='block'){
-      renderWritePermDropdown(grantedEmails);
-    }
-    return;
-  }
-
-  const hasPermission=grantedEmails.includes(me?.email||'');
-  bar.classList.toggle('blocked',!hasPermission);
-  notice.classList.toggle('show',!hasPermission);
-  if(!hasPermission){
-    notice.textContent='✋ אין לך הרשאת כתיבה כרגע — המתן ל-david להעניק הרשאה';
-  }
-}
-
 window.addEventListener('load',()=>{
   if(window.google?.accounts)initGoogle();
   else document.querySelector('script[src*="gsi"]').addEventListener('load',initGoogle);
@@ -1686,7 +1608,7 @@ async function composeDrop(e){
 async function composePaste(e){
   const items=[...(e.clipboardData?.items||[])];
   const imgItem=items.find(i=>i.type.startsWith('image/'));
-  if(!imgItem)return; // טקסט רגיל — תן לדפדפן לטפל
+  if(!imgItem)return;
   e.preventDefault();
   const file=imgItem.getAsFile();
   if(file)await uploadComposeImg(file);
@@ -1700,46 +1622,39 @@ function insertHeading(){
   if(!sel||!sel.rangeCount)return;
   const range=sel.getRangeAt(0);
 
-  // מצא את ה-text node הנוכחי ומיקום הסמן בתוכו
   let node=range.startContainer;
   let offset=range.startOffset;
 
-  // אם ה-node הוא ה-editor עצמו — קח את הילד האחרון
   if(node===ed){
     const children=ed.childNodes;
     if(children.length>0){node=children[children.length-1];offset=node.textContent?.length||0;}
     else{ed.innerHTML='<br>';onComposeChange();return;}
   }
 
-  // מצא את ה-text node המכיל את הסמן
   if(node.nodeType!==Node.TEXT_NODE){
-    // נסה את הילד
     if(node.childNodes[offset-1]){node=node.childNodes[offset-1];offset=node.textContent?.length||0;}
     else if(node.firstChild){node=node.firstChild;offset=0;}
   }
 
   if(node.nodeType===Node.TEXT_NODE){
     const text=node.textContent;
-    // הטקסט לפני הסמן באותה שורה (עד \n האחרון)
     const before=text.substring(0,offset);
     const after=text.substring(offset);
     const lastNL=before.lastIndexOf('\n');
     const lineStart=lastNL>=0?lastNL+1:0;
     const lineText=before.substring(lineStart);
 
-    // בנה טקסט חדש: לפני השורה + **שורה** + | + אחרי
-    const newBefore=before.substring(0,lineStart)+(lineText?'**'+lineText+'** | ':'| ');
+    // ✅ התיקון: • בתוך ה-** של ההדגשה
+    const newBefore=before.substring(0,lineStart)+(lineText?'**'+lineText+' •**':'**•**');
     node.textContent=newBefore+after;
 
-    // הצב cursor אחרי ה-|
     const newRange=document.createRange();
     newRange.setStart(node,newBefore.length);
     newRange.collapse(true);
     sel.removeAllRanges();
     sel.addRange(newRange);
   } else {
-    // fallback — פשוט הכנס | במיקום הסמן
-    document.execCommand('insertText',false,' | ');
+    document.execCommand('insertText',false,' •');
   }
 
   onComposeChange();
@@ -1748,7 +1663,6 @@ function insertHeading(){
 function composeFormat(cmd){
   const ed=document.getElementById('composeEditor');
   ed.focus();
-  // requestAnimationFrame מבטיח שה-focus יחול לפני execCommand
   requestAnimationFrame(()=>{
     document.execCommand(cmd,false,null);
     onComposeChange();
@@ -1856,12 +1770,10 @@ function updateAttachPreview(){
 
 function clearComposeVid(){composeVidUrl='';document.getElementById('composeVidUrl').value='';updateAttachPreview();}
 
-/* ממיר contenteditable HTML לטקסט עם סימוני bold/italic */
 function editorToMarkdown(el){
   function nodeToText(node){
     if(node.nodeType===Node.TEXT_NODE)return node.textContent;
     if(node.nodeType!==Node.ELEMENT_NODE)return'';
-    // דלג על בלוק הציטוט הויזואלי
     if(node.getAttribute&&node.getAttribute('data-quote-preview'))return'';
     const tag=node.tagName.toLowerCase();
     const inner=Array.from(node.childNodes).map(nodeToText).join('');
@@ -1886,7 +1798,6 @@ async function sendFeedPost(){
   const ed=document.getElementById('composeEditor');
   const editorText=editorToMarkdown(ed).trim();
   const quoteData=ed._quoteData||null;
-  // פורמט פשוט שלא מכיל תווים מיוחדים — ID בשורה ראשונה נפרדת
   const quotePrefix=quoteData
     ? `\u200Bquote:${quoteData.id}\n${quoteData.text.split('\n').map(l=>'> '+l).join('\n')}\n\u200B\n\n`
     : '';
@@ -1912,7 +1823,6 @@ async function sendFeedPost(){
     const r=await fetch(BACKEND+'/feed_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
     const d=await r.json();
     if(d.status==='ok'){
-      // הוסף מיד לרשימה המקומית — המנהל רואה את ההודעה שלו מיד
       const newEntry=d.entry||entry;
       if(!newEntry.id)newEntry.id=entry.id||String(entry.ts);
       if(!knownIds.has(newEntry.id)){
@@ -1936,7 +1846,6 @@ async function sendFeedPost(){
 const CHAT_COLORS=['#3b82f6','#7c3aed','#059669','#d97706','#dc2626','#db2777'];
 const chatCol=s=>CHAT_COLORS[(s||'').charCodeAt(0)%CHAT_COLORS.length];
 
-// Map email→{name,picture} loaded from allowed_list
 let _allowedMap={};
 async function loadAllowedMap(){
   try{
@@ -1948,7 +1857,6 @@ async function loadAllowedMap(){
         _allowedMap[e.email.toLowerCase()]={name:e.name||e.email.split('@')[0],picture:e.picture||''};
       }
     });
-    // add super admin
     _allowedMap[ADMIN_EMAIL.toLowerCase()]={name:'דוד',picture:me?.picture||''};
   }catch(ex){}
 }
@@ -1991,7 +1899,6 @@ async function loadAdminChat(){
     const r=await fetch(BACKEND+'/chat_messages');
     const d=await r.json();if(d.status!=='success')return;
     const msgs=d.messages||[];
-    // שלב reactions+id לבדיקה אם השתנה
     const sig=msgs.map(m=>m.id+(m.reactions?JSON.stringify(m.reactions):'')).join(',');
     if(sig===chatLastIds)return;
     const hadMsgs=chatLastIds!=='';
@@ -2028,7 +1935,6 @@ function renderAdminChat(msgs){
     const msgMin=(msg.clientTime||msg.time||'').substring(0,5);
     const sameGroup=lastEmail===msg.email&&msgMin===lastMin;
 
-    // Date separator
     const d=msg.date||msg.clientDate||'';
     if(d&&d!==lastDate){
       const sep=document.createElement('div');
@@ -2038,11 +1944,9 @@ function renderAdminChat(msgs){
       lastDate=d;
     }
 
-    // Group row
     const grp=document.createElement('div');
     grp.className='chat-grp'+(isMe?' me':'')+(!sameGroup&&idx>0?' gap':'');
 
-    // Avatar — show only on first of a group
     const avEl=document.createElement('div');
     avEl.className='chat-av';
     avEl.style.background=chatCol(displayName);
@@ -2054,11 +1958,9 @@ function renderAdminChat(msgs){
       avEl.appendChild(img);
     }else{avEl.textContent=displayName[0].toUpperCase();}
 
-    // Bubbles column
     const bubs=document.createElement('div');
     bubs.className='chat-bubs'+(isMe?' me':' other');
 
-    // Sender name — first of group, others only
     if(!isMe&&!sameGroup){
       const nm=document.createElement('div');
       nm.className='chat-sender';
@@ -2067,12 +1969,10 @@ function renderAdminChat(msgs){
       bubs.appendChild(nm);
     }
 
-    // Bubble
     const bub=document.createElement('div');
     bub.className='chat-bub '+(isMe?'me':'other');
     bub.dataset.id=msg.id;
     bub.innerHTML=renderChatText(msg.text||'');
-    // Time inline
     const t=msg.clientTime||msg.time||'';
     if(t){
       const ts=document.createElement('span');
@@ -2080,7 +1980,6 @@ function renderAdminChat(msgs){
       ts.textContent=' '+t;
       bub.appendChild(ts);
     }
-    // Double-click → context menu
     bub.addEventListener('dblclick',ev=>{ev.preventDefault();showChatCtx(ev,msg,isMe);});
     bubs.appendChild(bub);
 
@@ -2094,7 +1993,6 @@ function renderAdminChat(msgs){
   if(atBot)box.scrollTop=box.scrollHeight;
 }
 
-/* ── Chat context menu ── */
 let _ctxMsgId=null;
 function showChatCtx(ev,msg,isMe){
   ev.stopPropagation();
@@ -2117,10 +2015,9 @@ function hideChatCtx(){document.getElementById('chatCtxMenu').classList.remove('
 document.addEventListener('click',e=>{if(!e.target.closest('#chatCtxMenu'))hideChatCtx();});
 
 function copyChatMsg(id){
-  // find the message text
   const bub=document.querySelector(`.chat-bub[data-id="${id}"]`);
   if(!bub)return;
-  const text=bub.innerText.replace(/\s+\d{2}:\d{2}$/,'').trim(); // remove time suffix
+  const text=bub.innerText.replace(/\s+\d{2}:\d{2}$/,'').trim();
   navigator.clipboard.writeText(text).catch(()=>{});
   hideChatCtx();
 }
@@ -2173,7 +2070,6 @@ async function sendChatMsg(){
 }
 
 /* ══ ADMIN MESSAGES MODAL ══ */
-/* ══ MANAGE ADMINS (super admin only) ══ */
 async function openManageAdmins(){
   if(!isSuperAdmin())return;
   document.getElementById('manageAdminsModal').style.display='flex';
@@ -2246,7 +2142,6 @@ function showAdminMsgResult(txt,color){
 function openAdminMsgs(){
   if(!isAdmin())return;
   document.getElementById('adminMsgsModal').classList.add('open');
-  // סמן את כל ההודעות כנקראו ברגע פתיחת המודל
   if(adminMsgsLastId){
     localStorage.setItem('admin_msgs_seen', adminMsgsLastId);
     adminMsgsUnread=0;
@@ -2268,30 +2163,22 @@ async function loadAdminMsgs(){
 
 function checkAdminMsgsNew(msgs){
   const lastSeen=localStorage.getItem('admin_msgs_seen')||'';
-
   if(!msgs.length){
     adminMsgsLastId='';
     adminMsgsUnread=0;
     updateAdminMsgsBadge();
     return;
   }
-
   const topId=String(msgs[0].id);
-
-  // זיהוי הודעה חדשה — רק אחרי שהתחלנו לעקוב (לא בטעינה הראשונה)
   if(adminMsgsLastId!==null && adminMsgsLastId!=='' && topId!==adminMsgsLastId){
     const newest=msgs[0];
     if(String(newest.email)!==String(me?.email)){
       sendNotification('📢 הודעת מנהל חדשה', newest.sender+': '+(newest.text||'').substring(0,50));
     }
   }
-
-  // ספירת הודעות שלא נקראו — כל מה שה-ID שלו גדול מ-lastSeen ולא שלחתי אני
   const unread=msgs.filter(m=>String(m.id)>String(lastSeen) && String(m.email)!==String(me?.email)).length;
   adminMsgsUnread=unread;
   updateAdminMsgsBadge();
-
-  // אתחול בטעינה ראשונה
   if(adminMsgsLastId===null) adminMsgsLastId=topId;
   else adminMsgsLastId=topId;
 }
@@ -2300,14 +2187,6 @@ function updateAdminMsgsBadge(){
   const badge=document.getElementById('adminMsgsBadge');
   if(!badge)return;
   badge.classList.toggle('show', adminMsgsUnread>0);
-}
-
-function markAdminMsgsRead(){
-  if(!adminMsgsLastId)return;
-  localStorage.setItem('admin_msgs_seen', adminMsgsLastId);
-  adminMsgsUnread=0;
-  updateAdminMsgsBadge();
-  loadAdminMsgs();
 }
 
 const ADMIN_MSG_COLORS=['#3b82f6','#7c3aed','#059669','#d97706','#dc2626','#db2777'];
@@ -2368,11 +2247,7 @@ function markAdShown(){localStorage.setItem(AD_KEY,String(Date.now()));}
 function showAdSide(ad){
   document.getElementById('adSidebarImg').src=ad.imageUrl;
   document.getElementById('adSidebarLink').href=ad.linkUrl||'#';
-  if(isAdmin()){
-    // למנהלים — אין סיידבר נפרד לפרסומת, הסיידבר כבר פתוח עם צ'אט
-    // (ניתן להוסיף פרסומת בעתיד בתוך הצ'אט)
-  } else {
-    // למשתמשים רגילים — הצג סיידבר פרסומת נפרד
+  if(!isAdmin()){
     if(window.innerWidth>900){
       document.getElementById('adOnlySidebar').style.display='block';
     }
@@ -2474,18 +2349,14 @@ async function doSearch(q){
   const empty=document.getElementById('searchEmpty');
   inner.innerHTML='<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;"><i class="fas fa-spinner fa-spin"></i> מחפש...</div>';
   empty.style.display='none';
-
-  // טען את כל הפיד מהשרת לחיפוש מלא
-  let allItems=items; // התחל מה-cached
+  let allItems=items;
   try{
     const r=await fetch(BACKEND+'/feed?limit=500');
     const d=await r.json();
     if(d.status==='ok') allItems=[...d.feed].reverse();
   }catch(e){}
-
   const results=allItems.filter(e=>(e.text||'').toLowerCase().includes(qLow));
   if(!results.length){inner.innerHTML='';empty.style.display='block';return;}
-
   const escaped=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   inner.innerHTML=results.map(e=>
     buildMsg(e).replace(new RegExp(`(${escaped})`,'gi'),'<mark style="background:#fff176;border-radius:3px;padding:0 1px">$1</mark>')
