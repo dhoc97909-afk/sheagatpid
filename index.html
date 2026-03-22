@@ -707,6 +707,16 @@ body.dark #searchInput{color:#e5e7eb;}
       <div class="ctb-dropdown" id="vidDrop">
         <span class="ctb-inp-label">קישור לסרטון</span>
         <input class="ctb-inp" id="composeVidUrl" type="text" placeholder="https://..." oninput="updateComposeVid()">
+        <div id="driveUploadWrap" style="display:none;margin-top:8px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><div style="flex:1;height:1px;background:#e5e7eb;"></div><span style="font-size:10px;color:#aaa;">או העלה לDrive</span><div style="flex:1;height:1px;background:#e5e7eb;"></div></div>
+          <label style="display:flex;align-items:center;justify-content:center;gap:6px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:8px;font-size:12px;font-weight:700;color:#7c3aed;cursor:pointer;" onmouseover="this.style.background='#f3e8ff'" onmouseout="this.style.background='#faf5ff'">
+            <i class="fab fa-google-drive"></i> העלה לGoogle Drive
+            <input type="file" accept="video/*" style="display:none;" onchange="uploadVidToDrive(this.files[0]);this.value='';">
+          </label>
+          <div id="driveVidStatus" style="display:none;margin-top:8px;background:#f3e8ff;border:1px solid #e9d5ff;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;color:#7c3aed;align-items:center;gap:6px;">
+            <i class="fas fa-spinner fa-spin"></i> <span id="driveVidStatusText">מעלה...</span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="ctb-dropdown-wrap" id="btnDropWrap">
@@ -965,6 +975,9 @@ async function checkAllowedAdmin(){
   }
 
   if(isSuperAdmin()){
+    // הצג כפתור העלאה לDrive בדרופדאון הסרטון
+    const driveWrap=document.getElementById('driveUploadWrap');
+    if(driveWrap)driveWrap.style.display='block';
     document.getElementById('adminBadge').classList.add('show');
     document.getElementById('adBtn').style.display='flex';
     document.getElementById('adminMsgsSendRow').classList.add('show');
@@ -1770,6 +1783,91 @@ function updateAttachPreview(){
 }
 
 function clearComposeVid(){composeVidUrl='';document.getElementById('composeVidUrl').value='';updateAttachPreview();}
+
+/* ══ DRIVE VIDEO UPLOAD (super admin only) ══ */
+let _driveToken=null;
+let _driveFolderId=null;
+const DRIVE_FOLDER='סרטוני מבזק';
+const GOOGLE_OAUTH_CLIENT_ID='856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
+
+function getDriveToken(){
+  return new Promise((resolve,reject)=>{
+    if(_driveToken){resolve(_driveToken);return;}
+    const cached=sessionStorage.getItem('feed_drive_token');
+    const cachedExp=parseInt(sessionStorage.getItem('feed_drive_token_exp')||'0');
+    if(cached&&Date.now()<cachedExp){_driveToken=cached;resolve(cached);return;}
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id:GOOGLE_OAUTH_CLIENT_ID,
+      scope:'https://www.googleapis.com/auth/drive.file',
+      callback:(resp)=>{
+        if(resp.error){reject(new Error(resp.error));return;}
+        _driveToken=resp.access_token;
+        sessionStorage.setItem('feed_drive_token',resp.access_token);
+        sessionStorage.setItem('feed_drive_token_exp',String(Date.now()+55*60*1000));
+        resolve(_driveToken);
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function getOrCreateDriveFolder(token){
+  if(_driveFolderId)return _driveFolderId;
+  const sr=await fetch(`https://www.googleapis.com/drive/v3/files?q=name%3D'${encodeURIComponent(DRIVE_FOLDER)}'+and+mimeType%3D'application%2Fvnd.google-apps.folder'+and+trashed%3Dfalse&fields=files(id)`,
+    {headers:{Authorization:'Bearer '+token}});
+  if(sr.ok){const d=await sr.json();if(d.files&&d.files.length){_driveFolderId=d.files[0].id;return _driveFolderId;}}
+  const fr=await fetch('https://www.googleapis.com/drive/v3/files?fields=id',{
+    method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({name:DRIVE_FOLDER,mimeType:'application/vnd.google-apps.folder'})});
+  if(!fr.ok)throw new Error('שגיאה ביצירת תיקייה');
+  const f=await fr.json();_driveFolderId=f.id;return _driveFolderId;
+}
+
+async function uploadVidToDrive(file){
+  if(!file||!isSuperAdmin())return;
+  const statusEl=document.getElementById('driveVidStatus');
+  const statusTxt=document.getElementById('driveVidStatusText');
+  const showStatus=(msg,isErr)=>{
+    statusEl.style.display='flex';
+    statusEl.style.background=isErr?'#fef2f2':'#f3e8ff';
+    statusEl.style.borderColor=isErr?'#fecaca':'#e9d5ff';
+    statusEl.style.color=isErr?'#dc2626':'#7c3aed';
+    statusEl.innerHTML=(isErr?'<i class="fas fa-exclamation-circle"></i>':'<i class="fas fa-spinner fa-spin"></i>')+' <span>'+msg+'</span>';
+  };
+  showStatus('מתחבר לGoogle Drive...');
+  let token;
+  try{token=await getDriveToken();}
+  catch(e){showStatus('שגיאת כניסה: '+e.message,true);return;}
+  showStatus('מאתר תיקייה...');
+  let folderId;
+  try{folderId=await getOrCreateDriveFolder(token);}
+  catch(e){showStatus('שגיאת תיקייה: '+e.message,true);return;}
+  showStatus('מעלה סרטון... ('+Math.round(file.size/1024/1024)+'MB)');
+  try{
+    const metadata={name:file.name||'video.mp4',mimeType:file.type,parents:[folderId]};
+    const form=new FormData();
+    form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+    form.append('file',file);
+    const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+      {method:'POST',headers:{Authorization:'Bearer '+token},body:form});
+    if(!res.ok)throw new Error('שגיאת העלאה '+res.status);
+    const data=await res.json();
+    // Make file publicly readable
+    await fetch('https://www.googleapis.com/drive/v3/files/'+data.id+'/permissions',{
+      method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({role:'reader',type:'anyone'})}).catch(()=>{});
+    const url='https://drive.google.com/file/d/'+data.id+'/view';
+    composeVidUrl=url;
+    document.getElementById('composeVidUrl').value=url;
+    updateAttachPreview();
+    statusEl.style.display='flex';
+    statusEl.style.background='#f0fdf4';
+    statusEl.style.borderColor='#bbf7d0';
+    statusEl.style.color='#16a34a';
+    statusEl.innerHTML='<i class="fas fa-check-circle"></i> <span>הועלה! הסרטון מוכן לשליחה</span>';
+    setTimeout(()=>{statusEl.style.display='none';closeAllCtbDropdowns();},2500);
+  }catch(e){showStatus('שגיאה: '+e.message,true);}
+}
 
 function editorToMarkdown(el){
   function nodeToText(node){
