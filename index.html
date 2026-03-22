@@ -1076,7 +1076,13 @@ function doLogout(){
   try{google.accounts.id.disableAutoSelect();}catch(e){}
 }
 
-async function verifyAndLogin(user){me=user;saveUser(user);applyLogin();return true;}
+async function verifyAndLogin(user){
+  // תקן שם מקושקש אם נשמר מגרסה ישנה
+  if(user.name&&(user.name.includes('×')||user.name.includes('Ã'))){
+    user.name=user.email.split('@')[0];
+  }
+  me=user;saveUser(user);applyLogin();return true;
+}
 
 function applyLogin(){
   const av=document.getElementById('userAvatar');
@@ -1124,7 +1130,21 @@ async function handleLogin(resp){
   try{const parts=resp.credential.split('.');if(parts.length!==3)throw new Error('invalid');payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(e){return;}
   const email=(payload.email||'').toLowerCase();
   if(!email||!email.includes('@'))return;
-  const user={email,name:payload.name||email.split('@')[0],picture:payload.picture||''};
+  const picture=payload.picture||'';
+  // קח שם מה-allowed_list בשרת — לא מה-JWT (שם JWT לרוב מקושקש בעברית)
+  let displayName='';
+  try{
+    const lr=await fetch(BACKEND+'/allowed_list');
+    const ld=await lr.json();
+    const entries=ld.emails||[];
+    const myEntry=entries.find(e=>typeof e==='object'&&e.email===email);
+    if(myEntry&&myEntry.name&&!myEntry.name.includes('×')&&myEntry.name!==email){
+      displayName=myEntry.name;
+    }
+  }catch(e){}
+  // fallback — email prefix (תמיד ASCII, אף פעם לא מקושקש)
+  if(!displayName||displayName.includes('×'))displayName=email.split('@')[0];
+  const user={email,name:displayName,picture};
   await verifyAndLogin(user);
 }
 
@@ -2242,7 +2262,7 @@ async function deleteChatMsg(id){
 let _chatTypingTimer=null;
 function onChatType(){
   if(!me)return;
-  fetch(BACKEND+'/typing_ping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:me.name,email:me.email})}).catch(()=>{});
+  fetch(BACKEND+'/typing_ping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:getDisplayName(me.email,me.name),email:me.email})}).catch(()=>{});
   clearTimeout(_chatTypingTimer);
   _chatTypingTimer=setTimeout(()=>{
     fetch(BACKEND+'/typing_stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email})}).catch(()=>{});
@@ -2352,7 +2372,7 @@ async function sendChatMsg(){
   fetch(BACKEND+'/typing_stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:me.email})}).catch(()=>{});
   try{
     await fetch(BACKEND+'/chat_send',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sender:me.name,text,picture:me.picture,email:me.email,clientTime,clientDate,clientTs:now.getTime()})});
+      body:JSON.stringify({sender:getDisplayName(me.email,me.name),text,picture:me.picture,email:me.email,clientTime,clientDate,clientTs:now.getTime()})});
     chatLastIds='';loadAdminChat();
   }catch(e){}
 }
