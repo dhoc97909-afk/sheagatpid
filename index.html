@@ -641,12 +641,7 @@ body.dark #searchInput{color:#e5e7eb;}
       </button>
     </div>
   </div>
-  <!-- פרסומת כשהצ'אט ממוזער -->
-  <div id="adOnlySidebarInChat" style="display:none;flex:1;overflow:hidden;">
-    <a id="adSidebarLinkChat" href="#" target="_blank" rel="noopener noreferrer">
-      <img id="adSidebarImgChat" src="" alt="פרסומת" style="width:100%;height:auto;display:block;">
-    </a>
-  </div>
+
 </div>
 
 <!-- Ad block for non-admin sidebar -->
@@ -2169,9 +2164,7 @@ function toggleChatMinimize(){
   btn.innerHTML=isMin
     ?'<i class="fas fa-expand-alt"></i>'
     :'<i class="fas fa-minus"></i>';
-  // הצג/הסתר פרסומת במקום הצ'אט כשממוזער
-  const adWrap=document.getElementById('adOnlySidebarInChat');
-  if(adWrap)adWrap.style.display=isMin?'block':'none';
+
 }
 
 async function pingChatPresence(){
@@ -2650,29 +2643,8 @@ function showAdSide(ad){
     if(img){img.src=ad.imageUrl||'';img.style.display='block';}
     if(link)link.href=ad.linkUrl||'#';
   }
-  // עדכן גם את הפרסומת בצ'אט ממוזער
-  const chatAdImg=document.getElementById('adSidebarImgChat');
-  const chatAdLink=document.getElementById('adSidebarLinkChat');
-  if(ad.htmlCode||ad.htmlUrl){
-    if(chatAdImg)chatAdImg.style.display='none';
-    if(chatAdLink)chatAdLink.style.display='none';
-    const chatWrap=document.getElementById('adOnlySidebarInChat');
-    if(chatWrap&&!chatWrap.querySelector('iframe')){
-      const f=document.createElement('iframe');
-      f.id='adSidebarFrameChat';f.style.cssText='width:100%;height:100%;border:none;display:none;';
-      f.setAttribute('sandbox','allow-scripts allow-popups allow-forms allow-top-navigation-by-user-activation');
-      chatWrap.appendChild(f);
-    }
-    const cf=document.getElementById('adSidebarFrameChat');
-    if(cf){
-      if(ad.htmlCode)cf.srcdoc=ad.htmlCode;
-      else cf.src=ad.htmlUrl;
-      cf.style.display='block';
-    }
-  } else {
-    if(chatAdImg){chatAdImg.src=ad.imageUrl||'';chatAdImg.style.display='block';}
-    if(chatAdLink)chatAdLink.href=ad.linkUrl||'#';
-  }
+
+
   // הצג sidebar לכולם (גם מנהלים) כשיש פרסומת
   if(window.innerWidth>900){
     document.getElementById('adOnlySidebar').style.display='block';
