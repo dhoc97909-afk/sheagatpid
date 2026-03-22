@@ -732,6 +732,10 @@ body.dark #searchInput{color:#e5e7eb;}
         <div id="composeBtnList" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;"></div>
       </div>
     </div>
+    <!-- כותרת -->
+    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="insertHeading()" title="כותרת — מודגש + מפריד">
+      <i class="fas fa-heading" style="font-size:11px"></i> כותרת
+    </button>
     <div style="margin-right:auto;display:flex;align-items:center;gap:4px;">
       <span id="composeCharCount" style="font-size:10px;color:#aaa;font-weight:600;">0</span>
       <button class="ctb-btn" onclick="clearCompose()" title="נקה"><i class="fas fa-trash-alt" style="color:#e02020;"></i></button>
@@ -1686,9 +1690,61 @@ async function composePaste(e){
   if(file)await uploadComposeImg(file);
 }
 
+function insertHeading(){
+  const ed=document.getElementById('composeEditor');
+  ed.focus();
+
+  const sel=window.getSelection();
+  if(!sel||!sel.rangeCount)return;
+  const range=sel.getRangeAt(0);
+
+  // מצא את ה-text node הנוכחי ומיקום הסמן בתוכו
+  let node=range.startContainer;
+  let offset=range.startOffset;
+
+  // אם ה-node הוא ה-editor עצמו — קח את הילד האחרון
+  if(node===ed){
+    const children=ed.childNodes;
+    if(children.length>0){node=children[children.length-1];offset=node.textContent?.length||0;}
+    else{ed.innerHTML='<br>';onComposeChange();return;}
+  }
+
+  // מצא את ה-text node המכיל את הסמן
+  if(node.nodeType!==Node.TEXT_NODE){
+    // נסה את הילד
+    if(node.childNodes[offset-1]){node=node.childNodes[offset-1];offset=node.textContent?.length||0;}
+    else if(node.firstChild){node=node.firstChild;offset=0;}
+  }
+
+  if(node.nodeType===Node.TEXT_NODE){
+    const text=node.textContent;
+    // הטקסט לפני הסמן באותה שורה (עד \n האחרון)
+    const before=text.substring(0,offset);
+    const after=text.substring(offset);
+    const lastNL=before.lastIndexOf('\n');
+    const lineStart=lastNL>=0?lastNL+1:0;
+    const lineText=before.substring(lineStart);
+
+    // בנה טקסט חדש: לפני השורה + **שורה** + | + אחרי
+    const newBefore=before.substring(0,lineStart)+(lineText?'**'+lineText+'** | ':'| ');
+    node.textContent=newBefore+after;
+
+    // הצב cursor אחרי ה-|
+    const newRange=document.createRange();
+    newRange.setStart(node,newBefore.length);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+  } else {
+    // fallback — פשוט הכנס | במיקום הסמן
+    document.execCommand('insertText',false,' | ');
+  }
+
+  onComposeChange();
+}
+
 function composeFormat(cmd){
   const ed=document.getElementById('composeEditor');
-  // שמור selection לפני focus (לחיצה על הכפתור מאבדת אותה)
   ed.focus();
   // requestAnimationFrame מבטיח שה-focus יחול לפני execCommand
   requestAnimationFrame(()=>{
