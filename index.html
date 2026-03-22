@@ -335,6 +335,17 @@ header{
 /* HEADER ICON BUTTONS */
 .hdr-icon-btn,#searchBtn,#darkBtn,#notifBtn,#adBtn,#adminMsgsBtn,#manageAdminsBtn,#writePermBtn{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#888;transition:background .15s,color .15s;flex-shrink:0;text-decoration:none;position:relative;}
 .hdr-icon-btn:hover,#searchBtn:hover,#darkBtn:hover,#notifBtn:hover,#adBtn:hover,#adminMsgsBtn:hover,#manageAdminsBtn:hover,#writePermBtn:hover{background:#f3f4f6;color:#333;}
+#darkBtn.active{background:#1e1e30;color:#a5b4fc;}
+#darkBtn.active:hover{background:#2a2a45;color:#c4b5fd;}
+#notifBtn.active{background:#fef3c7;color:#d97706;}
+#notifBtn.active:hover{background:#fde68a;color:#b45309;}
+#notifBtn.active::after,#darkBtn.active::after{
+  content:'';position:absolute;top:5px;right:5px;
+  width:6px;height:6px;border-radius:50%;
+  border:1.5px solid #fff;
+}
+#notifBtn.active::after{background:#d97706;}
+#darkBtn.active::after{background:#a5b4fc;}
 #writePermBtn.has-granted{background:#eff6ff;color:#1a56db;}
 #adminMsgsBtn .unread-badge{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:#e02020;border:2px solid #fff;display:none;}
 #adminMsgsBtn .unread-badge.show{display:block;}
