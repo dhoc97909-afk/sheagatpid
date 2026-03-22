@@ -247,8 +247,7 @@ header{
 .quote-block:hover{background:#e9eaec;}
 .quote-block-text{
   font-size:14px;color:#6b7280;font-style:italic;
-  line-height:1.5;overflow:hidden;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  line-height:1.5;
 }
 
 /* EMOJI PICKER */
@@ -920,12 +919,11 @@ function rich(t){
   let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
   // ציטוט — פורמט: \u200Bquote:ID\n> שורות\n\u200B
-  s=s.replace(/\u200Bquote:([a-f0-9\-]+)\n((?:&gt; [^\n]*\n?)*)\u200B/g,(m,qid,body)=>{
-    const lines=body.replace(/&gt; /g,'').trim();
-    const preview=lines.substring(0,120)+(lines.length>120?'…':'');
+  s=s.replace(/\u200Bquote:([a-f0-9\-]+)\n((?:&gt; [^\n]*\n?)*)\u200B\n?/g,(m,qid,body)=>{
+    const lines=body.replace(/^&gt; /gm,'').trim();
     return `<div class="quote-block" onclick="jumpToQuotedMsg('${qid}')" title="לחץ לקפוץ להודעה המצוטטת">
       <i class="fas fa-quote-right" style="font-size:10px;color:#9ca3af;flex-shrink:0;margin-top:2px;"></i>
-      <span class="quote-block-text">${preview}</span>
+      <span class="quote-block-text">${lines}</span>
     </div>`;
   });
 
