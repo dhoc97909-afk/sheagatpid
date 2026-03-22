@@ -654,7 +654,7 @@ body.dark #searchInput{color:#e5e7eb;}
   <a id="adSidebarLink" href="#" target="_blank" rel="noopener noreferrer">
     <img id="adSidebarImg" src="" alt="פרסומת" style="width:100%;height:auto;display:block;">
   </a>
-  <iframe id="adSidebarFrame" src="" style="display:none;width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" loading="lazy"></iframe>
+  <iframe id="adSidebarFrame" src="" style="display:none;width:100%;height:100%;border:none;" sandbox="allow-scripts allow-popups allow-forms allow-top-navigation-by-user-activation" loading="lazy"></iframe>
 </div>
 
 <!-- APP -->
@@ -1284,12 +1284,12 @@ function buildMsg(e){
   if(e.buttons&&e.buttons.length)btns='<div class="bubble-btns">'+e.buttons.map(b=>`<a class="lnk-btn" href="${escAttr(b.url)}" target="_blank" rel="noopener noreferrer">${esc(b.text)}</a>`).join('')+'</div>';
   if(e.htmlCode){
     // הטמעת HTML מבודד ב-iframe
-    const encoded=btoa(unescape(encodeURIComponent(e.htmlCode)));
+    const safeHtml=e.htmlCode.replace(/`/g,'&#96;');
     media+=`<div class="bubble-html" style="margin-top:9px;border-radius:12px;overflow:hidden;width:100%;">
       <iframe
-        src="data:text/html;base64,${encoded}"
-        style="width:100%;border:none;border-radius:12px;display:block;"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+        srcdoc="${safeHtml.replace(/"/g,'&quot;')}"
+        style="width:100%;border:none;border-radius:12px;display:block;min-height:100px;"
+        sandbox="allow-scripts allow-popups allow-forms allow-top-navigation-by-user-activation"
         scrolling="no"
         onload="(function(f){try{var h=f.contentDocument.documentElement.scrollHeight||f.contentDocument.body.scrollHeight;f.style.height=Math.min(h+2,800)+'px';}catch(e){f.style.height='400px';}})(this)"
       ></iframe>
@@ -2640,8 +2640,8 @@ function showAdSide(ad){
     if(img)img.style.display='none';
     if(link)link.style.display='none';
     if(frame){
-      if(ad.htmlCode){const enc=btoa(unescape(encodeURIComponent(ad.htmlCode)));frame.src='data:text/html;base64,'+enc;}
-      else frame.src=ad.htmlUrl;
+      if(ad.htmlCode){frame.srcdoc=ad.htmlCode;}
+      else if(ad.htmlUrl){frame.src=ad.htmlUrl;}
       frame.style.display='block';
     }
   } else {
@@ -2661,7 +2661,7 @@ function showAdSide(ad){
     if(chatWrap&&!chatWrap.querySelector('iframe')){
       const f=document.createElement('iframe');
       f.id='adSidebarFrameChat';f.style.cssText='width:100%;height:100%;border:none;display:none;';
-      f.sandbox='allow-scripts allow-same-origin allow-popups allow-forms';
+      f.sandbox='allow-scripts allow-popups allow-forms allow-top-navigation-by-user-activation';
       chatWrap.appendChild(f);
     }
     const cf=document.getElementById('adSidebarFrameChat');
@@ -2692,13 +2692,12 @@ function showAdPopup(ad){
     inner.innerHTML=closeBtn;
     const frame=document.createElement('iframe');
     if(ad.htmlCode){
-      const enc=btoa(unescape(encodeURIComponent(ad.htmlCode)));
-      frame.src='data:text/html;base64,'+enc;
+      frame.srcdoc=ad.htmlCode;
     } else {
       frame.src=ad.htmlUrl;
     }
     frame.style.cssText='width:100%;height:70vh;border:none;display:block;';
-    frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-forms');
+    frame.setAttribute('sandbox','allow-scripts allow-popups allow-forms allow-top-navigation-by-user-activation');
     inner.appendChild(frame);
   } else {
     inner.innerHTML=closeBtn+`<a href="${escAttr(ad.linkUrl||'#')}" target="_blank" rel="noopener noreferrer" onclick="closeAd()"><img src="${escAttr(ad.imageUrl)}" style="width:100%;display:block;max-height:70vh;object-fit:contain;background:#000"></a>`;
