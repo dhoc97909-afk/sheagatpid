@@ -337,8 +337,8 @@ header{
 .cp-send{background:#1a56db;color:#fff;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 
 /* HEADER ICON BUTTONS */
-.hdr-icon-btn,#searchBtn,#darkBtn,#notifBtn,#adBtn,#adminMsgsBtn,#manageAdminsBtn,#writePermBtn{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#888;transition:background .15s,color .15s;flex-shrink:0;text-decoration:none;position:relative;}
-.hdr-icon-btn:hover,#searchBtn:hover,#darkBtn:hover,#notifBtn:hover,#adBtn:hover,#adminMsgsBtn:hover,#manageAdminsBtn:hover,#writePermBtn:hover{background:#f3f4f6;color:#333;}
+.hdr-icon-btn,#searchBtn,#darkBtn,#notifBtn,#adBtn,#adminMsgsBtn,#manageAdminsBtn,#writePermBtn,#updateModeHdrBtn{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#888;transition:background .15s,color .15s;flex-shrink:0;text-decoration:none;position:relative;}
+.hdr-icon-btn:hover,#searchBtn:hover,#darkBtn:hover,#notifBtn:hover,#adBtn:hover,#adminMsgsBtn:hover,#manageAdminsBtn:hover,#writePermBtn:hover,#updateModeHdrBtn:hover{background:#f3f4f6;color:#333;}
 #darkBtn.active{background:#1e1e30;color:#a5b4fc;}
 #darkBtn.active:hover{background:#2a2a45;color:#c4b5fd;}
 #notifBtn.active{background:#fef3c7;color:#d97706;}
@@ -359,6 +359,60 @@ header{
   width:6px;height:6px;border-radius:50%;
   background:#16a34a;border:1.5px solid #fff;
 }
+
+/* ── Update mode popover (super admin) ── */
+#updateModePopover{
+  position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:300;
+  min-width:220px;overflow:hidden;
+  animation:pickerPop .14s ease-out;direction:rtl;display:none;
+}
+#updateModePopover.open{display:block;}
+.ump-hdr{padding:10px 14px 6px;font-size:11px;font-weight:800;color:#9ca3af;border-bottom:1px solid #f3f4f6;}
+.ump-body{padding:8px 12px;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;}
+.ump-row{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#374151;}
+.ump-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0;}
+.ump-empty{font-size:12px;color:#aaa;text-align:center;padding:10px 0;}
+
+/* ── Update mode time dialog ── */
+#updateTimeDialog{
+  position:fixed;inset:0;z-index:900;
+  background:rgba(0,0,0,.4);
+  display:none;align-items:center;justify-content:center;
+  animation:lbIn .15s ease;
+}
+#updateTimeDialog.open{display:flex;}
+.utd-box{
+  background:#fff;border-radius:18px;padding:24px 24px 20px;
+  width:280px;box-shadow:0 16px 48px rgba(0,0,0,.2);
+  direction:rtl;display:flex;flex-direction:column;gap:14px;
+}
+.utd-title{font-size:15px;font-weight:800;color:#111;}
+.utd-sub{font-size:12px;color:#888;margin-top:-8px;}
+.utd-time-inp{
+  width:100%;border:1.5px solid #e5e7eb;border-radius:10px;
+  padding:10px 12px;font-size:22px;font-weight:700;
+  font-family:'Heebo',sans-serif;outline:none;text-align:center;
+  direction:ltr;transition:border-color .15s;color:#111;
+}
+.utd-time-inp:focus{border-color:#1a56db;}
+.utd-btns{display:flex;gap:8px;}
+.utd-ok{flex:1;background:#16a34a;color:#fff;border:none;border-radius:10px;padding:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;}
+.utd-ok:hover{background:#15803d;}
+.utd-cancel{background:#f3f4f6;color:#6b7280;border:none;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;}
+.utd-cancel:hover{background:#e5e7eb;}
+
+/* ── No-update-mode notice near send button ── */
+#updateModeNotice{
+  display:none;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;color:#92400e;
+  background:#fef3c7;border:1px solid #fde68a;
+  border-radius:8px;padding:4px 9px;white-space:nowrap;
+  cursor:pointer;transition:background .12s;flex-shrink:0;
+}
+#updateModeNotice:hover{background:#fde68a;}
+#updateModeNotice.show{display:inline-flex;}
 #adminMsgsBtn .unread-badge{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:#e02020;border:2px solid #fff;display:none;}
 #adminMsgsBtn .unread-badge.show{display:block;}
 
@@ -746,9 +800,17 @@ body.dark #searchInput{color:#e5e7eb;}
           <div id="writePermList" style="padding:6px 8px;display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;"></div>
         </div>
       </div>
-      <button id="updateModeHdrBtn" onclick="toggleUpdateMode()" title="לא מעדכן — לחץ להפעלה" style="position:relative;">
-        <i class="fas fa-satellite-dish" style="font-size:12px"></i>
-      </button>
+      <div style="position:relative;">
+        <button id="updateModeHdrBtn" onclick="onUpdateModeHdrClick(event)" title="מצב עדכון">
+          <i class="fas fa-satellite-dish" style="font-size:12px"></i>
+        </button>
+        <div id="updateModePopover">
+          <div class="ump-hdr">מי מעדכן כרגע</div>
+          <div class="ump-body" id="updateModePopoverBody">
+            <div class="ump-empty">אין מעדכנים פעילים</div>
+          </div>
+        </div>
+      </div>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar" style="position:relative;"></div>
     </div>
@@ -923,6 +985,9 @@ body.dark #searchInput{color:#e5e7eb;}
       ondrop="composeDrop(event)"
       onpaste="composePaste(event)"
     ></div>
+    <button id="updateModeNotice" onclick="toggleUpdateMode()" title="לחץ להפעלת מצב מעדכן">
+      <i class="fas fa-satellite-dish" style="font-size:10px"></i> לא מעדכן — לחץ להפעלה
+    </button>
     <button class="compose-send-btn" id="composeSendBtn" onclick="sendFeedPost()" title="שלח">
       <i class="fas fa-paper-plane" style="font-size:14px"></i>
     </button>
@@ -932,6 +997,19 @@ body.dark #searchInput{color:#e5e7eb;}
     <button class="compose-send-btn" id="composeEditCancelBtn" onclick="cancelEditMode()" title="בטל עריכה" style="display:none;background:#6b7280;">
       <i class="fas fa-times" style="font-size:14px"></i>
     </button>
+  </div>
+</div>
+
+<!-- ══ UPDATE TIME DIALOG ══ -->
+<div id="updateTimeDialog">
+  <div class="utd-box">
+    <div class="utd-title">🟢 הפעלת מצב מעדכן</div>
+    <div class="utd-sub">עד מתי בערך תעדכן?</div>
+    <input class="utd-time-inp" id="updateTimeInput" type="time" placeholder="שעה">
+    <div class="utd-btns">
+      <button class="utd-cancel" onclick="closeUpdateTimeDialog()">ביטול</button>
+      <button class="utd-ok" onclick="confirmUpdateTime()">✓ הפעל</button>
+    </div>
   </div>
 </div>
 
@@ -1755,21 +1833,58 @@ let _writePermPending=false;
 let _updateMode=false;
 let _updateUntil='';
 
+function onUpdateModeHdrClick(e){
+  e.stopPropagation();
+  if(isSuperAdmin()){
+    // סופר אדמין — הצג popover של מי מעדכן
+    const pop=document.getElementById('updateModePopover');
+    if(!pop)return;
+    const isOpen=pop.classList.contains('open');
+    closeAllDropdowns();
+    if(!isOpen)pop.classList.add('open');
+  } else {
+    toggleUpdateMode();
+  }
+}
+
+function closeUpdateModePopover(){
+  document.getElementById('updateModePopover')?.classList.remove('open');
+}
+
+function openUpdateTimeDialog(){
+  // הצע שעה נוכחית + שעה קדימה כברירת מחדל
+  const now=new Date();
+  now.setHours(now.getHours()+1,0,0,0);
+  const h=String(now.getHours()).padStart(2,'0');
+  const inp=document.getElementById('updateTimeInput');
+  if(inp)inp.value=h+':00';
+  document.getElementById('updateTimeDialog').classList.add('open');
+  setTimeout(()=>inp?.focus(),100);
+}
+
+function closeUpdateTimeDialog(){
+  document.getElementById('updateTimeDialog').classList.remove('open');
+}
+
+function confirmUpdateTime(){
+  const inp=document.getElementById('updateTimeInput');
+  const val=(inp?.value||'').trim();
+  if(!val){alert('נא לבחור שעה');return;}
+  _updateMode=true;
+  _updateUntil=val;
+  closeUpdateTimeDialog();
+  applyUpdateModeUI();
+  saveUpdateModeToServer(true,val);
+}
+
 function toggleUpdateMode(){
   if(_updateMode){
-    // כבה מצב מעדכן
     _updateMode=false;
     _updateUntil='';
     applyUpdateModeUI();
     saveUpdateModeToServer(false,'');
   } else {
-    // הפעל — שאל עד מתי
-    const until=prompt('עד מתי בערך אתה מעדכן? (לדוגמא: 22:00, שעה, חצי שעה)','');
-    if(until===null)return; // ביטול
-    _updateMode=true;
-    _updateUntil=until||'';
-    applyUpdateModeUI();
-    saveUpdateModeToServer(true,until||'');
+    openUpdateTimeDialog();
   }
 }
 
@@ -1777,6 +1892,7 @@ function applyUpdateModeUI(){
   const btn=document.getElementById('updateModeBtn');
   const bar=document.getElementById('updateModeBar');
   const hdrBtn=document.getElementById('updateModeHdrBtn');
+  const notice=document.getElementById('updateModeNotice');
   if(btn&&bar){
     if(_updateMode){
       btn.className='update-mode-btn on';
@@ -1797,6 +1913,10 @@ function applyUpdateModeUI(){
       hdrBtn.classList.remove('is-on');
       hdrBtn.title='לא מעדכן — לחץ להפעלה';
     }
+  }
+  // הצג/הסתר הודעה ליד כפתור שליחה (לא super admin)
+  if(notice&&!isSuperAdmin()){
+    notice.classList.toggle('show',!_updateMode);
   }
 }
 
@@ -1825,16 +1945,22 @@ async function pollUpdateMode(){
       _updateUntil=myEntry.until||'';
       applyUpdateModeUI();
     }
-    // למנהל ראשי — הצג מי מעדכן (ב-tooltip של כפתור הכותרת)
+    // למנהל ראשי — עדכן popover של מי מעדכן
     if(isSuperAdmin()){
       const active=(d.updaters||[]).filter(u=>u.active&&u.email!==me?.email);
       const whoEl=document.getElementById('updateModeWho');
-      const hdrBtn2=document.getElementById('updateModeHdrBtn');
-      const whoText=active.length?'מעדכנים: '+active.map(u=>u.name+(u.until?' עד '+u.until:'')).join(', '):'';
-      if(whoEl)whoEl.textContent=whoText;
-      if(hdrBtn2&&active.length){
-        const myStatus=_updateMode?'מעדכן'+(_updateUntil?' עד '+_updateUntil:''):'לא מעדכן';
-        hdrBtn2.title=myStatus+' | '+whoText;
+      const body=document.getElementById('updateModePopoverBody');
+      if(whoEl)whoEl.textContent='';
+      if(body){
+        if(active.length){
+          body.innerHTML=active.map(u=>`
+            <div class="ump-row">
+              <div class="ump-dot"></div>
+              <span>${u.name||u.email}${u.until?' — עד '+u.until:''}</span>
+            </div>`).join('');
+        } else {
+          body.innerHTML='<div class="ump-empty">אין מעדכנים פעילים כרגע</div>';
+        }
       }
     }
     // חסום שליחה אם לא במצב מעדכן (לא super admin)
@@ -1914,6 +2040,22 @@ document.addEventListener('click',function(e){
   const btn=document.getElementById('writePermBtn');
   if(dd&&dd.style.display==='block'&&!dd.contains(e.target)&&e.target!==btn&&!btn?.contains(e.target)){
     dd.style.display='none';
+  }
+  // סגור update mode popover בלחיצה מחוץ
+  const pop=document.getElementById('updateModePopover');
+  const hdrBtn=document.getElementById('updateModeHdrBtn');
+  if(pop&&pop.classList.contains('open')&&!pop.contains(e.target)&&!hdrBtn?.contains(e.target)){
+    pop.classList.remove('open');
+  }
+});
+
+// Enter ב-dialog השעה
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&document.getElementById('updateTimeDialog')?.classList.contains('open')){
+    confirmUpdateTime();
+  }
+  if(e.key==='Escape'&&document.getElementById('updateTimeDialog')?.classList.contains('open')){
+    closeUpdateTimeDialog();
   }
 });
 
