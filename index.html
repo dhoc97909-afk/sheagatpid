@@ -930,9 +930,6 @@ body.dark #searchInput{color:#e5e7eb;}
         <button onclick="removeTextColor()" style="margin-top:8px;width:100%;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:10px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;">✕ הסר צבע</button>
       </div>
     </div>
-    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="composeStrikethrough()" title="קו חוצה">
-      <i class="fas fa-strikethrough" style="font-size:11px"></i>
-    </button>
     <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="insertDivider()" title="קו מפריד">
       <i class="fas fa-minus" style="font-size:11px"></i> קו
     </button>
@@ -1206,8 +1203,9 @@ function rich(t){
   s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
   s=s.replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
   s=s.replace(/---DIVIDER---/g,'<hr class="bubble-divider">');
+  s=s.replace(/<br>\s*(<hr[^>]*>)\s*<br>/g,'$1');
   s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  s=s.replace(/(https?:\/\/[^\s<>"']{1,500})/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  s=s.replace(/(?<!href=")(https?:\/\/[^\s<>"']{1,500})/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
   s=s.replace(/\x02color:([^\x03]+)\x03([\s\S]*?)\x02\/color\x03/g,'<span style=\"color:$1\">$2</span>');
   return s;
 }
@@ -1938,7 +1936,7 @@ async function pollUpdateMode(){
     const hdrBtn=document.getElementById('updateModeHdrBtn');
     if(hdrBtn)hdrBtn.style.display='inline-flex';
     // עדכן מה שהמשתמש הנוכחי מגדיר
-    const myEntry=(d.updaters||[]).find(u=>u.email===me?.email);
+    const myEntry=(d.updaters||[]).find(u=>u.email===me?.email?.toLowerCase());
     if(myEntry&&!_updateMode){
       // שחזר מה שנשמר
       _updateMode=myEntry.active;
@@ -1947,7 +1945,7 @@ async function pollUpdateMode(){
     }
     // למנהל ראשי — עדכן popover של מי מעדכן
     if(isSuperAdmin()){
-      const active=(d.updaters||[]).filter(u=>u.active&&u.email!==me?.email);
+      const active=(d.updaters||[]).filter(u=>u.active&&u.email!==me?.email?.toLowerCase());
       const whoEl=document.getElementById('updateModeWho');
       const body=document.getElementById('updateModePopoverBody');
       if(whoEl)whoEl.textContent='';
