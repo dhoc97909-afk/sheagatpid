@@ -812,6 +812,30 @@ body.dark #searchInput{color:#e5e7eb;}
         <div id="composeBtnList" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;"></div>
       </div>
     </div>
+    <div class="ctb-dropdown-wrap" id="colorDropWrap">
+      <button class="ctb-btn" id="colorDropBtn" onclick="toggleCtbDropdown('colorDrop')" title="צבע טקסט">
+        <i class="fas fa-palette" style="font-size:11px"></i> צבע
+      </button>
+      <div class="ctb-dropdown" id="colorDrop" style="min-width:220px;">
+        <span class="ctb-inp-label">בחר צבע לטקסט הנבחר</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+          <button onclick="applyTextColor('#e02020')" style="width:28px;height:28px;border-radius:6px;background:#e02020;border:2px solid transparent;cursor:pointer;" title="אדום"></button>
+          <button onclick="applyTextColor('#1a56db')" style="width:28px;height:28px;border-radius:6px;background:#1a56db;border:2px solid transparent;cursor:pointer;" title="כחול"></button>
+          <button onclick="applyTextColor('#059669')" style="width:28px;height:28px;border-radius:6px;background:#059669;border:2px solid transparent;cursor:pointer;" title="ירוק"></button>
+          <button onclick="applyTextColor('#d97706')" style="width:28px;height:28px;border-radius:6px;background:#d97706;border:2px solid transparent;cursor:pointer;" title="כתום"></button>
+          <button onclick="applyTextColor('#7c3aed')" style="width:28px;height:28px;border-radius:6px;background:#7c3aed;border:2px solid transparent;cursor:pointer;" title="סגול"></button>
+          <button onclick="applyTextColor('#db2777')" style="width:28px;height:28px;border-radius:6px;background:#db2777;border:2px solid transparent;cursor:pointer;" title="ורוד"></button>
+          <button onclick="applyTextColor('#0891b2')" style="width:28px;height:28px;border-radius:6px;background:#0891b2;border:2px solid transparent;cursor:pointer;" title="תכלת"></button>
+          <button onclick="applyTextColor('#374151')" style="width:28px;height:28px;border-radius:6px;background:#374151;border:2px solid transparent;cursor:pointer;" title="כהה"></button>
+          <button onclick="applyTextColor('#9ca3af')" style="width:28px;height:28px;border-radius:6px;background:#9ca3af;border:2px solid transparent;cursor:pointer;" title="אפור"></button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="color" id="customColorPicker" value="#e02020" style="width:36px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0;">
+          <button class="ctb-add-btn" onclick="applyTextColor(document.getElementById('customColorPicker').value)" style="flex:1;">החל צבע מותאם</button>
+        </div>
+        <button onclick="removeTextColor()" style="margin-top:8px;width:100%;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:10px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;">✕ הסר צבע</button>
+      </div>
+    </div>
     <div class="ctb-dropdown-wrap" id="htmlDropWrap">
       <button class="ctb-btn" id="htmlDropBtn" onclick="toggleCtbDropdown('htmlDrop')" title="הטמע דף HTML">
         <i class="fas fa-code" style="font-size:11px"></i> HTML
@@ -843,6 +867,7 @@ body.dark #searchInput{color:#e5e7eb;}
   <div class="compose-main">
     <div id="composeEditor" contenteditable="true" placeholder="כתוב עדכון לפיד..."
       oninput="onComposeChange()"
+      onkeydown="onComposeKeyDown(event)"
       ondragover="composeDragOver(event)"
       ondragleave="composeDragLeave(event)"
       ondrop="composeDrop(event)"
@@ -1053,6 +1078,7 @@ function rich(t){
   s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
   s=s.replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
   s=s.replace(/(https?:\/\/[^\s<>"']{1,500})/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  s=s.replace(/&lt;span style=&quot;color:([^&"]+)&quot;&gt;(.*?)&lt;\/span&gt;/g,'<span style="color:$1">$2</span>');
   return s;
 }
 
@@ -2162,12 +2188,56 @@ function editorToMarkdown(el){
     if(tag==='i'||tag==='em')return'_'+inner+'_';
     if(tag==='u')return inner;
     if(tag==='br')return'\n';
+    if(tag==='font'){
+      const color=node.getAttribute('color');
+      if(color)return`<span style="color:${color}">${inner}</span>`;
+      return inner;
+    }
+    if(tag==='span'){
+      const style=node.getAttribute('style')||'';
+      const colorMatch=style.match(/color:\s*([^;]+)/);
+      if(colorMatch)return`<span style="color:${colorMatch[1].trim()}">${inner}</span>`;
+      return inner;
+    }
     if(tag==='div'||tag==='p'){
       return (node.previousElementSibling&&!node.previousElementSibling.getAttribute('data-quote-preview')?'\n':'')+inner;
     }
     return inner;
   }
   return nodeToText(el);
+}
+
+function applyTextColor(color){
+  const ed=document.getElementById('composeEditor');
+  ed.focus();
+  const sel=window.getSelection();
+  if(!sel||sel.rangeCount===0||sel.isCollapsed){
+    // אין בחירה — צייר צבע לטקסט הבא
+    document.execCommand('foreColor',false,color);
+  } else {
+    document.execCommand('foreColor',false,color);
+  }
+  closeAllCtbDropdowns();
+  onComposeChange();
+}
+
+function removeTextColor(){
+  const ed=document.getElementById('composeEditor');
+  ed.focus();
+  document.execCommand('foreColor',false,'#374151');
+  closeAllCtbDropdowns();
+  onComposeChange();
+}
+
+function onComposeKeyDown(e){
+  // Ctrl+Enter = שלח
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){
+    e.preventDefault();
+    if(_editMsgId)saveEditMsg();
+    else sendFeedPost();
+    return;
+  }
+  // Enter רגיל = ירידת שורה (ברירת מחדל — אל תמנע)
 }
 
 async function sendFeedPost(){
