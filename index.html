@@ -836,6 +836,21 @@ body.dark #searchInput{color:#e5e7eb;}
         <button onclick="removeTextColor()" style="margin-top:8px;width:100%;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:10px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;">✕ הסר צבע</button>
       </div>
     </div>
+    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="composeStrikethrough()" title="קו חוצה">
+      <i class="fas fa-strikethrough" style="font-size:11px"></i>
+    </button>
+    <div class="ctb-dropdown-wrap" id="linkDropWrap">
+      <button class="ctb-btn" id="linkDropBtn" onclick="saveLinkSelection();toggleCtbDropdown('linkDrop')" title="הוסף קישור">
+        <i class="fas fa-link" style="font-size:11px"></i> קישור
+      </button>
+      <div class="ctb-dropdown" id="linkDrop" style="min-width:260px;">
+        <span class="ctb-inp-label">טקסט הקישור</span>
+        <input class="ctb-inp" id="composeLinkText" placeholder="לחץ כאן..." style="direction:rtl;margin-bottom:8px;">
+        <span class="ctb-inp-label">כתובת URL</span>
+        <input class="ctb-inp" id="composeLinkUrl" placeholder="https://..." style="margin-bottom:8px;">
+        <button class="ctb-add-btn" onclick="insertComposeLink()">הוסף קישור</button>
+      </div>
+    </div>
     <div class="ctb-dropdown-wrap" id="htmlDropWrap">
       <button class="ctb-btn" id="htmlDropBtn" onclick="toggleCtbDropdown('htmlDrop')" title="הטמע דף HTML">
         <i class="fas fa-code" style="font-size:11px"></i> HTML
@@ -1077,8 +1092,9 @@ function rich(t){
   s=s.replace(/__([^_\n]+)__/g,'<u>$1</u>');
   s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
   s=s.replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   s=s.replace(/(https?:\/\/[^\s<>"']{1,500})/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-  s=s.replace(/&lt;span style=&quot;color:([^&"]+)&quot;&gt;(.*?)&lt;\/span&gt;/g,'<span style="color:$1">$2</span>');
+  s=s.replace(/\x02color:([^\x03]+)\x03([\s\S]*?)\x02\/color\x03/g,'<span style=\"color:$1\">$2</span>');
   return s;
 }
 
@@ -2190,21 +2206,62 @@ function editorToMarkdown(el){
     if(tag==='br')return'\n';
     if(tag==='font'){
       const color=node.getAttribute('color');
-      if(color)return`<span style="color:${color}">${inner}</span>`;
+      if(color)return`color:${color}${inner}/color`;
       return inner;
     }
     if(tag==='span'){
       const style=node.getAttribute('style')||'';
       const colorMatch=style.match(/color:\s*([^;]+)/);
-      if(colorMatch)return`<span style="color:${colorMatch[1].trim()}">${inner}</span>`;
+      if(colorMatch)return`color:${colorMatch[1].trim()}${inner}/color`;
       return inner;
     }
+    if(tag==='s'){return`~~${inner}~~`;}
     if(tag==='div'||tag==='p'){
       return (node.previousElementSibling&&!node.previousElementSibling.getAttribute('data-quote-preview')?'\n':'')+inner;
     }
     return inner;
   }
   return nodeToText(el);
+}
+
+function composeStrikethrough(){
+  const ed=document.getElementById('composeEditor');
+  ed.focus();
+  const sel=window.getSelection();
+  if(!sel||!sel.rangeCount||sel.isCollapsed)return;
+  const range=sel.getRangeAt(0);
+  const s=document.createElement('s');
+  try{range.surroundContents(s);}
+  catch(e){document.execCommand('strikeThrough',false,null);}
+  onComposeChange();
+}
+
+let _savedLinkRange=null;
+function saveLinkSelection(){
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount){_savedLinkRange=sel.getRangeAt(0).cloneRange();}
+  const sel2=window.getSelection();
+  const txt=sel2&&!sel2.isCollapsed?sel2.toString():'';
+  if(txt)document.getElementById('composeLinkText').value=txt;
+}
+
+function insertComposeLink(){
+  const text=document.getElementById('composeLinkText').value.trim();
+  const url=document.getElementById('composeLinkUrl').value.trim();
+  if(!text||!url){alert('יש למלא טקסט וקישור');return;}
+  const ed=document.getElementById('composeEditor');
+  ed.focus();
+  if(_savedLinkRange){
+    const sel=window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_savedLinkRange);
+  }
+  // שמור כ-syntax [text](url)
+  document.execCommand('insertText',false,`[${text}](${url})`);
+  document.getElementById('composeLinkText').value='';
+  document.getElementById('composeLinkUrl').value='';
+  closeAllCtbDropdowns();
+  onComposeChange();
 }
 
 function applyTextColor(color){
