@@ -203,6 +203,7 @@ header{
 .bubble-vid iframe{max-width:100%;border-radius:12px;}
 .vid-btn{display:inline-flex;align-items:center;gap:6px;background:#1a56db;color:#fff;padding:7px 15px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;}
 .bubble-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.bubble-divider{border:none;border-top:1.5px solid #e5e7eb;margin:10px 0;width:100%;}
 .lnk-btn{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:#374151;text-decoration:none;border:none;}
 .bubble-foot{display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap;padding-right:10px;}
 
@@ -424,6 +425,20 @@ body.dark #searchInput{color:#e5e7eb;}
   text-align:center;flex-shrink:0;
 }
 #blockNotice.show{display:block;}
+#updateModeBar{
+  display:none;padding:6px 14px;font-size:11px;font-weight:700;
+  color:#374151;background:#f0fdf4;border-bottom:1px solid #bbf7d0;
+  align-items:center;gap:8px;flex-shrink:0;direction:rtl;flex-wrap:wrap;
+}
+#updateModeBar.show{display:flex;}
+.update-mode-btn{
+  display:flex;align-items:center;gap:5px;border:none;border-radius:8px;
+  padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;
+  font-family:'Heebo',sans-serif;transition:all .15s;flex-shrink:0;
+}
+.update-mode-btn.on{background:#16a34a;color:#fff;}
+.update-mode-btn.off{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+#updateModeWho{font-size:11px;color:#16a34a;font-weight:700;margin-right:auto;}
 
 /* Write perm avatar chips in header */
 .wperm-chip{
@@ -752,6 +767,12 @@ body.dark #searchInput{color:#e5e7eb;}
     <i class="fas fa-pen" style="font-size:10px"></i>
     <span>מצב עריכה — ערוך את ההודעה ולחץ ✓ לשמור</span>
   </div>
+  <div id="updateModeBar">
+    <button class="update-mode-btn off" id="updateModeBtn" onclick="toggleUpdateMode()">
+      <i class="fas fa-times" style="font-size:9px"></i> לא מעדכן
+    </button>
+    <span id="updateModeWho"></span>
+  </div>
   <div id="blockNotice">✋ אין לך הרשאת כתיבה כרגע — המתן ל-david להעניק הרשאה</div>
   <div class="compose-toolbar">
     <button id="profileToggle" onclick="toggleComposeProfile()">
@@ -838,6 +859,9 @@ body.dark #searchInput{color:#e5e7eb;}
     </div>
     <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="composeStrikethrough()" title="קו חוצה">
       <i class="fas fa-strikethrough" style="font-size:11px"></i>
+    </button>
+    <button class="ctb-btn" onmousedown="event.preventDefault()" onclick="insertDivider()" title="קו מפריד">
+      <i class="fas fa-minus" style="font-size:11px"></i> קו
     </button>
     <div class="ctb-dropdown-wrap" id="linkDropWrap">
       <button class="ctb-btn" id="linkDropBtn" onclick="saveLinkSelection();toggleCtbDropdown('linkDrop')" title="הוסף קישור">
@@ -1092,6 +1116,7 @@ function rich(t){
   s=s.replace(/__([^_\n]+)__/g,'<u>$1</u>');
   s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
   s=s.replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
+  s=s.replace(/---DIVIDER---/g,'<hr class="bubble-divider">');
   s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   s=s.replace(/(https?:\/\/[^\s<>"']{1,500})/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
   s=s.replace(/\x02color:([^\x03]+)\x03([\s\S]*?)\x02\/color\x03/g,'<span style=\"color:$1\">$2</span>');
@@ -1136,6 +1161,8 @@ async function checkAllowedAdmin(){
     setInterval(pingChatPresence, 15000);
     await pollWritePerm();
     setInterval(pollWritePerm, 3000);
+    pollUpdateMode();
+    setInterval(pollUpdateMode, 5000);
     document.getElementById('feedWrap').style.paddingBottom='120px';
   }
 
@@ -1713,6 +1740,90 @@ function setLoading(v){document.getElementById('prog').classList.toggle('on',v);
 let _writePerm=null;
 let _writePermPending=false;
 
+/* ══ UPDATE MODE ══ */
+let _updateMode=false;
+let _updateUntil='';
+
+function toggleUpdateMode(){
+  if(_updateMode){
+    // כבה מצב מעדכן
+    _updateMode=false;
+    _updateUntil='';
+    applyUpdateModeUI();
+    saveUpdateModeToServer(false,'');
+  } else {
+    // הפעל — שאל עד מתי
+    const until=prompt('עד מתי בערך אתה מעדכן? (לדוגמא: 22:00, שעה, חצי שעה)','');
+    if(until===null)return; // ביטול
+    _updateMode=true;
+    _updateUntil=until||'';
+    applyUpdateModeUI();
+    saveUpdateModeToServer(true,until||'');
+  }
+}
+
+function applyUpdateModeUI(){
+  const btn=document.getElementById('updateModeBtn');
+  const bar=document.getElementById('updateModeBar');
+  if(!btn||!bar)return;
+  if(_updateMode){
+    btn.className='update-mode-btn on';
+    btn.innerHTML='<i class="fas fa-check" style="font-size:9px"></i> מעדכן'
+      +(_updateUntil?` עד ${_updateUntil}`:'');
+    document.getElementById('updateModeWho').textContent='';
+  } else {
+    btn.className='update-mode-btn off';
+    btn.innerHTML='<i class="fas fa-times" style="font-size:9px"></i> לא מעדכן';
+    document.getElementById('updateModeWho').textContent='';
+  }
+}
+
+async function saveUpdateModeToServer(active,until){
+  try{
+    await fetch(BACKEND+'/update_mode_set',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:me.email,name:getDisplayName(me.email,me.name),active,until})});
+  }catch(e){}
+}
+
+async function pollUpdateMode(){
+  if(!isAdmin())return;
+  try{
+    const r=await fetch(BACKEND+'/update_mode_get');
+    const d=await r.json();
+    const bar=document.getElementById('updateModeBar');
+    if(bar)bar.classList.add('show');
+    // עדכן מה שהמשתמש הנוכחי מגדיר
+    const myEntry=(d.updaters||[]).find(u=>u.email===me?.email);
+    if(myEntry&&!_updateMode){
+      // שחזר מה שנשמר
+      _updateMode=myEntry.active;
+      _updateUntil=myEntry.until||'';
+      applyUpdateModeUI();
+    }
+    // למנהל ראשי — הצג מי מעדכן
+    if(isSuperAdmin()){
+      const active=(d.updaters||[]).filter(u=>u.active&&u.email!==me?.email);
+      const whoEl=document.getElementById('updateModeWho');
+      if(whoEl&&active.length){
+        whoEl.textContent='מעדכנים: '+active.map(u=>u.name+(u.until?' עד '+u.until:'')).join(', ');
+      } else if(whoEl){
+        whoEl.textContent='';
+      }
+    }
+    // חסום שליחה אם לא במצב מעדכן (לא super admin)
+    if(!isSuperAdmin()){
+      const canSend=_updateMode;
+      const sendBtn=document.getElementById('composeSendBtn');
+      if(sendBtn){
+        sendBtn.disabled=!canSend;
+        sendBtn.style.opacity=canSend?'1':'0.4';
+        sendBtn.title=canSend?'שלח':'עליך להפעיל מצב מעדכן לפני שליחה';
+      }
+    }
+  }catch(e){}
+}
+
 async function pollWritePerm(){
   if(!isAdmin()||_writePermPending)return;
   _writePermPending=true;
@@ -2216,12 +2327,39 @@ function editorToMarkdown(el){
       return inner;
     }
     if(tag==='s'){return`~~${inner}~~`;}
+    if(tag==='hr'){return '\n---DIVIDER---\n';}
+    if(tag==='a'){
+      const href=node.getAttribute('href')||'';
+      if(href&&href.startsWith('http'))return`[${inner}](${href})`;
+      return inner;
+    }
     if(tag==='div'||tag==='p'){
       return (node.previousElementSibling&&!node.previousElementSibling.getAttribute('data-quote-preview')?'\n':'')+inner;
     }
     return inner;
   }
   return nodeToText(el);
+}
+
+function insertDivider(){
+  const ed=document.getElementById('composeEditor');
+  ed.focus();
+  const hr=document.createElement('hr');
+  hr.className='bubble-divider';
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount){
+    const range=sel.getRangeAt(0);
+    range.collapse(false);
+    range.insertNode(hr);
+    // קפוץ אחרי ה-hr
+    const br=document.createElement('br');
+    hr.insertAdjacentElement('afterend',br);
+    range.setStartAfter(br);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  onComposeChange();
 }
 
 function composeStrikethrough(){
@@ -2256,8 +2394,21 @@ function insertComposeLink(){
     sel.removeAllRanges();
     sel.addRange(_savedLinkRange);
   }
-  // שמור כ-syntax [text](url)
-  document.execCommand('insertText',false,`[${text}](${url})`);
+  // הכנס אלמנט <a> אמיתי
+  const a=document.createElement('a');
+  a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+  a.textContent=text;
+  a.style.color='#1a56db';
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount){
+    const range=sel.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(a);
+    range.setStartAfter(a);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
   document.getElementById('composeLinkText').value='';
   document.getElementById('composeLinkUrl').value='';
   closeAllCtbDropdowns();
