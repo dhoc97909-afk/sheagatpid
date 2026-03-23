@@ -1838,8 +1838,11 @@ function onUpdateModeHdrClick(e){
     const pop=document.getElementById('updateModePopover');
     if(!pop)return;
     const isOpen=pop.classList.contains('open');
-    closeAllDropdowns();
-    if(!isOpen)pop.classList.add('open');
+    // סגור dropdowns אחרים
+    closeAllCtbDropdowns();
+    document.getElementById('writePermDropdown').style.display='none';
+    if(!isOpen) pop.classList.add('open');
+    else pop.classList.remove('open');
   } else {
     toggleUpdateMode();
   }
