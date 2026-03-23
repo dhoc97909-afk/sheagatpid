@@ -359,6 +359,22 @@ header{
   width:6px;height:6px;border-radius:50%;
   background:#16a34a;border:1.5px solid #fff;
 }
+/* super admin — יש מעדכנים */
+#updateModeHdrBtn.has-active{background:#dcfce7;color:#16a34a;}
+#updateModeHdrBtn.has-active:hover{background:#bbf7d0;color:#15803d;}
+#updateModeHdrBtn.has-active::after{
+  content:'';position:absolute;top:5px;right:5px;
+  width:6px;height:6px;border-radius:50%;
+  background:#16a34a;border:1.5px solid #fff;
+}
+/* super admin — אין מעדכנים */
+#updateModeHdrBtn.no-active{background:#fff7ed;color:#ea580c;}
+#updateModeHdrBtn.no-active:hover{background:#ffedd5;color:#c2410c;}
+#updateModeHdrBtn.no-active::after{
+  content:'';position:absolute;top:5px;right:5px;
+  width:6px;height:6px;border-radius:50%;
+  background:#ea580c;border:1.5px solid #fff;
+}
 
 /* ── Update mode popover (super admin) ── */
 #updateModePopover{
@@ -1929,32 +1945,59 @@ async function saveUpdateModeToServer(active,until){
   }catch(e){}
 }
 
+// בודק אם שעת "עד מתי" עברה כבר (לפי שעון הלקוח)
+function isUntilExpired(until){
+  if(!until)return false;
+  const m=until.match(/^(\d{1,2}):(\d{2})$/);
+  if(!m)return false;
+  const now=new Date();
+  const endH=parseInt(m[1],10), endM=parseInt(m[2],10);
+  const endMinutes=endH*60+endM;
+  const nowMinutes=now.getHours()*60+now.getMinutes();
+  return nowMinutes>endMinutes;
+}
+
 async function pollUpdateMode(){
   if(!isAdmin())return;
   try{
     const r=await fetch(BACKEND+'/update_mode_get');
     const d=await r.json();
     const bar=document.getElementById('updateModeBar');
-    if(bar)bar.classList.remove('show'); // הכפתור עבר לכותרת — הפס הישן מוסתר
+    if(bar)bar.classList.remove('show');
     const hdrBtn=document.getElementById('updateModeHdrBtn');
     if(hdrBtn)hdrBtn.style.display='inline-flex';
-    // עדכן מה שהמשתמש הנוכחי מגדיר
+
+    // בדוק אם המצב שלי פג תוקף — כבה אוטומטית
+    if(_updateMode && isUntilExpired(_updateUntil)){
+      _updateMode=false;
+      _updateUntil='';
+      applyUpdateModeUI();
+      saveUpdateModeToServer(false,'');
+    }
+
+    // שחזר מצב שמור (רק אם עדיין לא מעודכן מקומית ועדיין לא פג תוקף)
     const myEntry=(d.updaters||[]).find(u=>u.email===me?.email?.toLowerCase());
     if(myEntry&&!_updateMode){
-      // שחזר מה שנשמר
-      _updateMode=myEntry.active;
-      _updateUntil=myEntry.until||'';
-      applyUpdateModeUI();
+      const expired=isUntilExpired(myEntry.until);
+      if(myEntry.active && expired){
+        // פג תוקף בשרת — כבה
+        saveUpdateModeToServer(false,'');
+      } else {
+        _updateMode=myEntry.active;
+        _updateUntil=myEntry.until||'';
+        applyUpdateModeUI();
+      }
     }
-    // למנהל ראשי — עדכן popover של מי מעדכן
+
+    // למנהל ראשי — עדכן popover וצבע כפתור
     if(isSuperAdmin()){
-      const active=(d.updaters||[]).filter(u=>u.active&&u.email!==me?.email?.toLowerCase());
-      const whoEl=document.getElementById('updateModeWho');
+      const allActive=(d.updaters||[]).filter(u=>
+        u.active && u.email!==me?.email?.toLowerCase() && !isUntilExpired(u.until)
+      );
       const body=document.getElementById('updateModePopoverBody');
-      if(whoEl)whoEl.textContent='';
       if(body){
-        if(active.length){
-          body.innerHTML=active.map(u=>`
+        if(allActive.length){
+          body.innerHTML=allActive.map(u=>`
             <div class="ump-row">
               <div class="ump-dot"></div>
               <span>${u.name||u.email}${u.until?' — עד '+u.until:''}</span>
@@ -1963,7 +2006,16 @@ async function pollUpdateMode(){
           body.innerHTML='<div class="ump-empty">אין מעדכנים פעילים כרגע</div>';
         }
       }
+      // צבע כפתור
+      if(hdrBtn){
+        hdrBtn.classList.remove('has-active','no-active');
+        hdrBtn.classList.add(allActive.length?'has-active':'no-active');
+        hdrBtn.title=allActive.length
+          ?'מעדכנים: '+allActive.map(u=>u.name+(u.until?' עד '+u.until:'')).join(', ')
+          :'אין מעדכנים פעילים כרגע';
+      }
     }
+
     // חסום שליחה אם לא במצב מעדכן (לא super admin)
     if(!isSuperAdmin()){
       const canSend=_updateMode;
