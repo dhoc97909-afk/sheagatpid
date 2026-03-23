@@ -351,6 +351,14 @@ header{
 #notifBtn.active::after{background:#d97706;}
 #darkBtn.active::after{background:#a5b4fc;}
 #writePermBtn.has-granted{background:#eff6ff;color:#1a56db;}
+#updateModeHdrBtn{display:none;}
+#updateModeHdrBtn.is-on{background:#dcfce7;color:#16a34a;}
+#updateModeHdrBtn.is-on:hover{background:#bbf7d0;color:#15803d;}
+#updateModeHdrBtn.is-on::after{
+  content:'';position:absolute;top:5px;right:5px;
+  width:6px;height:6px;border-radius:50%;
+  background:#16a34a;border:1.5px solid #fff;
+}
 #adminMsgsBtn .unread-badge{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:#e02020;border:2px solid #fff;display:none;}
 #adminMsgsBtn .unread-badge.show{display:block;}
 
@@ -738,6 +746,9 @@ body.dark #searchInput{color:#e5e7eb;}
           <div id="writePermList" style="padding:6px 8px;display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;"></div>
         </div>
       </div>
+      <button id="updateModeHdrBtn" onclick="toggleUpdateMode()" title="לא מעדכן — לחץ להפעלה" style="position:relative;">
+        <i class="fas fa-satellite-dish" style="font-size:12px"></i>
+      </button>
       <span id="adminBadge"><i class="fas fa-users"></i><span id="adminUserCount">0</span></span>
       <div id="userAvatar" style="position:relative;"></div>
     </div>
@@ -1765,16 +1776,27 @@ function toggleUpdateMode(){
 function applyUpdateModeUI(){
   const btn=document.getElementById('updateModeBtn');
   const bar=document.getElementById('updateModeBar');
-  if(!btn||!bar)return;
-  if(_updateMode){
-    btn.className='update-mode-btn on';
-    btn.innerHTML='<i class="fas fa-check" style="font-size:9px"></i> מעדכן'
-      +(_updateUntil?` עד ${_updateUntil}`:'');
-    document.getElementById('updateModeWho').textContent='';
-  } else {
-    btn.className='update-mode-btn off';
-    btn.innerHTML='<i class="fas fa-times" style="font-size:9px"></i> לא מעדכן';
-    document.getElementById('updateModeWho').textContent='';
+  const hdrBtn=document.getElementById('updateModeHdrBtn');
+  if(btn&&bar){
+    if(_updateMode){
+      btn.className='update-mode-btn on';
+      btn.innerHTML='<i class="fas fa-check" style="font-size:9px"></i> מעדכן'
+        +(_updateUntil?` עד ${_updateUntil}`:'');
+    } else {
+      btn.className='update-mode-btn off';
+      btn.innerHTML='<i class="fas fa-times" style="font-size:9px"></i> לא מעדכן';
+    }
+    const whoEl=document.getElementById('updateModeWho');
+    if(whoEl)whoEl.textContent='';
+  }
+  if(hdrBtn){
+    if(_updateMode){
+      hdrBtn.classList.add('is-on');
+      hdrBtn.title='מעדכן'+(_updateUntil?' עד '+_updateUntil:'')+' — לחץ לסיום';
+    } else {
+      hdrBtn.classList.remove('is-on');
+      hdrBtn.title='לא מעדכן — לחץ להפעלה';
+    }
   }
 }
 
@@ -1792,7 +1814,9 @@ async function pollUpdateMode(){
     const r=await fetch(BACKEND+'/update_mode_get');
     const d=await r.json();
     const bar=document.getElementById('updateModeBar');
-    if(bar)bar.classList.add('show');
+    if(bar)bar.classList.remove('show'); // הכפתור עבר לכותרת — הפס הישן מוסתר
+    const hdrBtn=document.getElementById('updateModeHdrBtn');
+    if(hdrBtn)hdrBtn.style.display='inline-flex';
     // עדכן מה שהמשתמש הנוכחי מגדיר
     const myEntry=(d.updaters||[]).find(u=>u.email===me?.email);
     if(myEntry&&!_updateMode){
@@ -1801,14 +1825,16 @@ async function pollUpdateMode(){
       _updateUntil=myEntry.until||'';
       applyUpdateModeUI();
     }
-    // למנהל ראשי — הצג מי מעדכן
+    // למנהל ראשי — הצג מי מעדכן (ב-tooltip של כפתור הכותרת)
     if(isSuperAdmin()){
       const active=(d.updaters||[]).filter(u=>u.active&&u.email!==me?.email);
       const whoEl=document.getElementById('updateModeWho');
-      if(whoEl&&active.length){
-        whoEl.textContent='מעדכנים: '+active.map(u=>u.name+(u.until?' עד '+u.until:'')).join(', ');
-      } else if(whoEl){
-        whoEl.textContent='';
+      const hdrBtn2=document.getElementById('updateModeHdrBtn');
+      const whoText=active.length?'מעדכנים: '+active.map(u=>u.name+(u.until?' עד '+u.until:'')).join(', '):'';
+      if(whoEl)whoEl.textContent=whoText;
+      if(hdrBtn2&&active.length){
+        const myStatus=_updateMode?'מעדכן'+(_updateUntil?' עד '+_updateUntil:''):'לא מעדכן';
+        hdrBtn2.title=myStatus+' | '+whoText;
       }
     }
     // חסום שליחה אם לא במצב מעדכן (לא super admin)
