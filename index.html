@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
 <title>שאגת הארי</title>
-<link rel="icon" type="image/png" href="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png">
+<link rel="icon" type="image/png" href="https://i.ibb.co/pBvLbsG3/ed89a1453931.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Assistant:wght@300;400;500;600;700;800&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,7 +17,7 @@ body{height:100%;font-family:'Heebo',sans-serif;-webkit-font-smoothing:antialias
 /* LOGIN */
 #loginScreen{position:fixed;inset:0;background:#eae9e4;display:flex;align-items:center;justify-content:center;z-index:1000;}
 .login-card{background:#fff;border-radius:18px;padding:38px 32px;text-align:center;box-shadow:0 4px 32px rgba(0,0,0,.12);max-width:320px;width:90%;}
-.login-logo-img{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:block;object-fit:cover;}
+.login-logo-img{width:90px;height:90px;border-radius:16px;margin:0 auto 14px;display:block;object-fit:contain;}
 .login-title{font-size:20px;font-weight:900;color:#111;margin-bottom:4px;}
 .login-sub{font-size:13px;color:#888;margin-bottom:24px;}
 
@@ -142,7 +142,7 @@ header{
   overflow:visible;
 }
 #app{padding-top:56px;}
-.hdr-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.hdr-avatar{width:38px;height:38px;border-radius:10px;object-fit:contain;flex-shrink:0;}
 .hdr-info{flex:1;min-width:0;}
 .hdr-name{font-size:15px;font-weight:800;color:#111;line-height:1.2;}
 .hdr-status{font-size:12px;color:#4caf7d;font-weight:600;display:flex;align-items:center;gap:4px;}
@@ -176,7 +176,7 @@ header{
   animation:mi .3s cubic-bezier(.16,1,.3,1) both;
 }
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.msg-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-start;margin-top:17px;}
+.msg-av{width:36px;height:36px;border-radius:10px;object-fit:contain;flex-shrink:0;align-self:flex-start;margin-top:17px;}
 .msg-col{display:flex;flex-direction:column;gap:3px;min-width:0;align-items:flex-start;position:relative;}
 .msg-meta{direction:rtl;display:flex;align-items:baseline;gap:6px;padding-right:4px;}
 .msg-meta-name{font-size:12px;font-weight:700;color:#666;}
@@ -190,7 +190,7 @@ header{
   box-shadow:0 1px 2px rgba(0,0,0,.10);
 }
 .bubble.is-red{background:#fff9f9;border-right:3px solid #e02020;}
-.bubble-text{font-size:18px;line-height:1.625;color:#374151;font-weight:400;white-space:pre-wrap;word-break:break-word;font-family:'Assistant','Heebo','Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;}
+.bubble-text{font-size:19px;line-height:1.65;color:#4b5563;font-weight:400;white-space:pre-wrap;word-break:break-word;font-family:'Assistant','Heebo','Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;}
 .bubble-text strong{font-weight:700;color:#1a1a1a;}
 .bubble-text em{font-style:italic;}
 .bubble-text a{color:#1a56db;text-decoration:underline;}
@@ -619,7 +619,7 @@ body.dark #searchInput{color:#e5e7eb;}
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
-    <img class="login-logo-img" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png" onerror="this.style.display='none'">
+    <img class="login-logo-img" src="https://i.ibb.co/pBvLbsG3/ed89a1453931.png" onerror="this.style.display='none'">
     <div class="login-title">שאגת הארי</div>
     <div id="googleBtn"></div>
   </div>
@@ -671,7 +671,7 @@ body.dark #searchInput{color:#e5e7eb;}
 <!-- APP -->
 <div id="app">
   <header>
-    <img class="hdr-avatar" src="https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png" onerror="this.style.background='#e02020'">
+    <img class="hdr-avatar" src="https://i.ibb.co/pBvLbsG3/ed89a1453931.png" onerror="this.style.background='#e02020'">
     <div class="hdr-info">
       <div class="hdr-name">שאגת הארי <span style="font-size:10px;font-weight:700;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:6px;padding:1px 6px;vertical-align:middle;">בהרצה</span></div>
       <div class="hdr-status"><div class="hdr-dot"></div>מחובר · עדכונים חיים</div>
@@ -999,7 +999,7 @@ body.dark #searchInput{color:#e5e7eb;}
 <script>
 const BACKEND = 'https://dhoc97909.pythonanywhere.com';
 const GOOGLE_CLIENT_ID = '856723702772-jm929ihp29ovhribfaaph17pbaq6qr3n.apps.googleusercontent.com';
-const LOGO = 'https://i.postimg.cc/zvyWy8wk/צילום_מסך_2026_03_01_031615.png';
+const LOGO = 'https://i.ibb.co/pBvLbsG3/ed89a1453931.png';
 const ADMIN_EMAIL = 'david@hamakom.ovh';
 const SUPER_ADMINS = ['david@hamakom.ovh','0533192512a@gmail.com'];
 const STORAGE_KEY = 'shaagat_hari_user';
@@ -1944,9 +1944,85 @@ function updateComposeImg(){
   const url=document.getElementById('composeImgUrl').value.trim();
   composeImgUrl=url;
   const thumb=document.getElementById('composeImgThumb');
-  if(url){document.getElementById('composeImgThumbImg').src=url;thumb.style.display='block';}
+  if(url){
+    // הטבע לוגו על תמונה מURL
+    stampLogoOnUrl(url).then(stamped=>{
+      composeImgUrl=stamped;
+      document.getElementById('composeImgThumbImg').src=stamped;
+    }).catch(()=>{
+      document.getElementById('composeImgThumbImg').src=url;
+    });
+    thumb.style.display='block';
+  }
   else{thumb.style.display='none';}
   updateAttachPreview();
+}
+
+async function stampLogoOnUrl(url){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=async()=>{
+      const blob=await fetch(url).then(r=>r.blob()).catch(()=>null);
+      if(!blob){reject();return;}
+      const file=new File([blob],'image.jpg',{type:blob.type||'image/jpeg'});
+      const stamped=await stampLogoOnImage(file);
+      const reader=new FileReader();
+      reader.onload=e=>resolve(e.target.result);
+      reader.readAsDataURL(stamped);
+    };
+    img.onerror=reject;
+    img.src=url;
+  });
+}
+
+/* ══ LOGO STAMP ON IMAGE ══ */
+async function stampLogoOnImage(file){
+  return new Promise((resolve)=>{
+    const LOGO_URL='https://i.ibb.co/pBvLbsG3/ed89a1453931.png';
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        const logo=new Image();
+        logo.crossOrigin='anonymous';
+        logo.onload=()=>{
+          const canvas=document.createElement('canvas');
+          canvas.width=img.width;canvas.height=img.height;
+          const ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0);
+          // לוגו בפינה ימין למעלה — 12% מרוחב התמונה
+          const logoSize=Math.max(40,Math.round(img.width*0.12));
+          const pad=Math.round(img.width*0.018);
+          // רקע לבן עגול מאחורי הלוגו
+          ctx.save();
+          ctx.shadowColor='rgba(0,0,0,0.18)';
+          ctx.shadowBlur=8;
+          const r=logoSize*0.18;
+          ctx.beginPath();
+          ctx.moveTo(img.width-pad-logoSize+r,pad);
+          ctx.arcTo(img.width-pad,pad,img.width-pad,pad+r,r);
+          ctx.arcTo(img.width-pad,pad+logoSize,img.width-pad-r,pad+logoSize,r);
+          ctx.arcTo(img.width-pad-logoSize,pad+logoSize,img.width-pad-logoSize,pad+logoSize-r,r);
+          ctx.arcTo(img.width-pad-logoSize,pad,img.width-pad-logoSize+r,pad,r);
+          ctx.closePath();
+          ctx.fillStyle='rgba(255,255,255,0.88)';
+          ctx.fill();
+          ctx.restore();
+          ctx.drawImage(logo,img.width-pad-logoSize,pad,logoSize,logoSize);
+          canvas.toBlob(blob=>{
+            const stamped=new File([blob],file.name||'image.jpg',{type:'image/jpeg'});
+            resolve(stamped);
+          },'image/jpeg',0.92);
+        };
+        logo.onerror=()=>resolve(file); // fallback ללא לוגו
+        logo.src=LOGO_URL;
+      };
+      img.onerror=()=>resolve(file);
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 async function uploadComposeImg(file){
@@ -1954,6 +2030,8 @@ async function uploadComposeImg(file){
   const imgDropBtn=document.getElementById('imgDropBtn');
   imgDropBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> מעלה...';
   try{
+    // הטבע לוגו על התמונה לפני העלאה
+    file=await stampLogoOnImage(file);
     const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
     const form=new FormData();form.append('key',IMGBB_KEY);form.append('image',base64);
     const resp=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:form});
