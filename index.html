@@ -176,7 +176,7 @@ header{
   animation:mi .3s cubic-bezier(.16,1,.3,1) both;
 }
 @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.msg-av{width:36px;height:36px;border-radius:10px;object-fit:contain;flex-shrink:0;align-self:flex-start;margin-top:17px;}
+.msg-av{width:36px;height:36px;border-radius:0;object-fit:contain;flex-shrink:0;align-self:flex-start;margin-top:17px;background:transparent;}
 .msg-col{display:flex;flex-direction:column;gap:3px;min-width:0;align-items:flex-start;position:relative;}
 .msg-meta{direction:rtl;display:flex;align-items:baseline;gap:6px;padding-right:4px;}
 .msg-meta-name{font-size:12px;font-weight:700;color:#666;}
@@ -186,7 +186,7 @@ header{
   background:#fff;direction:rtl;
   border-radius:18px 4px 18px 18px;
   padding:10px 14px 8px;
-  display:inline-block;max-width:100%;min-width:180px;
+  display:inline-block;max-width:100%;
   box-shadow:0 1px 2px rgba(0,0,0,.10);
 }
 .bubble.is-red{background:#fff9f9;border-right:3px solid #e02020;}
@@ -1959,21 +1959,20 @@ function updateComposeImg(){
 }
 
 async function stampLogoOnUrl(url){
-  return new Promise((resolve,reject)=>{
-    const img=new Image();
-    img.crossOrigin='anonymous';
-    img.onload=async()=>{
-      const blob=await fetch(url).then(r=>r.blob()).catch(()=>null);
-      if(!blob){reject();return;}
-      const file=new File([blob],'image.jpg',{type:blob.type||'image/jpeg'});
-      const stamped=await stampLogoOnImage(file);
+  // נסה להוריד ולהטביע — אם CORS חוסם, השתמש ב-URL המקורי
+  try{
+    const blob=await fetch(url,{mode:'cors'}).then(r=>{if(!r.ok)throw new Error();return r.blob();});
+    const file=new File([blob],'image.jpg',{type:blob.type||'image/jpeg'});
+    const stamped=await stampLogoOnImage(file);
+    return new Promise((resolve)=>{
       const reader=new FileReader();
       reader.onload=e=>resolve(e.target.result);
       reader.readAsDataURL(stamped);
-    };
-    img.onerror=reject;
-    img.src=url;
-  });
+    });
+  }catch(e){
+    // CORS נכשל — החזר URL מקורי ללא הטבעה
+    return url;
+  }
 }
 
 /* ══ LOGO STAMP ON IMAGE ══ */
@@ -1994,21 +1993,7 @@ async function stampLogoOnImage(file){
           // לוגו בפינה ימין למעלה — 12% מרוחב התמונה
           const logoSize=Math.max(40,Math.round(img.width*0.12));
           const pad=Math.round(img.width*0.018);
-          // רקע לבן עגול מאחורי הלוגו
-          ctx.save();
-          ctx.shadowColor='rgba(0,0,0,0.18)';
-          ctx.shadowBlur=8;
-          const r=logoSize*0.18;
-          ctx.beginPath();
-          ctx.moveTo(img.width-pad-logoSize+r,pad);
-          ctx.arcTo(img.width-pad,pad,img.width-pad,pad+r,r);
-          ctx.arcTo(img.width-pad,pad+logoSize,img.width-pad-r,pad+logoSize,r);
-          ctx.arcTo(img.width-pad-logoSize,pad+logoSize,img.width-pad-logoSize,pad+logoSize-r,r);
-          ctx.arcTo(img.width-pad-logoSize,pad,img.width-pad-logoSize+r,pad,r);
-          ctx.closePath();
-          ctx.fillStyle='rgba(255,255,255,0.88)';
-          ctx.fill();
-          ctx.restore();
+          // הטמע לוגו ישירות ללא מסגרת
           ctx.drawImage(logo,img.width-pad-logoSize,pad,logoSize,logoSize);
           canvas.toBlob(blob=>{
             const stamped=new File([blob],file.name||'image.jpg',{type:'image/jpeg'});
