@@ -628,6 +628,22 @@ body.dark #searchInput{color:#e5e7eb;}
 
 /* LOAD MORE SPINNER */
 #loadMoreSpinner{display:none;align-items:center;justify-content:center;padding:16px;gap:8px;color:#aaa;font-size:13px;font-family:'Heebo',sans-serif;}
+
+/* UNREAD SEPARATOR */
+.unread-sep{
+  display:flex;align-items:center;gap:10px;
+  font-size:11px;font-weight:800;color:#e02020;
+  padding:6px 0;margin:4px 0;direction:rtl;
+  position:relative;
+}
+.unread-sep::before,.unread-sep::after{content:'';flex:1;height:1.5px;background:#fecaca;}
+.unread-sep span{
+  background:#fff5f5;border:1px solid #fecaca;
+  border-radius:99px;padding:2px 10px;white-space:nowrap;
+  flex-shrink:0;
+}
+body.dark .unread-sep::before,body.dark .unread-sep::after{background:#4a1212;}
+body.dark .unread-sep span{background:#2a1010;border-color:#7f1d1d;}
 #loadMoreSpinner.show{display:flex;}
 .lm-ring{width:22px;height:22px;border-radius:50%;border:2.5px solid #e5e7eb;border-top-color:#1a56db;animation:spin .7s linear infinite;flex-shrink:0;}
 
@@ -1729,7 +1745,21 @@ async function delCmt(msgId,cid){
 }
 
 /* ── FEED ── */
+// ─── last-visit timestamp (per user, for unread divider) ───
+let _lastVisitTs = 0;
+function _saveLastVisitTs(){
+  if(!me||!lastTs)return;
+  localStorage.setItem('shaagat_visit_'+me.email, String(lastTs));
+}
+function _loadLastVisitTs(){
+  if(!me)return 0;
+  return parseInt(localStorage.getItem('shaagat_visit_'+me.email)||'0',10);
+}
+window.addEventListener('pagehide',_saveLastVisitTs);
+window.addEventListener('beforeunload',_saveLastVisitTs);
+
 async function loadFeed(){
+  _lastVisitTs = _loadLastVisitTs(); // קרא לפני טעינה
   setLoading(true);
   try{
     const r=await fetch(BACKEND+'/feed?limit=20');
@@ -1745,6 +1775,8 @@ async function loadFeed(){
       else{inner.innerHTML=items.map(buildMsg).join('');}
       document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
       if(items.length)await pollAll(true);
+      await insertUnreadDivider(); // הוסף קו לא-נקראו
+      _saveLastVisitTs();          // שמור timestamp חדש
       setTimeout(highlightMsgFromHash, 500);
     }
   }catch(e){}
@@ -1774,8 +1806,52 @@ async function loadMore(){
   }catch(e){}finally{loadingMore=false;document.getElementById('loadMoreSpinner').classList.remove('show');}
 }
 
-async function pollAll(){
-  if(pollPending)return;if(!me||!items.length)return;
+// טוען עוד הודעות ישנות בשקט (ללא עדכון scroll גלוי)
+async function loadMoreSilent(){
+  if(loadingMore||allLoaded||!oldestTs)return;
+  loadingMore=true;
+  try{
+    const r=await fetch(BACKEND+`/feed?before=${oldestTs}&limit=20`);
+    const d=await r.json();
+    if(d.status==='ok'&&d.feed.length){
+      const older=d.feed.filter(e=>!knownIds.has(e.id)).reverse();
+      older.forEach(e=>{knownIds.add(e.id);items.unshift(e);});
+      oldestTs=Math.min(...older.map(e=>e.ts||Infinity));
+      allLoaded=older.length<20;
+      const inner=document.getElementById('feedInner');
+      const wrap=document.getElementById('feedWrap');
+      const prevHeight=wrap.scrollHeight;
+      const prevTop=wrap.scrollTop;
+      inner.insertAdjacentHTML('afterbegin',older.map(buildMsg).join(''));
+      wrap.scrollTop=prevTop+(wrap.scrollHeight-prevHeight);
+    }else{allLoaded=true;}
+  }catch(e){}finally{loadingMore=false;}
+}
+
+async function insertUnreadDivider(){
+  if(!_lastVisitTs||!items.length)return;
+  // אם כל ההודעות הטעונות חדשות — טען עוד עד שנמצא גבול (max 5 דפים)
+  for(let i=0;i<5;i++){
+    const idx=items.findIndex(e=>(e.ts||0)>_lastVisitTs);
+    if(idx>0)break;     // נמצא גבול
+    if(idx===-1)return; // הכל כבר נקרא
+    if(allLoaded)break; // אין עוד
+    await loadMoreSilent();
+  }
+  const firstUnreadIdx=items.findIndex(e=>(e.ts||0)>_lastVisitTs);
+  if(firstUnreadIdx<=0)return;
+  const row=document.querySelector(`.msg-row[data-id="${items[firstUnreadIdx].id}"]`);
+  if(!row)return;
+  document.getElementById('unreadSep')?.remove();
+  const sep=document.createElement('div');
+  sep.id='unreadSep';sep.className='unread-sep';
+  const n=items.length-firstUnreadIdx;
+  sep.innerHTML=`<span>📬 ${n} הודעה${n===1?'':'ות'} חדש${n===1?'ה':'ות'}</span>`;
+  row.parentNode.insertBefore(sep,row);
+  setTimeout(()=>sep.scrollIntoView({behavior:'smooth',block:'center'}),150);
+}
+
+async function pollAll(){if(!me||!items.length)return;
   pollPending=true;
   try{
     const r=await fetch(BACKEND+'/feed_poll',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msgIds:items.map(e=>e.id),since:lastTs})});
@@ -3387,12 +3463,19 @@ async function doSearch(q){
   const empty=document.getElementById('searchEmpty');
   inner.innerHTML='<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;"><i class="fas fa-spinner fa-spin"></i> מחפש...</div>';
   empty.style.display='none';
-  let allItems=items;
-  try{
-    const r=await fetch(BACKEND+'/feed?limit=500');
-    const d=await r.json();
-    if(d.status==='ok') allItems=[...d.feed].reverse();
-  }catch(e){}
+  // טען את כל הפיד עמוד עמוד (מקסימום 30 דפים = 1500 פוסטים)
+  let allItems=[];let before=0;
+  for(let page=0;page<30;page++){
+    try{
+      const url=before?BACKEND+`/feed?before=${before}&limit=50`:BACKEND+'/feed?limit=50';
+      const r=await fetch(url);const d=await r.json();
+      if(d.status!=='ok'||!d.feed.length)break;
+      allItems.push(...d.feed);
+      if(d.feed.length<50)break;
+      before=Math.min(...d.feed.map(e=>e.ts||Infinity));
+    }catch(e){break;}
+  }
+  allItems.reverse();
   const results=allItems.filter(e=>(e.text||'').toLowerCase().includes(qLow));
   if(!results.length){inner.innerHTML='';empty.style.display='block';return;}
   const escaped=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
