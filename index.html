@@ -1845,8 +1845,7 @@ async function insertUnreadDivider(){
   document.getElementById('unreadSep')?.remove();
   const sep=document.createElement('div');
   sep.id='unreadSep';sep.className='unread-sep';
-  const n=items.length-firstUnreadIdx;
-  sep.innerHTML=`<span>📬 ${n} הודעה${n===1?'':'ות'} חדש${n===1?'ה':'ות'}</span>`;
+  sep.innerHTML=`<span>לא נקראו</span>`;
   row.parentNode.insertBefore(sep,row);
   setTimeout(()=>sep.scrollIntoView({behavior:'smooth',block:'center'}),150);
 }
