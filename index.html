@@ -1759,25 +1759,73 @@ window.addEventListener('pagehide',_saveLastVisitTs);
 window.addEventListener('beforeunload',_saveLastVisitTs);
 
 async function loadFeed(){
-  _lastVisitTs = _loadLastVisitTs(); // קרא לפני טעינה
+  _lastVisitTs = _loadLastVisitTs();
   setLoading(true);
   try{
+    // ── טען דף ראשון ──
     const r=await fetch(BACKEND+'/feed?limit=20');
     const d=await r.json();
     if(d.status==='ok'){
-      items=[...d.feed].reverse();
-      items.forEach(e=>knownIds.add(e.id));
-      lastTs=items.length?Math.max(...items.map(e=>e.ts||0)):0;
-      oldestTs=items.length?Math.min(...items.map(e=>e.ts||0)):0;
+      let allPages=[...d.feed].reverse(); // ישן→חדש
+      allPages.forEach(e=>knownIds.add(e.id));
       allLoaded=d.feed.length<20;
-      const inner=document.getElementById('feedInner');inner.innerHTML='';
+      oldestTs=allPages.length?Math.min(...allPages.map(e=>e.ts||Infinity)):0;
+
+      // ── אם יש lastVisitTs וכל ההודעות חדשות ממנו — טען עוד דפים (data בלבד) ──
+      if(_lastVisitTs && allPages.length && allPages[0].ts > _lastVisitTs){
+        for(let i=0;i<5&&!allLoaded;i++){
+          try{
+            const rp=await fetch(BACKEND+`/feed?before=${oldestTs}&limit=20`);
+            const dp=await rp.json();
+            if(dp.status==='ok'&&dp.feed.length){
+              const older=dp.feed.filter(e=>!knownIds.has(e.id)).reverse();
+              older.forEach(e=>knownIds.add(e.id));
+              allPages=[...older,...allPages];
+              oldestTs=Math.min(...older.map(e=>e.ts||Infinity));
+              allLoaded=dp.feed.length<20;
+              if(allPages[0].ts <= _lastVisitTs) break; // מצאנו גבול
+            }else{allLoaded=true;break;}
+          }catch(e){break;}
+        }
+      }
+
+      items=allPages;
+      lastTs=items.length?Math.max(...items.map(e=>e.ts||0)):0;
+
+      // ── רנדר הכל בבת אחת ──
+      const inner=document.getElementById('feedInner');
+      inner.innerHTML='';
       if(!items.length){document.getElementById('empty').style.display='block';}
       else{inner.innerHTML=items.map(buildMsg).join('');}
-      document.getElementById('feedWrap').scrollTop=document.getElementById('feedWrap').scrollHeight;
+
+      // ── הכנס קו לא-נקראו בתוך ה-DOM שכבר רונדר ──
+      let scrollTarget=null;
+      if(_lastVisitTs&&items.length){
+        const firstUnreadIdx=items.findIndex(e=>(e.ts||0)>_lastVisitTs);
+        if(firstUnreadIdx>0){
+          const row=document.querySelector(`.msg-row[data-id="${items[firstUnreadIdx].id}"]`);
+          if(row){
+            document.getElementById('unreadSep')?.remove();
+            const sep=document.createElement('div');
+            sep.id='unreadSep';sep.className='unread-sep';
+            sep.innerHTML='<span>לא נקראו</span>';
+            row.parentNode.insertBefore(sep,row);
+            scrollTarget=sep;
+          }
+        }
+      }
+
+      // ── גלול ──
+      const wrap=document.getElementById('feedWrap');
+      if(scrollTarget){
+        wrap.scrollTop=0; // אפס קודם כדי ש-scrollIntoView יעבוד נכון
+        setTimeout(()=>scrollTarget.scrollIntoView({behavior:'auto',block:'start'}),50);
+      }else{
+        wrap.scrollTop=wrap.scrollHeight;
+      }
+
       if(items.length)await pollAll(true);
-      await insertUnreadDivider(); // הוסף קו לא-נקראו
-      _saveLastVisitTs();          // שמור timestamp חדש
-      setTimeout(highlightMsgFromHash, 500);
+      setTimeout(highlightMsgFromHash,500);
     }
   }catch(e){}
   setLoading(false);
@@ -1804,50 +1852,6 @@ async function loadMore(){
       }
     }else{allLoaded=true;}
   }catch(e){}finally{loadingMore=false;document.getElementById('loadMoreSpinner').classList.remove('show');}
-}
-
-// טוען עוד הודעות ישנות בשקט (ללא עדכון scroll גלוי)
-async function loadMoreSilent(){
-  if(loadingMore||allLoaded||!oldestTs)return;
-  loadingMore=true;
-  try{
-    const r=await fetch(BACKEND+`/feed?before=${oldestTs}&limit=20`);
-    const d=await r.json();
-    if(d.status==='ok'&&d.feed.length){
-      const older=d.feed.filter(e=>!knownIds.has(e.id)).reverse();
-      older.forEach(e=>{knownIds.add(e.id);items.unshift(e);});
-      oldestTs=Math.min(...older.map(e=>e.ts||Infinity));
-      allLoaded=older.length<20;
-      const inner=document.getElementById('feedInner');
-      const wrap=document.getElementById('feedWrap');
-      const prevHeight=wrap.scrollHeight;
-      const prevTop=wrap.scrollTop;
-      inner.insertAdjacentHTML('afterbegin',older.map(buildMsg).join(''));
-      wrap.scrollTop=prevTop+(wrap.scrollHeight-prevHeight);
-    }else{allLoaded=true;}
-  }catch(e){}finally{loadingMore=false;}
-}
-
-async function insertUnreadDivider(){
-  if(!_lastVisitTs||!items.length)return;
-  // אם כל ההודעות הטעונות חדשות — טען עוד עד שנמצא גבול (max 5 דפים)
-  for(let i=0;i<5;i++){
-    const idx=items.findIndex(e=>(e.ts||0)>_lastVisitTs);
-    if(idx>0)break;     // נמצא גבול
-    if(idx===-1)return; // הכל כבר נקרא
-    if(allLoaded)break; // אין עוד
-    await loadMoreSilent();
-  }
-  const firstUnreadIdx=items.findIndex(e=>(e.ts||0)>_lastVisitTs);
-  if(firstUnreadIdx<=0)return;
-  const row=document.querySelector(`.msg-row[data-id="${items[firstUnreadIdx].id}"]`);
-  if(!row)return;
-  document.getElementById('unreadSep')?.remove();
-  const sep=document.createElement('div');
-  sep.id='unreadSep';sep.className='unread-sep';
-  sep.innerHTML=`<span>לא נקראו</span>`;
-  row.parentNode.insertBefore(sep,row);
-  setTimeout(()=>sep.scrollIntoView({behavior:'smooth',block:'center'}),150);
 }
 
 async function pollAll(){if(!me||!items.length)return;
