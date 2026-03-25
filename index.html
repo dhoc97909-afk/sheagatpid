@@ -650,8 +650,7 @@ body.dark .unread-sep span{background:#2a1010;border-color:#7f1d1d;}
 #scrollDownBtn{
   position:fixed;
   bottom:20px;
-  left:160px; /* אמצע ה-sidebar (320px / 2) */
-  transform:translateX(-50%);
+  left:calc(320px - 22px); /* על קצה הסיידבר — מחצית הכפתור פנימה, מחצית בפיד */
   width:44px;height:44px;
   background:#fff;
   border:1.5px solid #e5e7eb;
@@ -659,7 +658,7 @@ body.dark .unread-sep span{background:#2a1010;border-color:#7f1d1d;}
   display:none;align-items:center;justify-content:center;
   box-shadow:0 4px 18px rgba(0,0,0,.15);
   cursor:pointer;
-  z-index:201; /* מעל adminComposeBar (z-index:200) */
+  z-index:201;
   transition:bottom .2s ease;
 }
 #scrollDownBtn.show{display:flex;}
@@ -672,11 +671,9 @@ body.dark .unread-sep span{background:#2a1010;border-color:#7f1d1d;}
   display:none;box-shadow:none;
 }
 #scrollDownBtn.has-new .unread-dot{display:block;}
-/* כשאין סיידבר (מובייל) — מרכז */
 @media(max-width:900px){
   #scrollDownBtn{left:50%;transform:translateX(-50%);}
 }
-/* כשהכפתור מוצג ויש compose bar — העלה אותו */
 body.has-compose #scrollDownBtn{bottom:calc(var(--compose-h,120px) + 16px);}.unread-dot{width:8px;height:8px;border-radius:50%;background:#e02020;flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
 #scrollDownBtn.has-new .unread-dot{display:block;}
 
