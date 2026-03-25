@@ -647,9 +647,37 @@ body.dark .unread-sep span{background:#2a1010;border-color:#7f1d1d;}
 #loadMoreSpinner.show{display:flex;}
 .lm-ring{width:22px;height:22px;border-radius:50%;border:2.5px solid #e5e7eb;border-top-color:#1a56db;animation:spin .7s linear infinite;flex-shrink:0;}
 
-#scrollDownBtn{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #e5e7eb;border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;color:#374151;cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(0,0,0,.11);font-family:'Heebo',sans-serif;z-index:50;}
+#scrollDownBtn{
+  position:fixed;
+  bottom:20px;
+  left:160px; /* אמצע ה-sidebar (320px / 2) */
+  transform:translateX(-50%);
+  width:44px;height:44px;
+  background:#fff;
+  border:1.5px solid #e5e7eb;
+  border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 4px 18px rgba(0,0,0,.15);
+  cursor:pointer;
+  z-index:201; /* מעל adminComposeBar (z-index:200) */
+  transition:bottom .2s ease;
+}
 #scrollDownBtn.show{display:flex;}
-.unread-dot{width:8px;height:8px;border-radius:50%;background:#e02020;flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
+#scrollDownBtn:hover{background:#f3f4f6;border-color:#d1d5db;}
+#scrollDownBtn .scroll-arrow{color:#374151;font-size:16px;line-height:1;}
+#scrollDownBtn .unread-dot{
+  position:absolute;top:4px;right:4px;
+  width:10px;height:10px;border-radius:50%;
+  background:#e02020;border:2px solid #fff;
+  display:none;box-shadow:none;
+}
+#scrollDownBtn.has-new .unread-dot{display:block;}
+/* כשאין סיידבר (מובייל) — מרכז */
+@media(max-width:900px){
+  #scrollDownBtn{left:50%;transform:translateX(-50%);}
+}
+/* כשהכפתור מוצג ויש compose bar — העלה אותו */
+body.has-compose #scrollDownBtn{bottom:calc(var(--compose-h,120px) + 16px);}.unread-dot{width:8px;height:8px;border-radius:50%;background:#e02020;flex-shrink:0;display:none;box-shadow:0 0 0 2px #fff;}
 #scrollDownBtn.has-new .unread-dot{display:block;}
 
 #prog{position:fixed;top:0;inset-inline:0;height:2px;background:#1a56db;transform:scaleX(0);transform-origin:right;z-index:999;display:none;}
@@ -861,8 +889,7 @@ body.dark .unread-sep span{background:#2a1010;border-color:#7f1d1d;}
 
   <button id="scrollDownBtn" onclick="scrollToBottom()">
     <div class="unread-dot"></div>
-    <span id="scrollDownTxt">למטה</span>
-    <i class="fas fa-arrow-down" style="font-size:10px"></i>
+    <i class="fas fa-arrow-down scroll-arrow"></i>
   </button>
 </div>
 
@@ -1906,10 +1933,22 @@ async function pollAll(){if(!me||!items.length)return;
 
 function scrollToBottom(){document.getElementById('feedWrap').scrollTo({top:999999,behavior:'smooth'});newCount=0;updateScrollBtn();}
 function updateScrollBtn(){
-  const btn=document.getElementById('scrollDownBtn'),txt=document.getElementById('scrollDownTxt');
-  if(!atBottom){btn.classList.add('show');if(newCount>0){btn.classList.add('has-new');txt.textContent=newCount+' חדשות';}else{btn.classList.remove('has-new');txt.textContent='למטה';}}
+  const btn=document.getElementById('scrollDownBtn');
+  if(!atBottom){btn.classList.add('show');if(newCount>0)btn.classList.add('has-new');else btn.classList.remove('has-new');}
   else{btn.classList.remove('show','has-new');newCount=0;}
 }
+function updateComposeHeight(){
+  const bar=document.getElementById('adminComposeBar');
+  if(bar&&bar.classList.contains('show')){
+    document.documentElement.style.setProperty('--compose-h', bar.offsetHeight+'px');
+    document.body.classList.add('has-compose');
+  }else{
+    document.body.classList.remove('has-compose');
+  }
+}
+const _composeObserver=new ResizeObserver(updateComposeHeight);
+const _composeEl=document.getElementById('adminComposeBar');
+if(_composeEl)_composeObserver.observe(_composeEl);
 
 document.getElementById('feedWrap').addEventListener('scroll',function(){
   atBottom=(this.scrollHeight-this.scrollTop-this.clientHeight)<80;updateScrollBtn();
