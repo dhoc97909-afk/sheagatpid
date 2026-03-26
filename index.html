@@ -1510,7 +1510,19 @@ function buildMsg(e){
 <\/script>`:''}
       </div>`;
     } else {
-      media+=`<div class="bubble-vid" style="margin-top:9px;"><a class="vid-btn" href="${escAttr(vu)}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play" style="font-size:10px"></i> סרטון</a></div>`;
+      // ניסיון לנגן כ-<video> עם fallback לכפתור אם הדפדפן לא תומך
+      const vidId='vid-'+escAttr(id);
+      media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;width:100%;">
+        <video id="${vidId}" controls playsinline preload="metadata"
+          src="${escAttr(vu)}"
+          style="max-height:480px;display:block;border-radius:12px;object-fit:contain;width:100%;"
+          onloadedmetadata="if(this.videoHeight>this.videoWidth)this.classList.add('portrait')"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        </video>
+        <a class="vid-btn" href="${escAttr(vu)}" target="_blank" rel="noopener noreferrer" style="display:none;margin-top:6px;">
+          <i class="fas fa-play" style="font-size:10px"></i> פתח סרטון
+        </a>
+      </div>`;
     }
   }
 
