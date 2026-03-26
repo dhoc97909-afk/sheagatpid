@@ -1510,19 +1510,14 @@ function buildMsg(e){
 <\/script>`:''}
       </div>`;
     } else {
-      // URL לא מוכר — תמיד טען דרך פרוקסי השרת כדי לעקוף CORS
-      const vidId='vid-'+escAttr(id);
-      const proxyUrl=BACKEND+'/video_proxy?url='+encodeURIComponent(vu);
-      media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;width:100%;">
-        <video id="${vidId}" controls playsinline preload="metadata"
-          src="${proxyUrl}"
-          style="max-height:480px;display:block;border-radius:12px;object-fit:contain;width:100%;"
-          onloadedmetadata="if(this.videoHeight>this.videoWidth)this.classList.add('portrait')"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        </video>
-        <a class="vid-btn" href="${escAttr(vu)}" target="_blank" rel="noopener noreferrer" style="display:none;margin-top:6px;">
-          <i class="fas fa-play" style="font-size:10px"></i> פתח סרטון
-        </a>
+      // URL לא מוכר — הצג ב-iframe (עוקף CORS לחלוטין)
+      media+=`<div class="bubble-vid" style="margin-top:9px;border-radius:12px;overflow:hidden;width:100%;background:#000;">
+        <iframe src="${escAttr(vu)}"
+          width="100%" height="300" frameborder="0"
+          allowfullscreen allow="autoplay; fullscreen"
+          style="display:block;border-radius:12px;min-height:300px;"
+          sandbox="allow-scripts allow-same-origin allow-presentation allow-popups">
+        </iframe>
       </div>`;
     }
   }
